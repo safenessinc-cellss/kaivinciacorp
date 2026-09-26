@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'http';
-import { TelnyxBackendService } from '../server/telnyxBackend';
+import { TelnyxBackendService } from '../server/telnyxBackend.js';
 
 export default async function handler(req: any, res: any) {
   // CORS configuration
