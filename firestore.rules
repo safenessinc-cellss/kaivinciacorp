@@ -171,6 +171,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /telnyx_sip_credentials/{sipId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
     match /esim_profiles/{profileId} {
       allow read, create, update: if isAuthenticated();
       allow delete: if isAdmin();

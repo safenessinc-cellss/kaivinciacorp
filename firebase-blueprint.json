@@ -76,6 +76,30 @@
       },
       "required": ["id", "enabled", "connectionId", "apiKey"]
     },
+    "TelnyxSipCredential": {
+      "title": "Telnyx SIP Credential",
+      "description": "Encrypted individual SIP trunk and WebRTC credentials assigned to an agent or pool.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Document ID" },
+        "name": { "type": "string", "description": "SIP connection friendly name" },
+        "connectionId": { "type": "string", "description": "Telnyx Connection ID" },
+        "username": { "type": "string", "description": "SIP authentication username" },
+        "passwordEncrypted": { "type": "string", "description": "AES-GCM encrypted SIP password" },
+        "assignedTo": { "type": "string", "description": "UID of assigned agent" },
+        "assignedAgentName": { "type": "string", "description": "Name of assigned agent" },
+        "assignedAgentEmail": { "type": "string", "description": "Email of assigned agent" },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "isDefault": { "type": "boolean" },
+        "sipDomain": { "type": "string" },
+        "sipPort": { "type": "number" },
+        "transport": { "type": "string", "enum": ["WSS", "UDP", "TCP", "TLS"] },
+        "callerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "connectionId", "username", "passwordEncrypted", "status"]
+    },
     "AuditLog": {
       "title": "Audit Log",
       "description": "Records system activity for security and compliance.",
@@ -863,6 +887,12 @@
         }
       },
       "description": "Stores encrypted integration credentials for VoIP and external telephony providers."
+    },
+    "/telnyx_sip_credentials/{sipId}": {
+      "schema": {
+        "$ref": "TelnyxSipCredential"
+      },
+      "description": "Stores individual encrypted Telnyx SIP credentials and agent assignments."
     }
   }
 }
