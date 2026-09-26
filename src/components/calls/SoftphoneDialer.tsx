@@ -1,3 +1,29 @@
+{/* Número Marcado - Input editable */}
+<div className="min-h-[44px] flex items-center justify-center">
+  <input
+    type="text"
+    inputMode="tel"
+    value={phoneNumber}
+    onChange={(e) => {
+      const cleaned = e.target.value.replace(/[^\d+\-\s()]/g, "");
+      setPhoneNumber(cleaned);
+    }}
+    onPaste={(e) => {
+      e.preventDefault();
+      const pasted = e.clipboardData.getData("text");
+      const cleaned = pasted.replace(/[^\d+\-\s()]/g, "");
+      setPhoneNumber(cleaned);
+    }}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" && callStatus === "idle" && phoneNumber.trim()) {
+        handleStartCall();
+      }
+    }}
+    placeholder="_ _ _ _ _ _"
+    disabled={callStatus !== "idle"}
+    className="w-full text-center text-2xl sm:text-3xl font-mono font-bold tracking-wider text-white bg-transparent border-none outline-none focus:outline-none placeholder-slate-600 disabled:opacity-60"
+  />
+</div>
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   Phone, 
@@ -856,11 +882,31 @@ export default function SoftphoneDialer({
             )}
           </div>
 
-          {/* Número Marcado */}
+          {/* Número Marcado - Input editable */}
           <div className="min-h-[44px] flex items-center justify-center">
-            <span className="text-2xl sm:text-3xl font-mono font-bold tracking-wider text-white select-all">
-              {phoneNumber || <span className="text-slate-600">_ _ _ _ _ _</span>}
-            </span>
+            <input
+              type="text"
+              inputMode="tel"
+              value={phoneNumber}
+              onChange={(e) => {
+                const cleaned = e.target.value.replace(/[^\d+\-\s()]/g, "");
+                setPhoneNumber(cleaned);
+              }}
+              onPaste={(e) => {
+                e.preventDefault();
+                const pasted = e.clipboardData.getData("text");
+                const cleaned = pasted.replace(/[^\d+\-\s()]/g, "");
+                setPhoneNumber(cleaned);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && callStatus === "idle" && phoneNumber.trim()) {
+                  handleStartCall();
+                }
+              }}
+              placeholder="_ _ _ _ _ _"
+              disabled={callStatus !== "idle"}
+              className="w-full text-center text-2xl sm:text-3xl font-mono font-bold tracking-wider text-white bg-transparent border-none outline-none focus:outline-none placeholder-slate-600 disabled:opacity-60"
+            />
           </div>
 
           {/* Botones de Edición Rápida (Borrar / Limpiar) */}
