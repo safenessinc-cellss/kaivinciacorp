@@ -12,19 +12,11 @@ import {
   X, 
   Zap, 
   Sparkles, 
-  Smartphone, 
+  Settings, 
   AlertCircle, 
-  CheckCircle2, 
-  Radio, 
-  Clock, 
-  Delete,
-  Settings,
-  ShieldCheck,
-  Activity,
-  Briefcase,
-  UserCheck
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 import { collection, onSnapshot, addDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
 import { useAuth } from '../../hooks/useAuth';
@@ -32,6 +24,13 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useGlobalContext } from '../../contexts/GlobalContext';
 import { VoipProvider, CallRecord, SoftphoneState } from '../../types/calls';
 import VoipProviderModal from './VoipProviderModal';
+
+// Subcomponentes modulares del Softphone
+import SoftphoneTabs from './SoftphoneTabs';
+import SoftphoneDisplay from './SoftphoneDisplay';
+import SoftphoneKeypad from './SoftphoneKeypad';
+import SoftphoneConfig from './SoftphoneConfig';
+import SoftphoneSipConsole from './SoftphoneSipConsole';
 
 interface SoftphoneDialerProps {
   mode?: 'embedded' | 'floating';
@@ -58,21 +57,6 @@ const DTMF_FREQUENCIES: Record<string, [number, number]> = {
   '0': [941, 1336],
   '#': [941, 1477],
 };
-
-const KEYPAD_BUTTONS = [
-  { key: '1', sub: '—' },
-  { key: '2', sub: 'ABC' },
-  { key: '3', sub: 'DEF' },
-  { key: '4', sub: 'GHI' },
-  { key: '5', sub: 'JKL' },
-  { key: '6', sub: 'MNO' },
-  { key: '7', sub: 'PQRS' },
-  { key: '8', sub: 'TUV' },
-  { key: '9', sub: 'WXYZ' },
-  { key: '*', sub: 'SEC' },
-  { key: '0', sub: '+' },
-  { key: '#', sub: 'HASH' },
-];
 
 const DEFAULT_PROVIDERS: VoipProvider[] = [
   {
@@ -116,6 +100,12 @@ export default function SoftphoneDialer({
   const { user, loading: authLoading } = useAuth();
   const { clients = [] } = useGlobalContext();
 
+  // Navegación por pestañas: Marcador (por defecto) o Configuración
+  const [activeTab, setActiveTab] = useState<'dialer' | 'config'>('dialer');
+
+  // En modo flotante, toggle para expandir / ver configuración
+  const [isFloatingExpanded, setIsFloatingExpanded] = useState(false);
+
   // Estados del discador
   const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber);
   const [callStatus, setCallStatus] = useState<SoftphoneState['status']>('idle');
@@ -146,7 +136,6 @@ export default function SoftphoneDialer({
   const callDurationIntervalRef = useRef<any>(null);
   const timeoutsRef = useRef<any[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const recordedChunksRef = useRef<Blob[]>([]);
   const currentCallStartedAtRef = useRef<string>('');
 
   // Sincronizar número inicial si cambia por props
@@ -228,7 +217,6 @@ export default function SoftphoneDialer({
             setSelectedCallerId(combined[0]);
           }
         } else {
-          // Si no tiene asignación individual, permitir pool compartido
           setAuthorizedCallerIds(sharedPoolNumbers);
           if (sharedPoolNumbers.length > 0) setSelectedCallerId(sharedPoolNumbers[0]);
         }
@@ -248,13 +236,13 @@ export default function SoftphoneDialer({
     };
   }, [user, authLoading]);
 
-  // Función de limpieza de temporizadores
+  // Limpieza de temporizadores
   const clearAllTimeouts = useCallback(() => {
     timeoutsRef.current.forEach(id => clearTimeout(id));
     timeoutsRef.current = [];
   }, []);
 
-  // Obtener o crear contexto de audio seguro
+  // Audio Context seguro
   const getAudioContext = useCallback((): AudioContext | null => {
     try {
       if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
@@ -272,9 +260,9 @@ export default function SoftphoneDialer({
     }
   }, []);
 
-  // Reproducir tono DTMF sintético de dos frecuencias
+  // Tono DTMF sintético de dos frecuencias ITU-T
   const playDtmfTone = useCallback((char: string) => {
-    const freqs = DTMF_FREQUENCIES[char];
+    const freqs = DTMF_FREQUFrequencies(char);
     if (!freqs) return;
 
     const ctx = getAudioContext();
@@ -306,7 +294,11 @@ export default function SoftphoneDialer({
     }
   }, [getAudioContext]);
 
-  // Reproducir ringback tone (llamada saliente en progreso)
+  const DTMF_FREQUFrequencies = (char: string): [number, number] | undefined => {
+    return DTMF_FREQUENCIES[char];
+  };
+
+  // Ringback tone
   const startRingback = useCallback(() => {
     stopRingback();
     const ctx = getAudioContext();
@@ -352,7 +344,6 @@ export default function SoftphoneDialer({
     }
   }, []);
 
-  // Sonido de conexión establecida
   const playConnectBeep = useCallback(() => {
     const ctx = getAudioContext();
     if (!ctx) return;
@@ -371,7 +362,6 @@ export default function SoftphoneDialer({
     } catch (e) {}
   }, [getAudioContext]);
 
-  // Sonido de fin de llamada
   const playHangupBeep = useCallback(() => {
     const ctx = getAudioContext();
     if (!ctx) return;
@@ -389,12 +379,11 @@ export default function SoftphoneDialer({
     } catch (e) {}
   }, [getAudioContext]);
 
-  // Manejo de pulsación de teclado físico
+  // Teclado físico
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignorar si el usuario está escribiendo en un input o textarea externo
       const activeTag = (document.activeElement?.tagName || '').toLowerCase();
-      if (activeTag === 'input' || activeTag === 'textarea') return;
+      if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') return;
 
       if ((e.key >= '0' && e.key <= '9') || e.key === '*' || e.key === '#') {
         e.preventDefault();
@@ -415,7 +404,7 @@ export default function SoftphoneDialer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [callStatus, phoneNumber]);
 
-  // Limpieza total al desmontar el componente
+  // Limpieza al desmontar
   useEffect(() => {
     return () => {
       stopRingback();
@@ -434,7 +423,6 @@ export default function SoftphoneDialer({
     };
   }, [clearAllTimeouts, stopRingback]);
 
-  // Manejo de dígitos
   const handleDigitPress = (char: string) => {
     playDtmfTone(char);
     setPhoneNumber(prev => prev + char);
@@ -448,7 +436,6 @@ export default function SoftphoneDialer({
     setPhoneNumber('');
   };
 
-  // Carrier activo y verificación de credenciales
   const activeCarrierObj = useMemo(() => {
     return providers.find(p => p.id === selectedCarrier) || providers[0] || DEFAULT_PROVIDERS[0];
   }, [providers, selectedCarrier]);
@@ -456,7 +443,6 @@ export default function SoftphoneDialer({
   const hasValidSipCredentials = useMemo(() => {
     if (!activeCarrierObj) return false;
     if (activeCarrierObj.status === 'offline') return false;
-    // Zadarma o SIP requiere usuario o dominio
     if (activeCarrierObj.type === 'sip') {
       return !!(activeCarrierObj.credentials?.username || activeCarrierObj.credentials?.domain);
     }
@@ -482,7 +468,6 @@ export default function SoftphoneDialer({
     startRingback();
     onCallStart?.(dialNum);
 
-    // Simular o negociar conexión WebRTC
     const ringTimeout = setTimeout(() => {
       stopRingback();
       playConnectBeep();
@@ -493,10 +478,8 @@ export default function SoftphoneDialer({
         ...prev.slice(0, 30)
       ]);
 
-      // Iniciar cronómetro de duración
       callDurationIntervalRef.current = setInterval(() => {
         setDuration(prev => prev + 1);
-        // Simular pequeñas variaciones reales de jitter y latencia
         setLiveLatency(20 + Math.floor(Math.random() * 8));
         setLiveJitter(parseFloat((1.0 + Math.random() * 0.4).toFixed(1)));
       }, 1000);
@@ -506,7 +489,7 @@ export default function SoftphoneDialer({
     timeoutsRef.current.push(ringTimeout);
   };
 
-  // Forzar conexión inmediata ("⚡ Conectar Ahora")
+  // Forzar conexión inmediata
   const handleForceConnectNow = () => {
     if (callStatus !== 'calling') return;
     clearAllTimeouts();
@@ -524,7 +507,7 @@ export default function SoftphoneDialer({
     }
   };
 
-  // Llamada de prueba de demostración ("Demo Test")
+  // Llamada demo
   const handleDemoTestCall = () => {
     const demoNumbers = ['+1 (323) 555-0144', '+1 (415) 882-9901', '+34 912 345 678'];
     const randomNum = demoNumbers[Math.floor(Math.random() * demoNumbers.length)];
@@ -564,13 +547,12 @@ export default function SoftphoneDialer({
       isRecorded: isRecording || Boolean(agentAssignment?.recordCalls)
     };
 
-    // Guardar automáticamente en Firestore voip_call_history
     addDoc(collection(db, 'voip_call_history'), endedRecord).catch(err => {
       console.warn('Could not write call record to Firestore:', err);
     });
 
     setSipLogs(prev => [
-      `[${new Date().toLocaleTimeString()}] SIP BYE -> Llamada finalizada (Duración: ${formatTimer(finalDuration)})`,
+      `[${new Date().toLocaleTimeString()}] SIP BYE -> Llamada finalizada`,
       ...prev.slice(0, 30)
     ]);
 
@@ -580,7 +562,6 @@ export default function SoftphoneDialer({
       onCallEnd(endedRecord);
     }
 
-    // Regresar a estado idle tras 1.5s
     const resetTimeout = setTimeout(() => {
       setCallStatus('idle');
       setDuration(0);
@@ -591,7 +572,6 @@ export default function SoftphoneDialer({
     timeoutsRef.current.push(resetTimeout);
   };
 
-  // Alternar Mute
   const toggleMute = () => {
     setIsMuted(prev => !prev);
     setSipLogs(prev => [
@@ -600,7 +580,6 @@ export default function SoftphoneDialer({
     ]);
   };
 
-  // Alternar Hold
   const toggleHold = () => {
     const nextHold = !isOnHold;
     setIsOnHold(nextHold);
@@ -610,7 +589,6 @@ export default function SoftphoneDialer({
     ]);
   };
 
-  // Alternar Grabación local
   const toggleRecord = () => {
     if (!isRecording) {
       setIsRecording(true);
@@ -621,440 +599,269 @@ export default function SoftphoneDialer({
     } else {
       setIsRecording(false);
       setSipLogs(prev => [
-        `[${new Date().toLocaleTimeString()}] Grabación de audio FINALIZADA y guardada`,
+        `[${new Date().toLocaleTimeString()}] Grabación de audio FINALIZADA`,
         ...prev.slice(0, 30)
       ]);
     }
   };
 
-  // Formato mm:ss
-  const formatTimer = (sec: number) => {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
+  const isFloating = mode === 'floating';
+  // En modo floating, mostrar pestañas si el usuario decidió expandirlo
+  const showTabs = !isFloating || isFloatingExpanded;
 
   return (
-    <div className={`relative bg-slate-950 text-white rounded-3xl border border-slate-800 shadow-2xl p-5 sm:p-7 ${className}`}>
+    <div className={`relative bg-slate-950/95 backdrop-blur-xl text-white rounded-3xl border border-slate-800 shadow-2xl transition-all ${
+      isFloating ? 'p-3.5 sm:p-4' : 'p-4 sm:p-6'
+    } ${className}`}>
+      
       {/* Botón de cierre en modo flotante */}
-      {mode === 'floating' && (
-        <button
-          type="button"
-          onClick={handleClose}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors z-20"
-          title="Cerrar discador"
-        >
-          <X className="w-4 h-4" />
-        </button>
+      {isFloating && (
+        <div className="absolute top-3 right-3 flex items-center gap-1 z-20">
+          <button
+            type="button"
+            onClick={() => setIsFloatingExpanded(!isFloatingExpanded)}
+            className="p-1.5 text-slate-400 hover:text-white rounded-full bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors"
+            title={isFloatingExpanded ? 'Contraer configuración' : 'Expandir configuración'}
+          >
+            {isFloatingExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+          </button>
+          <button
+            type="button"
+            onClick={handleClose}
+            className="p-1.5 text-slate-400 hover:text-rose-400 rounded-full bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors"
+            title="Cerrar marcador"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
       )}
 
       {/* Cabecera del Marcador */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-900">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
-            <Phone className="w-5 h-5" />
+      <div className={`flex items-center justify-between gap-2 border-b border-slate-900 ${
+        isFloating ? 'pb-2.5 mb-2.5' : 'pb-3 mb-3'
+      }`}>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_12px_rgba(0,240,255,0.25)]">
+            <Phone className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-base font-black text-white uppercase tracking-tight italic flex items-center gap-2">
+            <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-tight italic flex items-center gap-1.5">
               <span>{t('voip.softphone_title', 'Softphone WebRTC')}</span>
-              {mode === 'floating' && (
-                <span className="text-[9px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono">
-                  FLOTANTE
+              {isFloating && (
+                <span className="text-[8px] px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 font-mono">
+                  MINI
                 </span>
               )}
             </h3>
-            <p className="text-xs text-slate-400 font-medium">
-              {t('voip.softphone_sub', 'Códecs OPUS / G.711u · Cancelación de eco')}
+            <p className="text-[10px] text-slate-400 font-medium truncate max-w-[170px] sm:max-w-none">
+              {activeCarrierObj?.name || 'Telnyx WebRTC'} · OPUS
             </p>
           </div>
         </div>
 
-        {/* Estado del Servidor SIP / Carrier & Botones */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {hasValidSipCredentials ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-              SIP: {activeCarrierObj.name.split(' ')[0]} (OK)
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-500/30 text-[10px] font-mono text-amber-400 font-semibold">
-              <AlertCircle className="w-3 h-3 text-amber-400" />
-              {t('voip.sip_pending', 'Pendiente de conectar')}
-            </span>
-          )}
-
-          {/* Botón directo a configuración de APIs del carrier */}
-          <button
-            type="button"
-            onClick={() => {
-              setProviderToEdit(activeCarrierObj);
-              setIsProviderModalOpen(true);
-            }}
-            className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-cyan-500/30 hover:border-cyan-400 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
-            title="Configurar APIs, sockets y parámetros del carrier activo"
-          >
-            <Settings className="w-3 h-3" />
-            <span>APIs & Troncales</span>
-          </button>
-
-          {/* Botones de prueba rápida */}
-          <button
-            type="button"
-            onClick={handleDemoTestCall}
-            disabled={callStatus !== 'idle'}
-            className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold flex items-center gap-1.5 transition-all disabled:opacity-40 cursor-pointer active:scale-95"
-          >
-            <Sparkles className="w-3 h-3 text-amber-400" />
-            <span>Demo Test</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Contenido Principal: Selector de Carrier + Display + Teclado */}
-      <div className="mt-5 space-y-4">
-        {/* Selector y Configuración Coherente de Carrier VoIP */}
-        <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-3 space-y-2.5">
-          <div className="flex items-center justify-between gap-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Radio className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{t('voip.carrier', 'Carrier Activo')}:</span>
-            </label>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
-                <Activity className="w-3 h-3" />
-                <span>{liveLatency}ms</span>
+        {/* SIP Badge & Demo Test en modo no-flotante */}
+        {!isFloating && (
+          <div className="flex items-center gap-2">
+            {hasValidSipCredentials ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-[9px] font-mono text-emerald-400 font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                SIP OK
               </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setProviderToEdit(activeCarrierObj);
-                  setIsProviderModalOpen(true);
-                }}
-                className="text-[10px] font-black uppercase text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 px-2.5 py-1 rounded-xl flex items-center gap-1 transition-all cursor-pointer"
-                title="Editar todos los parámetros técnicos y credenciales de este proveedor"
-              >
-                <Settings className="w-3 h-3" />
-                <span>Editar Parámetros</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div>
-              <label className="text-[9px] uppercase font-bold text-slate-500 mb-0.5 block">Troncal / Proveedor</label>
-              <select
-                value={selectedCarrier}
-                onChange={(e) => setSelectedCarrier(e.target.value)}
-                disabled={callStatus !== 'idle'}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-cyan-400 transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                {providers.map(p => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} {p.isDefault ? '⭐' : ''} ({p.costPerMinute || '$0.012'}/m)
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Selector de Caller ID Autorizado para la Colaboradora */}
-            <div>
-              <div className="flex items-center justify-between mb-0.5">
-                <label className="text-[9px] uppercase font-bold text-slate-500 flex items-center gap-1">
-                  <UserCheck className="w-2.5 h-2.5 text-cyan-400" />
-                  <span>Caller ID Autorizado</span>
-                </label>
-                {authorizedCallerIds.length > 0 && (
-                  <span className="text-[9px] text-emerald-400 font-bold">● Habilitado</span>
-                )}
-              </div>
-
-              {authorizedCallerIds.length > 0 ? (
-                <select
-                  value={selectedCallerId}
-                  onChange={(e) => setSelectedCallerId(e.target.value)}
-                  disabled={callStatus !== 'idle'}
-                  className="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-3 py-1.5 text-xs text-cyan-300 font-mono font-bold focus:outline-none focus:border-cyan-400 disabled:opacity-50 cursor-pointer"
-                >
-                  {authorizedCallerIds.map(num => (
-                    <option key={num} value={num}>
-                      {num} {agentAssignment?.defaultCallerId === num ? '(Default)' : ''}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <div className="bg-slate-950 border border-amber-500/30 rounded-xl px-2.5 py-1.5 text-[10px] text-amber-300 font-medium">
-                  Central: +1 (305) 555-0199
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Selector de Proyecto / Campaña para Trazabilidad */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-800/60">
-            <div>
-              <label className="text-[9px] uppercase font-bold text-slate-500 mb-0.5 block flex items-center gap-1">
-                <Briefcase className="w-2.5 h-2.5 text-slate-400" />
-                <span>Proyecto / Campaña</span>
-              </label>
-              <select
-                value={selectedProject}
-                onChange={(e) => setSelectedProject(e.target.value)}
-                disabled={callStatus !== 'idle'}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1 text-xs text-slate-300 font-medium focus:outline-none focus:border-cyan-400 disabled:opacity-50 cursor-pointer"
-              >
-                <option value="Ventas B2B">Ventas B2B (Closer)</option>
-                <option value="Onboarding Clientes">Onboarding & Bienvenida</option>
-                <option value="Soporte VIP">Soporte & Éxito</option>
-                <option value="Cobranza">Cobranzas & Facturación</option>
-                <option value="Prospección Fría">Prospección Telefónica</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-[9px] uppercase font-bold text-slate-500 mb-0.5 block">Cliente Vinculado</label>
-              <select
-                value={selectedClientName}
-                onChange={(e) => {
-                  setSelectedClientName(e.target.value);
-                  const foundClient = clients.find((c: any) => c.name === e.target.value || c.company === e.target.value);
-                  if (foundClient && foundClient.phone && callStatus === 'idle') {
-                    setPhoneNumber(foundClient.phone);
-                  }
-                }}
-                disabled={callStatus !== 'idle'}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1 text-xs text-slate-300 font-medium focus:outline-none focus:border-cyan-400 disabled:opacity-50 cursor-pointer"
-              >
-                <option value="">-- Sin vincular / Llamada directa --</option>
-                {clients.slice(0, 15).map((c: any) => (
-                  <option key={c.id || c.name} value={c.name || c.company}>
-                    {c.name || c.company} {c.phone ? `(${c.phone})` : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Pantalla del Número / Display */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 text-center relative overflow-hidden">
-          {/* Indicador de Estado Activo */}
-          <div className="flex items-center justify-between text-[11px] mb-2 font-mono">
-            <span className="flex items-center gap-1.5">
-              {callStatus === 'idle' && <span className="text-slate-500 font-medium">DISPONIBLE</span>}
-              {callStatus === 'calling' && <span className="text-cyan-400 animate-pulse font-bold">LLAMANDO...</span>}
-              {callStatus === 'connected' && <span className="text-emerald-400 font-bold">EN LLAMADA</span>}
-              {callStatus === 'on_hold' && <span className="text-amber-400 font-bold">EN ESPERA</span>}
-              {callStatus === 'ended' && <span className="text-rose-400 font-bold">FINALIZADA</span>}
-            </span>
-
-            {/* Temporizador */}
-            {(callStatus === 'connected' || callStatus === 'on_hold') && (
-              <span className="flex items-center gap-1 text-white font-bold bg-slate-950 px-2.5 py-0.5 rounded-lg border border-slate-800">
-                <Clock className="w-3 h-3 text-cyan-400" />
-                <span>{formatTimer(duration)}</span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-950/60 border border-amber-500/30 text-[9px] font-mono text-amber-400 font-semibold">
+                <AlertCircle className="w-2.5 h-2.5 text-amber-400" />
+                Pendiente
               </span>
             )}
-          </div>
 
-          {/* Número Marcado - Input editable */}
-          <div className="min-h-[44px] flex items-center justify-center">
-            <input
-              type="text"
-              inputMode="tel"
-              value={phoneNumber}
-              onChange={(e) => {
-                const cleaned = e.target.value.replace(/[^\d+\-\s()]/g, "");
-                setPhoneNumber(cleaned);
-              }}
-              onPaste={(e) => {
-                e.preventDefault();
-                const pasted = e.clipboardData.getData("text");
-                const cleaned = pasted.replace(/[^\d+\-\s()]/g, "");
-                setPhoneNumber(cleaned);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && callStatus === "idle" && phoneNumber.trim()) {
-                  handleStartCall();
-                }
-              }}
-              placeholder="_ _ _ _ _ _"
-              disabled={callStatus !== "idle"}
-              className="w-full text-center text-2xl sm:text-3xl font-mono font-bold tracking-wider text-white bg-transparent border-none outline-none focus:outline-none placeholder-slate-600 disabled:opacity-60"
-            />
-          </div>
-
-          {/* Botones de Edición Rápida (Borrar / Limpiar) */}
-          {phoneNumber && callStatus === 'idle' && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              <button
-                type="button"
-                onClick={handleBackspace}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-                title="Borrar dígito"
-              >
-                <Delete className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-
-          {/* Botón de Conexión Forzada si está en estado 'calling' */}
-          {callStatus === 'calling' && (
-            <div className="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-center">
-              <button
-                type="button"
-                onClick={handleForceConnectNow}
-                className="px-3 py-1 bg-cyan-500 hover:bg-cyan-400 text-black text-[11px] font-black uppercase tracking-wider rounded-xl transition-all shadow-[0_0_15px_rgba(0,240,255,0.4)] flex items-center gap-1.5 cursor-pointer active:scale-95"
-              >
-                <Zap className="w-3.5 h-3.5 fill-current" />
-                <span>⚡ Conectar Ahora</span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Teclado Numérico DTMF */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
-          {KEYPAD_BUTTONS.map((btn) => (
             <button
-              key={btn.key}
               type="button"
-              onClick={() => handleDigitPress(btn.key)}
-              className="group bg-slate-900/80 hover:bg-cyan-500/10 active:bg-cyan-500/20 border border-slate-800 hover:border-cyan-500/40 rounded-2xl py-3 px-2 flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95"
+              onClick={handleDemoTestCall}
+              disabled={callStatus !== 'idle'}
+              className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[9px] font-bold flex items-center gap-1 transition-all disabled:opacity-40 cursor-pointer active:scale-95"
             >
-              <span className="text-lg sm:text-xl font-mono font-bold text-white group-hover:text-cyan-400 transition-colors">
-                {btn.key}
-              </span>
-              <span className="text-[9px] font-mono text-slate-500 group-hover:text-cyan-300/70 tracking-widest uppercase">
-                {btn.sub}
-              </span>
+              <Sparkles className="w-2.5 h-2.5 text-amber-400" />
+              <span>Demo</span>
             </button>
-          ))}
-        </div>
+          </div>
+        )}
+      </div>
 
-        {/* Barra de Controles de Llamada (Llamar / Colgar / Mute / Hold / Grabar) */}
-        <div className="pt-2">
-          {callStatus === 'idle' ? (
+      {/* Pestañas (Marcador vs Configuración) */}
+      {showTabs && (
+        <SoftphoneTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          selectedCarrierName={activeCarrierObj?.name}
+          hasValidSip={hasValidSipCredentials}
+          authorizedCallerId={selectedCallerId}
+          isFloating={isFloating}
+        />
+      )}
+
+      {/* Display del Número y Estado (SIEMPRE VISIBLE) */}
+      <SoftphoneDisplay
+        phoneNumber={phoneNumber}
+        onBackspace={handleBackspace}
+        onClear={handleClear}
+        callStatus={callStatus}
+        duration={duration}
+        onForceConnect={handleForceConnectNow}
+        compact={isFloating}
+      />
+
+      {/* Cuerpo según la Pestaña Activa */}
+      {activeTab === 'dialer' || (!showTabs && isFloating) ? (
+        /* PESTAÑA 1: Teclado DTMF Compacto */
+        <div className="space-y-2">
+          <SoftphoneKeypad
+            onDigitPress={handleDigitPress}
+            disabled={callStatus === 'ended'}
+            compact={isFloating}
+          />
+        </div>
+      ) : (
+        /* PESTAÑA 2: Configuración (Selectores de Carrier, Caller ID, Campaña, Cliente) */
+        <div className="space-y-2">
+          <SoftphoneConfig
+            providers={providers}
+            selectedCarrier={selectedCarrier}
+            onSelectCarrier={setSelectedCarrier}
+            authorizedCallerIds={authorizedCallerIds}
+            selectedCallerId={selectedCallerId}
+            onSelectCallerId={setSelectedCallerId}
+            selectedProject={selectedProject}
+            onSelectProject={setSelectedProject}
+            selectedClientName={selectedClientName}
+            onSelectClient={(clientName, phone) => {
+              setSelectedClientName(clientName);
+              if (phone && callStatus === 'idle') {
+                setPhoneNumber(phone);
+              }
+            }}
+            clients={clients}
+            liveLatency={liveLatency}
+            liveJitter={liveJitter}
+            hasValidSipCredentials={hasValidSipCredentials}
+            onOpenProviderModal={(provider) => {
+              setProviderToEdit(provider);
+              setIsProviderModalOpen(true);
+            }}
+            callStatus={callStatus}
+            agentAssignment={agentAssignment}
+          />
+        </div>
+      )}
+
+      {/* BOTONES DE ACCIÓN PRINCIPALES (SIEMPRE VISIBLES FUERA DE LAS PESTAÑAS) */}
+      <div className="pt-2.5">
+        {callStatus === 'idle' ? (
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleStartCall()}
               disabled={!phoneNumber.trim()}
-              className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:hover:bg-emerald-500 text-black font-black text-sm uppercase tracking-wider rounded-2xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              className="flex-1 py-2.5 sm:py-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:hover:bg-emerald-500 text-black font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 cursor-pointer active:scale-98"
             >
-              <Phone className="w-5 h-5 fill-current" />
+              <Phone className="w-4 h-4 fill-current" />
               <span>{t('voip.call', 'Llamar')}</span>
             </button>
-          ) : (
-            <div className="space-y-3">
-              {/* Controles en Vivo durante la Llamada */}
-              <div className="grid grid-cols-4 gap-2">
-                {/* Mute */}
-                <button
-                  type="button"
-                  onClick={toggleMute}
-                  className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all text-xs font-semibold ${
-                    isMuted 
-                      ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' 
-                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
-                  }`}
-                  title={isMuted ? 'Activar micrófono' : 'Silenciar'}
-                >
-                  {isMuted ? <MicOff className="w-4 h-4 text-rose-400" /> : <Mic className="w-4 h-4 text-slate-300" />}
-                  <span className="text-[9px]">{isMuted ? 'Muted' : 'Mute'}</span>
-                </button>
 
-                {/* Hold */}
-                <button
-                  type="button"
-                  onClick={toggleHold}
-                  className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all text-xs font-semibold ${
-                    isOnHold 
-                      ? 'bg-amber-500/20 border-amber-500/40 text-amber-300' 
-                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
-                  }`}
-                  title={isOnHold ? 'Reanudar llamada' : 'Poner en espera'}
-                >
-                  {isOnHold ? <Play className="w-4 h-4 text-amber-400" /> : <Pause className="w-4 h-4 text-slate-300" />}
-                  <span className="text-[9px]">{isOnHold ? 'Reanudar' : 'Hold'}</span>
-                </button>
-
-                {/* Record */}
-                <button
-                  type="button"
-                  onClick={toggleRecord}
-                  className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all text-xs font-semibold ${
-                    isRecording 
-                      ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 animate-pulse' 
-                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
-                  }`}
-                  title={isRecording ? 'Detener grabación' : 'Grabar llamada'}
-                >
-                  <Disc className={`w-4 h-4 ${isRecording ? 'text-rose-400' : 'text-slate-300'}`} />
-                  <span className="text-[9px]">{isRecording ? 'REC' : 'Grabar'}</span>
-                </button>
-
-                {/* Speaker */}
-                <button
-                  type="button"
-                  onClick={() => setIsSpeaker(!isSpeaker)}
-                  className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all text-xs font-semibold ${
-                    isSpeaker 
-                      ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300' 
-                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800'
-                  }`}
-                  title="Altavoz"
-                >
-                  {isSpeaker ? <Volume2 className="w-4 h-4 text-cyan-400" /> : <VolumeX className="w-4 h-4" />}
-                  <span className="text-[9px]">Audio</span>
-                </button>
-              </div>
-
-              {/* Botón Colgar */}
+            {isFloating && (
               <button
                 type="button"
-                onClick={handleHangup}
-                className="w-full py-3.5 bg-rose-500 hover:bg-rose-400 text-white font-black text-sm uppercase tracking-wider rounded-2xl transition-all shadow-[0_0_20px_rgba(244,63,94,0.3)] flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                onClick={handleDemoTestCall}
+                className="p-2.5 bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-800 rounded-xl transition-all cursor-pointer"
+                title="Llamada de prueba"
               >
-                <PhoneOff className="w-5 h-5 fill-current" />
-                <span>{t('voip.hangup', 'Colgar')}</span>
+                <Sparkles className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {/* Controles en Vivo durante la Llamada */}
+            <div className="grid grid-cols-4 gap-1.5">
+              <button
+                type="button"
+                onClick={toggleMute}
+                className={`py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold cursor-pointer ${
+                  isMuted 
+                    ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' 
+                    : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
+                }`}
+                title={isMuted ? 'Activar micrófono' : 'Silenciar'}
+              >
+                {isMuted ? <MicOff className="w-3.5 h-3.5 text-rose-400" /> : <Mic className="w-3.5 h-3.5" />}
+                <span>{isMuted ? 'Muted' : 'Mute'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={toggleHold}
+                className={`py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold cursor-pointer ${
+                  isOnHold 
+                    ? 'bg-amber-500/20 border-amber-500/40 text-amber-300' 
+                    : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
+                }`}
+                title={isOnHold ? 'Reanudar llamada' : 'Poner en espera'}
+              >
+                {isOnHold ? <Play className="w-3.5 h-3.5 text-amber-400" /> : <Pause className="w-3.5 h-3.5" />}
+                <span>{isOnHold ? 'Reanudar' : 'Hold'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={toggleRecord}
+                className={`py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold cursor-pointer ${
+                  isRecording 
+                    ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 animate-pulse' 
+                    : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
+                }`}
+                title={isRecording ? 'Detener grabación' : 'Grabar llamada'}
+              >
+                <Disc className={`w-3.5 h-3.5 ${isRecording ? 'text-rose-400' : 'text-slate-300'}`} />
+                <span>{isRecording ? 'REC' : 'Grabar'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsSpeaker(!isSpeaker)}
+                className={`py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold cursor-pointer ${
+                  isSpeaker 
+                    ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300' 
+                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800'
+                }`}
+                title="Altavoz"
+              >
+                {isSpeaker ? <Volume2 className="w-3.5 h-3.5 text-cyan-400" /> : <VolumeX className="w-3.5 h-3.5" />}
+                <span>Audio</span>
               </button>
             </div>
-          )}
-        </div>
 
-        {/* Telemetría en Vivo (Latencia, Jitter, Códec) */}
-        {callStatus === 'connected' && (
-          <div className="p-3 bg-slate-900/60 rounded-2xl border border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-400">
-            <span className="flex items-center gap-1">
-              <Activity className="w-3 h-3 text-cyan-400" />
-              <span>Latencia: <strong className="text-white">{liveLatency}ms</strong></span>
-            </span>
-            <span>Jitter: <strong className="text-white">{liveJitter}ms</strong></span>
-            <span>Códec: <strong className="text-emerald-400">OPUS 48kHz</strong></span>
-          </div>
-        )}
-
-        {/* Toggle para ver consola SIP técnica */}
-        <div className="pt-1 text-center">
-          <button
-            type="button"
-            onClick={() => setShowConsole(!showConsole)}
-            className="text-[10px] font-mono text-slate-500 hover:text-cyan-400 underline transition-colors cursor-pointer"
-          >
-            {showConsole ? 'Ocultar consola SIP WebRTC' : 'Mostrar consola SIP WebRTC'}
-          </button>
-        </div>
-
-        {/* Consola SIP */}
-        {showConsole && (
-          <div className="p-3 bg-black rounded-xl border border-slate-800 text-[10px] font-mono text-emerald-400 max-h-32 overflow-y-auto space-y-1">
-            {sipLogs.length === 0 ? (
-              <span className="text-slate-600">Esperando eventos de señalización SIP...</span>
-            ) : (
-              sipLogs.map((log, idx) => <div key={idx}>{log}</div>)
-            )}
+            {/* Botón Colgar */}
+            <button
+              type="button"
+              onClick={handleHangup}
+              className="w-full py-2.5 sm:py-3 bg-rose-500 hover:bg-rose-400 text-white font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all shadow-[0_0_15px_rgba(244,63,94,0.3)] flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+            >
+              <PhoneOff className="w-4 h-4 fill-current" />
+              <span>{t('voip.hangup', 'Colgar')}</span>
+            </button>
           </div>
         )}
       </div>
+
+      {/* Consola SIP Colapsable en la parte inferior */}
+      <SoftphoneSipConsole
+        logs={sipLogs}
+        isOpen={showConsole}
+        onToggle={() => setShowConsole(!showConsole)}
+        onClearLogs={() => setSipLogs([])}
+        liveLatency={liveLatency}
+        liveJitter={liveJitter}
+        callStatus={callStatus}
+      />
 
       {/* Modal de Configuración Integral de APIs & Troncales VoIP */}
       <VoipProviderModal
