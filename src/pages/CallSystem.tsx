@@ -14,7 +14,8 @@ import {
   PhoneCall,
   Sparkles,
   ChevronRight,
-  Headphones
+  Headphones,
+  Share2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -28,9 +29,8 @@ import VoipProviderConfig from '../components/calls/VoipProviderConfig';
 import LiveCallMonitor from '../components/calls/LiveCallMonitor';
 import OmnichannelInbox from '../components/calls/OmnichannelInbox';
 import VoipCoverageZones from '../components/calls/VoipCoverageZones';
+import MetaAdminHub from '../components/integrations/MetaAdminHub';
 import TelnyxAdminHub from '../components/calls/TelnyxAdminHub';
-
-export default function CallSystem() {
   const { userData } = useOutletContext<{ userData: any }>() || {};
   const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -95,11 +95,9 @@ export default function CallSystem() {
     { id: 'monitor', label: t('calls.tabs.monitor', 'Monitor VoIP'), icon: Activity },
     { id: 'softphone', label: t('calls.tabs.softphone', 'Marcador WebRTC'), icon: Phone },
     { id: 'telnyx', label: '⭐ Panel Telnyx', icon: Radio },
-    { id: 'logs', label: t('calls.tabs.logs', 'Historial & Grabaciones'), icon: Clock },
-    { id: 'esim', label: t('calls.tabs.esim', 'Líneas eSIM'), icon: Smartphone },
+    { id: 'meta', label: '⭐ Panel Meta', icon: Share2 },
     { id: 'directory', label: t('calls.tabs.directory', 'Troncales SIP'), icon: Server },
     { id: 'inbox', label: t('calls.tabs.inbox', 'Bandeja Omnicanal'), icon: MessageSquare },
-    { id: 'cobertura', label: t('calls.tabs.coverage', 'Zonas & Horarios'), icon: MapPin },
     { id: 'utilidades', label: t('calls.tabs.utilities', 'Comprobante Utility'), icon: FileText }
   ];
 
@@ -185,6 +183,10 @@ export default function CallSystem() {
               mode="embedded"
             />
           </div>
+        )}
+
+        {activeTab === 'meta' && (
+          <MetaAdminHub />
         )}
 
         {activeTab === 'telnyx' && (
