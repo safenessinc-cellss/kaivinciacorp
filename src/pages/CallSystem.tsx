@@ -31,6 +31,7 @@ import OmnichannelInbox from '../components/calls/OmnichannelInbox';
 import VoipCoverageZones from '../components/calls/VoipCoverageZones';
 import MetaAdminHub from '../components/integrations/MetaAdminHub';
 import TelnyxAdminHub from '../components/calls/TelnyxAdminHub';
+export default function CallSystem() {
   const { userData } = useOutletContext<{ userData: any }>() || {};
   const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
