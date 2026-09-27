@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, 
   Check, 
@@ -21,12 +21,18 @@ import {
   HelpCircle,
   CheckCircle2,
   AlertTriangle,
-  Info
+  Info,
+  UserCheck,
+  ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, onSnapshot } from 'firebase/firestore';
+import { useSearchParams } from 'react-router-dom';
 import { db } from '../../firebase';
-import { VoipProvider } from '../../types/calls';
+import { useAuth } from '../../hooks/useAuth';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { VoipProvider, TelnyxSipCredential } from '../../types/calls';
+import { SipCredentialsService } from '../../services/sipCredentialsService';
 
 interface VoipProviderModalProps {
   isOpen: boolean;
@@ -190,6 +196,18 @@ export default function VoipProviderModal({
   // Pestaña activa dentro del modal
   const [activeTab, setActiveTab] = useState<'sip' | 'api' | 'webrtc' | 'routing'>('sip');
 
+  // Hooks de autenticación, idioma y enrutamiento
+  const { user, userData } = useAuth();
+  const { t } = useLanguage();
+  const [, setSearchParams] = useSearchParams();
+  const isAdmin = userData?.role === 'admin' || userData?.role === 'superadmin' || userData?.role === 'owner';
+
+  // SIPs cargados desde Firestore (telnyx_sip_credentials)
+  const [availableSips, setAvailableSips] = useState<TelnyxSipCredential[]>([]);
+  const [selectedSipId, setSelectedSipId] = useState<string>('');
+  const [isLoadingSips, setIsLoadingSips] = useState<boolean>(true);
+  const [sipAppliedMessage, setSipAppliedMessage] = useState<string | null>(null);
+
   // Estado del formulario
   const [form, setForm] = useState<Partial<VoipProvider>>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -260,6 +278,92 @@ export default function VoipProviderModal({
     setTestReport(null);
     setActiveTab('sip');
   }, [isOpen, provider]);
+
+  // Sincronizar SIPs de Telnyx desde Firestore en tiempo real y sembrar las 9 iniciales si está vacía
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setIsLoadingSips(true);
+    const unsub = onSnapshot(collection(db, 'telnyx_sip_credentials'), async (snapshot) => {
+      let sips: TelnyxSipCredential[] = [];
+      if (!snapshot.empty) {
+        sips = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as TelnyxSipCredential));
+      } else {
+        await SipCredentialsService.seedInitialSips();
+        sips = await SipCredentialsService.getAllSips();
+      }
+      setAvailableSips(sips);
+      setIsLoadingSips(false);
+
+      // Si el agente actual ya tiene un SIP asignado, preseleccionarlo si no hay credenciales cargadas
+      if (user?.uid) {
+        const assigned = sips.find(s => s.assignedTo === user.uid && s.status === 'active');
+        if (assigned && !form.credentials?.username) {
+          handleSelectSip(assigned.id, sips);
+        } else if (form.credentials?.username) {
+          const matching = sips.find(s => s.username === form.credentials?.username);
+          if (matching) setSelectedSipId(matching.id);
+        }
+      }
+    }, (err) => {
+      console.warn('Error loading SIP credentials in modal:', err);
+      setIsLoadingSips(false);
+    });
+
+    return () => unsub();
+  }, [isOpen, user?.uid]);
+
+  const handleSelectSip = async (sipId: string, customList?: TelnyxSipCredential[]) => {
+    setSelectedSipId(sipId);
+    if (!sipId) {
+      setForm(prev => ({
+        ...prev,
+        credentials: {
+          ...prev?.credentials,
+          authUsername: ''
+        }
+      }));
+      return;
+    }
+
+    const list = customList || availableSips;
+    const targetSip = list.find(s => s.id === sipId);
+    if (!targetSip) return;
+
+    let decryptedPw = '';
+    if (targetSip.passwordEncrypted) {
+      decryptedPw = await SipCredentialsService.decryptSipPassword(targetSip.passwordEncrypted);
+    }
+
+    setForm(prev => ({
+      ...prev,
+      credentials: {
+        ...prev?.credentials,
+        username: targetSip.username,
+        password: decryptedPw || prev?.credentials?.password || '',
+        authUsername: targetSip.username,
+        callerName: targetSip.name,
+        domain: targetSip.sipDomain || prev?.credentials?.domain || 'sip.telnyx.com',
+        port: targetSip.sipPort || prev?.credentials?.port || 5060,
+        transport: targetSip.transport || prev?.credentials?.transport || 'WSS',
+        callerId: targetSip.callerId || prev?.credentials?.callerId || '+1 (305) 555-0199'
+      }
+    }));
+
+    setSipAppliedMessage(`¡SIP "${targetSip.name}" cargado y credenciales sincronizadas!`);
+    setTimeout(() => setSipAppliedMessage(null), 3000);
+  };
+
+  const selectedSip = useMemo(() => {
+    return availableSips.find(s => s.id === selectedSipId) ||
+           availableSips.find(s => s.username === form.credentials?.authUsername) ||
+           availableSips.find(s => s.username === form.credentials?.username) ||
+           null;
+  }, [availableSips, selectedSipId, form.credentials?.authUsername, form.credentials?.username]);
+
+  const hasAvailableSips = useMemo(() => {
+    return availableSips.some(s => s.status === 'active' && (!s.assignedTo || s.assignedTo === user?.uid || isAdmin));
+  }, [availableSips, user?.uid, isAdmin]);
 
   if (!isOpen) return null;
 
@@ -795,24 +899,74 @@ export default function VoipProviderModal({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">
-                      Auth Username (Opcional si difiere del usuario SIP)
-                    </label>
-                    <input
-                      type="text"
-                      value={form.credentials?.authUsername || ''}
-                      onChange={(e) => setForm({
-                        ...form,
-                        credentials: { ...form.credentials, authUsername: e.target.value }
-                      })}
-                      placeholder="auth_user_id"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 font-mono text-slate-200 text-xs focus:outline-none focus:border-cyan-400"
-                    />
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase flex items-center gap-1">
+                        <UserCheck className="w-3 h-3 text-cyan-400" />
+                        <span>{t('sip.auth_username', 'Auth Username (Cuenta SIP Telnyx)')}</span>
+                      </label>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onClose();
+                            setSearchParams({ tab: 'telnyx' });
+                          }}
+                          className="text-cyan-400 hover:text-cyan-300 hover:underline text-[9px] font-mono cursor-pointer flex items-center gap-0.5"
+                          title="Gestionar credenciales SIP en el Panel Telnyx"
+                        >
+                          <span>{t('sip.manage_sips', 'Gestionar SIPs')}</span>
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* SELECT DROPDOWN CON LOS 9 SIPS DE TELNYX */}
+                    <div className="relative">
+                      <select
+                        value={selectedSipId || (availableSips.find(s => s.username === form.credentials?.authUsername)?.id || '')}
+                        onChange={(e) => handleSelectSip(e.target.value)}
+                        disabled={isLoadingSips}
+                        className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-400 rounded-xl p-2.5 text-xs text-slate-200 font-mono focus:outline-none transition-colors cursor-pointer"
+                      >
+                        <option value="">
+                          {isLoadingSips 
+                            ? '-- Cargando cuentas SIP de Telnyx... --' 
+                            : t('sip.select_placeholder', '-- Seleccionar Cuenta SIP de Telnyx (9 disponibles) --')}
+                        </option>
+                        {availableSips.map((sip) => {
+                          const isAssignedToCurrent = sip.assignedTo && sip.assignedTo === user?.uid;
+                          const isAssignedToOther = sip.assignedTo && sip.assignedTo !== user?.uid;
+
+                          let badgeText = `[${t('sip.available', 'Disponible')}]`;
+                          if (isAssignedToCurrent) badgeText = `[⭐ ${t('sip.assigned', 'Asignado a ti')}]`;
+                          else if (isAssignedToOther) badgeText = `[🔒 ${t('sip.assigned', 'Asignado')}: ${sip.assignedAgentName || 'Otro agente'}]`;
+                          else if (sip.status === 'inactive') badgeText = `[${t('sip.inactive', 'Inactivo')}]`;
+
+                          return (
+                            <option
+                              key={sip.id}
+                              value={sip.id}
+                              disabled={Boolean(isAssignedToOther && !isAdmin)}
+                              className={isAssignedToOther ? 'text-slate-500 bg-slate-900' : 'text-slate-100 bg-slate-950'}
+                            >
+                              {sip.name} — {sip.username} ({sip.connectionId}) {badgeText}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+
+                    {availableSips.length === 0 && !isLoadingSips && (
+                      <p className="text-[10px] text-rose-400 mt-1 font-semibold flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3 shrink-0" />
+                        <span>{t('sip.no_available', 'No hay usuarios SIP disponibles. Contacta al administrador.')}</span>
+                      </p>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">
-                      Caller Name (Nombre en Pantalla de Destino)
+                      {t('sip.caller_name', 'Caller Name (Nombre en Pantalla de Destino)')}
                     </label>
                     <input
                       type="text"
@@ -826,6 +980,76 @@ export default function VoipProviderModal({
                     />
                   </div>
                 </div>
+
+                {/* PANEL DE PREVIEW DETALLADO DEL SIP SELECCIONADO */}
+                {selectedSip && (
+                  <div className="p-3 bg-slate-950/80 rounded-xl border border-cyan-500/30 space-y-2 mt-2">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <div className="flex items-center gap-1.5 font-bold text-cyan-300">
+                        <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Troncal SIP Activo: {selectedSip.name}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {selectedSip.assignedTo === user?.uid ? (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[9px] font-bold border border-amber-500/30">
+                            {t('sip.assigned', 'Asignado a ti')}
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-bold border border-emerald-500/30">
+                            {t('sip.available', 'Disponible')}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectSip(selectedSip.id)}
+                          className="px-2.5 py-1 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-[9px] uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 active:scale-95 shadow-[0_0_10px_rgba(0,240,255,0.3)]"
+                        >
+                          <Check className="w-3 h-3" />
+                          <span>{t('sip.use_this_sip', 'Usar este SIP')}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono text-slate-300 pt-1.5 border-t border-slate-800/80">
+                      <div>
+                        <span className="text-slate-500 text-[8px] uppercase block">{t('sip.connection_id', 'Connection ID')}</span>
+                        <div className="flex items-center gap-1">
+                          <span className="truncate">{selectedSip.connectionId}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(selectedSip.connectionId, 'connId')}
+                            className="text-slate-400 hover:text-cyan-400 cursor-pointer"
+                            title="Copiar Connection ID"
+                          >
+                            {copiedField === 'connId' ? <Check className="w-2.5 h-2.5 text-emerald-400" /> : <Copy className="w-2.5 h-2.5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-slate-500 text-[8px] uppercase block">{t('sip.domain', 'Dominio SIP')}</span>
+                        <span>{selectedSip.sipDomain || 'sip.telnyx.com'}</span>
+                      </div>
+
+                      <div>
+                        <span className="text-slate-500 text-[8px] uppercase block">{t('sip.port', 'Puerto')} / {t('sip.transport', 'Transport')}</span>
+                        <span>{selectedSip.sipPort || 5060} / {selectedSip.transport || 'WSS'}</span>
+                      </div>
+
+                      <div>
+                        <span className="text-slate-500 text-[8px] uppercase block">{t('sip.caller_id', 'Caller ID')}</span>
+                        <span className="text-emerald-400 font-bold">{selectedSip.callerId || '+13055550199'}</span>
+                      </div>
+                    </div>
+
+                    {sipAppliedMessage && (
+                      <div className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1 animate-fadeIn">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <span>{sipAppliedMessage}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1316,7 +1540,7 @@ export default function VoipProviderModal({
 
               <button
                 type="submit"
-                disabled={isSaving}
+                disabled={isSaving || (!form.credentials?.username?.trim() && !hasAvailableSips)}
                 className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(0,240,255,0.3)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isSaving ? (
