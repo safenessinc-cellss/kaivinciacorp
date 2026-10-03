@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User, signInAnonymously, signOut as fbSignOut } from 'firebase/auth';
+import { onAuthStateChanged, User, signOut as fbSignOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
@@ -120,7 +120,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (hasOperatorSession || isGuest) {
           try {
-            const cred = await signInAnonymously(auth);
             if (cred.user) {
               // The onAuthStateChanged listener will fire again with cred.user
               return;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signInWithPopup, GoogleAuthProvider, signInAnonymously } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { LOGO_FULL } from '../constants/images';
@@ -35,7 +35,6 @@ export default function LoginPage() {
 
       let currentUser = auth.currentUser;
       if (!currentUser) {
-        const cred = await signInAnonymously(auth);
         currentUser = cred.user;
       }
 

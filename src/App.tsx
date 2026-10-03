@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { motion } from 'motion/react';
@@ -81,9 +81,7 @@ export default function App() {
     if (guestStatus === 'true' || operatorSession) {
       setIsGuest(true);
       if (!auth.currentUser) {
-        signInAnonymously(auth).catch((err) => {
-          console.warn("Guest anonymous session initialization:", err?.message);
-        });
+        
       }
       if (operatorSession && !userData) {
         try {
