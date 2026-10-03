@@ -240,7 +240,7 @@ export default function Reports() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <h3 className="text-lg font-bold text-gray-900 mb-6">Ingresos vs Costos por Proyecto</h3>
-          <div className="h-80">
+          <div className="h-80 min-h-80">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} initialDimension={{ width: 400, height: 320 }}>
               <BarChart data={reportData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
@@ -260,7 +260,7 @@ export default function Reports() {
 
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <h3 className="text-lg font-bold text-gray-900 mb-6">Distribución de Utilidad</h3>
-          <div className="h-80">
+          <div className="h-80 min-h-80">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} initialDimension={{ width: 400, height: 320 }}>
               <PieChart>
                 <Pie

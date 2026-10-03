@@ -191,8 +191,8 @@ export default function LiveCallMonitor({
             </span>
           </div>
 
-          <div className="h-44 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-44 w-full min-h-80">
+            <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 100, height: 50 }}>
               <AreaChart data={DUMMY_SENTIMENT_DATA}>
                 <defs>
                   <linearGradient id="sentimentGradient" x1="0" y1="0" x2="0" y2="1">

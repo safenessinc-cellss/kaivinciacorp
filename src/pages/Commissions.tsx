@@ -155,7 +155,7 @@ export default function Commissions() {
           <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
             <Award className="w-5 h-5 text-cyan-500/100" /> Ranking de Productividad
           </h3>
-          <div className="h-80">
+          <div className="h-80 min-h-80">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} initialDimension={{ width: 400, height: 320 }}>
               <BarChart data={commissionData.slice(0, 5)}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
@@ -176,7 +176,7 @@ export default function Commissions() {
           <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-blue-500" /> Rendimiento de Conversión
           </h3>
-          <div className="h-80">
+          <div className="h-80 min-h-80">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} initialDimension={{ width: 400, height: 320 }}>
               <LineChart data={commissionData.slice(0, 5)}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
