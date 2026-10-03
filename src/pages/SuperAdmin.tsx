@@ -13,7 +13,7 @@ import {
   Search, Filter, MoreVertical, X, Mail, ArrowLeft, Trash2,
   Settings, Zap, Briefcase, Check, RefreshCw, Smartphone, 
   PhoneCall, HelpCircle, Save, ExternalLink, Shield, Building2,
-  BookOpen, Layers, CheckSquare, Info
+  BookOpen, Layers, CheckSquare, Info, Palette
 } from 'lucide-react';
 
 interface RBACPermission {
@@ -404,6 +404,15 @@ export default function SuperAdmin() {
             className="p-3 bg-gray-50 border border-gray-200 text-gray-700 hover:text-slate-900 hover:bg-gray-100 rounded-2xl transition-all"
           >
             <Settings className="w-4 h-4" />
+          </button>
+
+          {/* Quick Action: Personalización Visual */}
+          <button 
+            onClick={() => navigate('/crm/appearance')}
+            title="Personalización Visual & Temas"
+            className="p-3 bg-pink-50 border border-pink-200 text-pink-600 hover:bg-pink-100 rounded-2xl transition-all cursor-pointer"
+          >
+            <Palette className="w-4 h-4" />
           </button>
 
           {/* Quick Action: Realtime Sync (Lightning) */}

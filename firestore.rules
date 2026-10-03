@@ -236,6 +236,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /settings/appearance {
+      allow read:  if true;
+      allow write: if isSuperAdmin() || isAdmin();
+    }
+
     match /settings/voip_providers {
       allow read:  if true;
       allow write: if isAdmin();

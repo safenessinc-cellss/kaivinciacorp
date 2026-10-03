@@ -1,28 +1,30 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { initializeFirestore, getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import firebaseConfig from '../firebase-applet-config.json';
 
-const app = initializeApp(firebaseConfig);
-export const db = (firebaseConfig as any).firestoreDatabaseId 
-  ? getFirestore(app, (firebaseConfig as any).firestoreDatabaseId)
-  : getFirestore(app);
-export const auth = getAuth(app);
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Test connection SILENCIOSO — solo avisa si hay auth
-async function testConnection() {
-  try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-  } catch (error) {
-    // Solo advertir si hay sesión activa (problema real)
-    if (auth.currentUser) {
-      console.warn("[Firestore] Connection check:", error instanceof Error ? error.message : String(error));
-    }
-    // Si NO hay sesión, es un estado transitorio esperado, no mostrar nada
-  }
+// Initialize Firestore with auto-detect long polling and ignoreUndefinedProperties
+const databaseId = (firebaseConfig as any).firestoreDatabaseId;
+let dbInstance;
+
+try {
+  dbInstance = initializeFirestore(
+    app,
+    {
+      experimentalAutoDetectLongPolling: true,
+      ignoreUndefinedProperties: true
+    },
+    databaseId || undefined
+  );
+} catch (e) {
+  dbInstance = databaseId ? getFirestore(app, databaseId) : getFirestore(app);
 }
-testConnection();
+
+export const db = dbInstance;
+export const auth = getAuth(app);
 
 // Initialize storage with explicit bucket URL if auto-detection fails
 let storageInstance;

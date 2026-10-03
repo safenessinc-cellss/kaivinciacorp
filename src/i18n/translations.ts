@@ -44,6 +44,7 @@ export const translations: Record<Language, Record<string, any>> = {
       helpdesk: 'Centro de Soporte',
       security_center: 'Centro de Seguridad',
       superadmin: 'SuperAdmin Maestro',
+      appearance: 'Personalización Visual',
       automations: 'Automatizaciones',
       digital_products: 'Tienda Digital',
       groups: {
@@ -384,6 +385,89 @@ export const translations: Record<Language, Record<string, any>> = {
         scheduled_total: 'Compromisos de agenda',
         collab_notice: 'Visualizando tus métricas operativas individuales. Los supervisores pueden ver todo el equipo.'
       }
+    },
+    sip: {
+      title: 'Credenciales SIP Telnyx',
+      available: 'Disponible',
+      assigned: 'Asignado',
+      inactive: 'Inactivo',
+      no_available: 'No hay usuarios SIP disponibles. Contacta al administrador.',
+      select_placeholder: '-- Seleccionar Cuenta SIP de Telnyx (9 disponibles) --',
+      use_this_sip: 'Usar este SIP',
+      manage_sips: 'Gestionar SIPs',
+      connection_id: 'Connection ID',
+      domain: 'Dominio SIP',
+      port: 'Puerto',
+      transport: 'Transporte',
+      caller_id: 'Caller ID',
+      credentials: 'Credenciales SIP / Extensión de Usuario',
+      username: 'Usuario SIP / Extensión (Username)',
+      password: 'Contraseña / Secret SIP',
+      auth_username: 'Auth Username (Cuenta SIP Telnyx)',
+      caller_name: 'Caller Name (Nombre en Pantalla de Destino)',
+      reveal_password: 'Revelar Contraseña',
+      hide_password: 'Ocultar'
+    },
+    appearance: {
+      title: 'Personalización Visual',
+      subtitle: 'Ajusta tipografías, paletas cromáticas, menú, bordes y accesibilidad global en tiempo real.',
+      admin_only: 'Solo los usuarios con rol SuperAdmin o Administrador tienen permisos para modificar la apariencia corporativa de Kaivincia.',
+      save: 'Guardar Cambios',
+      reset: 'Restablecer',
+      saved_success: '¡Guardado!',
+      confirm_reset: 'Sí, Restablecer',
+      presets: 'Presets de Tema Predefinidos',
+      preview: {
+        title: 'Vista Previa en Vivo'
+      },
+      tab: {
+        typography: 'Tipografía',
+        colors: 'Colores',
+        menu: 'Menú / Sidebar',
+        components: 'Componentes',
+        accessibility: 'Accesibilidad'
+      },
+      fonts: {
+        title: 'Configuración Tipográfica',
+        desc: 'Ajusta la familia de fuentes, tamaño base, peso y escala proporcional de encabezados.',
+        family: 'Familia Tipográfica Principal',
+        base_size: 'Tamaño de Fuente Base',
+        heading_scale: 'Escala de Títulos',
+        weight: 'Peso de Fuente Base'
+      },
+      colors: {
+        title: 'Paleta Cromática Corporativa',
+        desc: 'Configura los colores hexadecimales aplicados globalmente a través de variables CSS.',
+        primary: 'Color Primario (Acentos/Botones)',
+        secondary: 'Color Secundario (Bordes/Bases)',
+        background: 'Color de Fondo Principal',
+        surface: 'Color de Superficie (Tarjetas/Modales)',
+        text_primary: 'Texto Principal',
+        text_secondary: 'Texto Secundario (Muted)',
+        sidebar_bg: 'Fondo de Barra Lateral',
+        sidebar_text: 'Texto de Barra Lateral',
+        sidebar_active: 'Ítem Activo en Sidebar',
+        header_bg: 'Fondo de Encabezado Superior'
+      },
+      layout: {
+        menu_title: 'Geometría y Comportamiento del Menú',
+        menu_desc: 'Controla la anchura, posición lateral y comportamiento de colapso de la barra de navegación.',
+        components_title: 'Propiedades de Componentes',
+        components_desc: 'Ajusta el radio de curvatura de bordes, sombras de tarjetas y densidad de espaciado.',
+        sidebar_size: 'Ancho de Barra Lateral',
+        sidebar_position: 'Posición del Menú',
+        sidebar_collapsible: 'Comportamiento de Colapso',
+        border_radius: 'Radio de Bordes (Border Radius)',
+        card_shadow: 'Sombra de Tarjetas',
+        density: 'Densidad de Interfaz'
+      },
+      accessibility: {
+        title: 'Accesibilidad e Inclusión',
+        desc: 'Optimiza la visibilidad para condiciones visuales y preferencias motoras.',
+        high_contrast: 'Modo Alto Contraste',
+        color_blind_mode: 'Filtro de Daltonismo',
+        reduce_motion: 'Reducir Movimiento (Motion Safe)'
+      }
     }
   },
 
@@ -417,6 +501,7 @@ export const translations: Record<Language, Record<string, any>> = {
       helpdesk: 'Support Center',
       security_center: 'Security Center',
       superadmin: 'Master SuperAdmin',
+      appearance: 'Appearance & Theme',
       automations: 'Automations',
       digital_products: 'Digital Store',
       groups: {
@@ -757,6 +842,89 @@ export const translations: Record<Language, Record<string, any>> = {
         scheduled_total: 'Calendar commitments',
         collab_notice: 'Viewing your individual operational metrics. Supervisors can view the entire team.'
       }
+    },
+    sip: {
+      title: 'Telnyx SIP Credentials',
+      available: 'Available',
+      assigned: 'Assigned',
+      inactive: 'Inactive',
+      no_available: 'No SIP users available. Please contact your administrator.',
+      select_placeholder: '-- Select Telnyx SIP Account (9 available) --',
+      use_this_sip: 'Use this SIP',
+      manage_sips: 'Manage SIPs',
+      connection_id: 'Connection ID',
+      domain: 'SIP Domain',
+      port: 'Port',
+      transport: 'Transport',
+      caller_id: 'Caller ID',
+      credentials: 'SIP Credentials / User Extension',
+      username: 'SIP User / Extension (Username)',
+      password: 'Password / SIP Secret',
+      auth_username: 'Auth Username (Telnyx SIP Account)',
+      caller_name: 'Caller Name (Outbound Display Name)',
+      reveal_password: 'Show Password',
+      hide_password: 'Hide'
+    },
+    appearance: {
+      title: 'Appearance & Visual Theme',
+      subtitle: 'Customize typography, color palettes, menu, borders, and global accessibility in real time.',
+      admin_only: 'Only SuperAdmin or Administrator users have permission to modify Kaivincia corporate appearance.',
+      save: 'Save Changes',
+      reset: 'Reset',
+      saved_success: 'Saved!',
+      confirm_reset: 'Yes, Reset',
+      presets: 'Preset Themes',
+      preview: {
+        title: 'Live Preview'
+      },
+      tab: {
+        typography: 'Typography',
+        colors: 'Colors',
+        menu: 'Menu / Sidebar',
+        components: 'Components',
+        accessibility: 'Accessibility'
+      },
+      fonts: {
+        title: 'Typography Settings',
+        desc: 'Customize font family, base size, weight, and heading scale ratio.',
+        family: 'Primary Font Family',
+        base_size: 'Base Font Size',
+        heading_scale: 'Heading Scale',
+        weight: 'Base Font Weight'
+      },
+      colors: {
+        title: 'Corporate Color Palette',
+        desc: 'Configure hex colors applied globally via CSS variables.',
+        primary: 'Primary Color (Accents/Buttons)',
+        secondary: 'Secondary Color (Borders/Bases)',
+        background: 'Main Background Color',
+        surface: 'Surface Color (Cards/Modals)',
+        text_primary: 'Primary Text',
+        text_secondary: 'Secondary Text (Muted)',
+        sidebar_bg: 'Sidebar Background',
+        sidebar_text: 'Sidebar Text',
+        sidebar_active: 'Sidebar Active Item',
+        header_bg: 'Top Header Background'
+      },
+      layout: {
+        menu_title: 'Menu Geometry & Behavior',
+        menu_desc: 'Control navigation sidebar width, lateral position, and collapse behavior.',
+        components_title: 'Component Properties',
+        components_desc: 'Adjust border radius, card shadows, and spacing density.',
+        sidebar_size: 'Sidebar Width',
+        sidebar_position: 'Menu Position',
+        sidebar_collapsible: 'Collapse Behavior',
+        border_radius: 'Border Radius',
+        card_shadow: 'Card Shadow',
+        density: 'Interface Density'
+      },
+      accessibility: {
+        title: 'Accessibility & Inclusion',
+        desc: 'Optimize visibility for visual conditions and motor preferences.',
+        high_contrast: 'High Contrast Mode',
+        color_blind_mode: 'Color Blindness Filter',
+        reduce_motion: 'Reduce Motion (Motion Safe)'
+      }
     }
   },
 
@@ -790,6 +958,7 @@ export const translations: Record<Language, Record<string, any>> = {
       helpdesk: 'Centro de Suporte',
       security_center: 'Centro de Segurança',
       superadmin: 'SuperAdmin Mestre',
+      appearance: 'Personalização Visual',
       automations: 'Automações',
       digital_products: 'Loja Digital',
       groups: {
@@ -1129,6 +1298,89 @@ export const translations: Record<Language, Record<string, any>> = {
         completed_tasks: 'Concluídas vs pend.',
         scheduled_total: 'Compromissos agendados',
         collab_notice: 'Visualizando suas métricas operacionais individuais. Supervisores podem visualizar toda a equipe.'
+      }
+    },
+    sip: {
+      title: 'Credenciais SIP Telnyx',
+      available: 'Disponível',
+      assigned: 'Atribuído',
+      inactive: 'Inativo',
+      no_available: 'Nenhum usuário SIP disponível. Entre em contato com o administrador.',
+      select_placeholder: '-- Selecionar Conta SIP Telnyx (9 disponíveis) --',
+      use_this_sip: 'Usar este SIP',
+      manage_sips: 'Gerenciar SIPs',
+      connection_id: 'Connection ID',
+      domain: 'Domínio SIP',
+      port: 'Porta',
+      transport: 'Transporte',
+      caller_id: 'Caller ID',
+      credentials: 'Credenciais SIP / Extensão de Usuário',
+      username: 'Usuário SIP / Extensão (Username)',
+      password: 'Senha / Secret SIP',
+      auth_username: 'Auth Username (Conta SIP Telnyx)',
+      caller_name: 'Caller Name (Nome de Exibição de Saída)',
+      reveal_password: 'Mostrar Senha',
+      hide_password: 'Ocultar'
+    },
+    appearance: {
+      title: 'Personalização Visual',
+      subtitle: 'Ajuste tipografias, paletas de cores, menu, bordas e acessibilidade global em tempo real.',
+      admin_only: 'Apenas usuários com perfil SuperAdmin ou Administrador têm permissão para alterar a aparência corporativa da Kaivincia.',
+      save: 'Salvar Alterações',
+      reset: 'Restaurar',
+      saved_success: 'Salvo com sucesso!',
+      confirm_reset: 'Sim, Restaurar',
+      presets: 'Temas Predefinidos',
+      preview: {
+        title: 'Pré-visualização ao Vivo'
+      },
+      tab: {
+        typography: 'Tipografia',
+        colors: 'Cores',
+        menu: 'Menu / Barra Lateral',
+        components: 'Componentes',
+        accessibility: 'Acessibilidade'
+      },
+      fonts: {
+        title: 'Configurações Tipográficas',
+        desc: 'Ajuste a família de fontes, tamanho base, peso e escala proporcional dos títulos.',
+        family: 'Família Tipográfica Principal',
+        base_size: 'Tamanho de Fonte Base',
+        heading_scale: 'Escala de Títulos',
+        weight: 'Peso de Fonte Base'
+      },
+      colors: {
+        title: 'Paleta de Cores Corporativa',
+        desc: 'Configure as cores hexadecimais aplicadas globalmente via variáveis CSS.',
+        primary: 'Cor Primária (Destaques/Botões)',
+        secondary: 'Cor Secundária (Bordas/Bases)',
+        background: 'Cor de Fundo Principal',
+        surface: 'Cor de Superfície (Cartões/Modais)',
+        text_primary: 'Texto Principal',
+        text_secondary: 'Texto Secundário (Suave)',
+        sidebar_bg: 'Fundo da Barra Lateral',
+        sidebar_text: 'Texto da Barra Lateral',
+        sidebar_active: 'Item Ativo na Barra Lateral',
+        header_bg: 'Fundo do Cabeçalho Superior'
+      },
+      layout: {
+        menu_title: 'Geometria e Comportamento do Menu',
+        menu_desc: 'Controle a largura, posição lateral e comportamento de recolhimento da barra de navegação.',
+        components_title: 'Propriedades dos Componentes',
+        components_desc: 'Ajuste o raio dos cantos, sombras de cartões e densidade de espaçamento.',
+        sidebar_size: 'Largura da Barra Lateral',
+        sidebar_position: 'Posição do Menu',
+        sidebar_collapsible: 'Comportamento de Recolhimento',
+        border_radius: 'Raio das Bordas',
+        card_shadow: 'Sombra dos Cartões',
+        density: 'Densidade da Interface'
+      },
+      accessibility: {
+        title: 'Acessibilidade e Inclusão',
+        desc: 'Otimize a visibilidade para diferentes condições visuais e preferências motoras.',
+        high_contrast: 'Modo Alto Contraste',
+        color_blind_mode: 'Filtro para Daltonismo',
+        reduce_motion: 'Reduzir Movimento (Motion Safe)'
       }
     }
   }

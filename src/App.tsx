@@ -16,10 +16,10 @@ import Clients from './pages/Clients';
 import Pipeline from './pages/Pipeline';
 import Tasks from './pages/Tasks';
 import Chat from './pages/Chat';
-import Communications from './pages/Communications';
 import StrategicReport from './pages/StrategicReport';
 import Cobranza from './pages/Cobranza';
 import SuperAdmin from './pages/SuperAdmin';
+import AppearancePanel from './components/admin/AppearancePanel';
 import AcademyInternal from './pages/AcademyInternal';
 import AcademyExternal from './pages/AcademyExternal';
 import DigitalProducts from './pages/DigitalProducts';
@@ -80,9 +80,6 @@ export default function App() {
     const operatorSession = localStorage.getItem('kaivincia_operator_session');
     if (guestStatus === 'true' || operatorSession) {
       setIsGuest(true);
-      if (!auth.currentUser) {
-        
-      }
       if (operatorSession && !userData) {
         try {
           const parsed = JSON.parse(operatorSession);
@@ -371,6 +368,7 @@ export default function App() {
           
           {/* New Modules */}
           <Route path="superadmin" element={userData?.role !== 'superadmin' ? <Navigate to="/crm/dashboard" /> : <SuperAdmin />} />
+          <Route path="appearance" element={userData?.role !== 'superadmin' && userData?.role !== 'admin' ? <Navigate to="/crm/dashboard" /> : <AppearancePanel />} />
           <Route path="automations" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Automations />} />
           <Route path="form-templates" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <FormTemplates />} />
           <Route path="integrations" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Integrations />} />

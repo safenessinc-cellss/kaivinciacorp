@@ -7,7 +7,7 @@ import {
   UserPlus, FileText, Receipt, GraduationCap, ShoppingCart, ChevronRight, Home,
   ChevronDown, ChevronUp, Search, Activity, Zap, Award, Bell, Eye, EyeOff, PanelLeftClose, PanelLeftOpen,
   BrainCircuit, Navigation, DollarSign, HelpCircle, HardDrive, ClipboardCheck,
-  ShieldCheck, ArrowLeft, LayoutTemplate, Share2
+  ShieldCheck, ArrowLeft, LayoutTemplate, Share2, Palette
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth } from '../firebase';
@@ -18,9 +18,11 @@ import HelpDrawer from './help/HelpDrawer';
 import NotificationCenter from './NotificationCenter';
 import LanguageSelector from './LanguageSelector';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAppearance } from '../contexts/AppearanceContext';
 
 export default function CRMLayout({ userData }: { userData: any }) {
   const { t } = useLanguage();
+  const { appearance } = useAppearance();
   const location = useLocation();
   const navigate = useNavigate();
   const [isCommandBarOpen, setIsCommandBarOpen] = useState(false);
@@ -210,6 +212,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
           title: t('nav.groups.config', 'CONFIGURACIÓN'),
           items: [
             { name: t('nav.superadmin', 'SuperAdmin'), href: '/crm/superadmin', icon: ShieldAlert },
+            { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[#EC4899]' },
             { name: t('nav.security_center', 'Security Center'), href: '/crm/security', icon: ShieldCheck, color: 'text-[#FACC15]' },
             { name: t('nav.automations', 'Automatizaciones'), href: '/crm/automations', icon: Zap },
             { name: t('nav.form_templates', 'Plantillas de Ficha'), href: '/crm/form-templates', icon: LayoutTemplate, color: 'text-[#00F0FF]' },
@@ -272,13 +275,28 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
   const breadcrumbs = generateBreadcrumbs();
 
+  const isRightSidebar = appearance.layout.sidebarPosition === 'right';
+  const effectiveCollapsed = appearance.layout.sidebarCollapsible === 'always_collapsed' ? true : isSidebarCollapsed;
+  const sidebarWidthClass = effectiveCollapsed 
+    ? 'w-20' 
+    : (appearance.layout.sidebarSize === 'compact' ? 'w-20' : (appearance.layout.sidebarSize === 'expanded' ? 'w-80' : 'w-64'));
+
   return (
-    <div className="min-h-screen bg-gray-50 flex relative">
+    <div 
+      className={`min-h-screen flex relative ${isRightSidebar ? 'flex-row-reverse' : 'flex-row'}`}
+      style={{ backgroundColor: 'var(--color-background)' }}
+    >
       <div className="fixed inset-0 z-0 pointer-events-none">
         <img src="/images/portada.jpg" alt="Portada" className="w-full h-full object-cover opacity-[0.03] grayscale mix-blend-multiply" />
       </div>
       {/* Sidebar */}
-      <div className={`bg-[#0a0a0a] text-gray-300 border-r border-gray-800 flex flex-col h-screen transition-all duration-300 relative z-10 ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
+      <div 
+        className={`text-gray-300 ${isRightSidebar ? 'border-l' : 'border-r'} border-gray-800 flex flex-col h-screen transition-all duration-300 relative z-10 ${sidebarWidthClass}`}
+        style={{ 
+          backgroundColor: 'var(--color-sidebar-bg)', 
+          color: 'var(--color-sidebar-text)' 
+        }}
+      >
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800 shrink-0">
           {!isSidebarCollapsed ? (
             <img 
