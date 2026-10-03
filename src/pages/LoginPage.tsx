@@ -32,11 +32,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       setError('');
-
       let currentUser = auth.currentUser;
-      if (!currentUser) {
-        currentUser = cred.user;
-      }
 
       const operatorUid = currentUser?.uid || `op_${Date.now()}`;
       const operator = {

@@ -118,17 +118,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const hasOperatorSession = localStorage.getItem('kaivincia_operator_session');
         const isGuest = localStorage.getItem('kaivincia_guest') === 'true';
 
-        if (hasOperatorSession || isGuest) {
-          try {
-            if (cred.user) {
-              // The onAuthStateChanged listener will fire again with cred.user
-              return;
-            }
-          } catch (anonErr) {
-            console.warn('Anonymous fallback auth failed:', anonErr);
-          }
-        }
-
         setUserData(null);
         setLoading(false);
       }
