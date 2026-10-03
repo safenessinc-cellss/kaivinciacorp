@@ -29,8 +29,9 @@ import VoipProviderConfig from '../components/calls/VoipProviderConfig';
 import LiveCallMonitor from '../components/calls/LiveCallMonitor';
 import OmnichannelInbox from '../components/calls/OmnichannelInbox';
 import VoipCoverageZones from '../components/calls/VoipCoverageZones';
-import MetaAdminHub from '../components/integrations/MetaAdminHub';
 import TelnyxAdminHub from '../components/calls/TelnyxAdminHub';
+import MetaAdminHub from '../components/integrations/MetaAdminHub';
+
 export default function CallSystem() {
   const { userData } = useOutletContext<{ userData: any }>() || {};
   const { t } = useLanguage();
@@ -97,8 +98,11 @@ export default function CallSystem() {
     { id: 'softphone', label: t('calls.tabs.softphone', 'Marcador WebRTC'), icon: Phone },
     { id: 'telnyx', label: '⭐ Panel Telnyx', icon: Radio },
     { id: 'meta', label: '⭐ Panel Meta', icon: Share2 },
+    { id: 'logs', label: t('calls.tabs.logs', 'Historial & Grabaciones'), icon: Clock },
+    { id: 'esim', label: t('calls.tabs.esim', 'Líneas eSIM'), icon: Smartphone },
     { id: 'directory', label: t('calls.tabs.directory', 'Troncales SIP'), icon: Server },
     { id: 'inbox', label: t('calls.tabs.inbox', 'Bandeja Omnicanal'), icon: MessageSquare },
+    { id: 'cobertura', label: t('calls.tabs.coverage', 'Zonas & Horarios'), icon: MapPin },
     { id: 'utilidades', label: t('calls.tabs.utilities', 'Comprobante Utility'), icon: FileText }
   ];
 
@@ -186,12 +190,12 @@ export default function CallSystem() {
           </div>
         )}
 
-        {activeTab === 'meta' && (
-          <MetaAdminHub />
-        )}
-
         {activeTab === 'telnyx' && (
           <TelnyxAdminHub />
+        )}
+
+        {activeTab === 'meta' && (
+          <MetaAdminHub />
         )}
 
         {activeTab === 'logs' && (
@@ -232,28 +236,11 @@ export default function CallSystem() {
       {/* Marcador Flotante (Popup / Floating Widget) */}
       <AnimatePresence>
         {isSoftphoneFloating && activeTab !== 'softphone' && (
-          <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 30, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 w-80 sm:w-88 shadow-2xl drop-shadow-2xl"
-          >
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsSoftphoneFloating(false)}
-                className="absolute -top-3 -right-3 z-10 w-7 h-7 rounded-full bg-slate-800 text-white hover:bg-rose-600 flex items-center justify-center text-xs font-bold shadow-lg transition-colors cursor-pointer"
-                title="Cerrar marcador flotante"
-              >
-                ✕
-              </button>
-              <SoftphoneDialer
-                initialPhoneNumber={dialTargetNumber}
-                mode="floating"
-                onClose={() => setIsSoftphoneFloating(false)}
-              />
-            </div>
-          </motion.div>
+          <SoftphoneDialer
+            initialPhoneNumber={dialTargetNumber}
+            mode="floating"
+            onClose={() => setIsSoftphoneFloating(false)}
+          />
         )}
       </AnimatePresence>
     </div>
