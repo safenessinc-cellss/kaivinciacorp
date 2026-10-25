@@ -179,6 +179,148 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
+  // Admin/settings diagnostics share this existing serverless function so
+  // the project stays within the Vercel Hobby function-count limit. This route
+  // validates the current user's own assignment and never returns the generated JWT.
+  if (req.method === 'GET' && String(req.query?.diagnostics || '') === 'run') {
+    let diagnosticUid = '';
+    let diagnosticCredentialId = '';
+    try {
+      const diagnosticUser = await getFirebaseUser(req, res);
+      if (!diagnosticUser) return;
+      diagnosticUid = diagnosticUser.uid;
+      if (!hasPermission(diagnosticUser, 'dialer')) {
+        respondError(res, 403, 'PERMISSION_DENIED', 'No tienes permiso para usar el discador.');
+        return;
+      }
+
+      const profileSnap = await adminDb.collection('users').doc(diagnosticUid).get();
+      const profile = profileSnap.data() || {};
+      const assignmentSnap = await adminDb.collection('telnyx_agent_assignments').doc(diagnosticUid).get();
+      const assignment = assignmentSnap.exists ? assignmentSnap.data() || {} : {};
+      diagnosticCredentialId = String(assignment.telnyxCredentialId || profile.assignedSipCredentialId || '').trim();
+      if (!diagnosticCredentialId) {
+        await recordTokenError({ uid: diagnosticUid, credentialId: '', status: 403, error: 'SIP_ASSIGNMENT_REQUIRED' });
+        respondError(res, 403, 'NO_SIP', 'No tienes una línea SIP asignada. Contacta al administrador.');
+        return;
+      }
+
+      const credentialSnap = await adminDb.collection('telnyx_sip_credentials').doc(diagnosticCredentialId).get();
+      if (!credentialSnap.exists) {
+        respondError(res, 403, 'SIP_ASSIGNMENT_INVALID', 'La credencial SIP asignada no existe.');
+        return;
+      }
+      const credential = credentialSnap.data() || {};
+      if (String(credential.assignedTo || '') !== diagnosticUid) {
+        await recordTokenError({ uid: diagnosticUid, credentialId: diagnosticCredentialId, status: 403, error: 'SIP_CREDENTIAL_OWNER_MISMATCH' });
+        respondError(res, 403, 'SIP_ASSIGNMENT_INVALID', 'La línea SIP no está asignada a tu usuario.');
+        return;
+      }
+
+      const apiKey = TelnyxBackendService.getApiKey();
+      const connectionId = String(credential.connectionId || credential.connection_id || process.env.TELNYX_CONNECTION_ID || '').trim();
+      const checks: Array<{ id: string; ok: boolean; label: string; detail?: string }> = [
+        { id: 'approved', ok: diagnosticUser.status === 'approved', label: 'Cuenta aprobada', detail: diagnosticUser.status === 'approved' ? 'Tu cuenta está habilitada.' : 'La cuenta requiere aprobación.' },
+        { id: 'sip', ok: true, label: 'Línea SIP asignada', detail: 'La credencial está vinculada a tu usuario.' },
+        { id: 'apiKey', ok: Boolean(apiKey), label: 'Configuración de telefonía', detail: apiKey ? 'La clave del servidor está configurada.' : 'Falta configurar la clave de Telnyx en Vercel.' }
+      ];
+      let outboundProfileId: string | null = null;
+      let didVerified: string[] = [];
+      let connectionActive: boolean | null = null;
+      let telnyxTokenValid = false;
+      let tokenExpiresAt: string | null = null;
+
+      if (apiKey && connectionId) {
+        try {
+          const connectionResponse = await fetch(`https://api.telnyx.com/v2/connections/${encodeURIComponent(connectionId)}`, {
+            headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' }
+          });
+          const connectionBody: any = await connectionResponse.json().catch(() => ({}));
+          const connectionData = connectionBody?.data || {};
+          connectionActive = connectionResponse.ok;
+          outboundProfileId = connectionResponse.ok ? String(connectionData.outbound_voice_profile_id || '') || null : null;
+          checks.push({
+            id: 'connection',
+            ok: connectionResponse.ok,
+            label: 'Conexión de Telnyx',
+            detail: connectionResponse.ok ? 'Telnyx respondió correctamente.' : 'No se pudo verificar la conexión de telefonía.'
+          });
+          checks.push({
+            id: 'outboundProfile',
+            ok: Boolean(outboundProfileId),
+            label: 'Perfil de llamadas salientes',
+            detail: outboundProfileId ? 'Hay un perfil de llamadas salientes asociado.' : 'No se detectó un perfil de llamadas salientes; revísalo en el portal de Telnyx.'
+          });
+        } catch {
+          checks.push({ id: 'connection', ok: false, label: 'Conexión de Telnyx', detail: 'No fue posible consultar la conexión.' });
+          checks.push({ id: 'outboundProfile', ok: false, label: 'Perfil de llamadas salientes', detail: 'No se pudo comprobar el perfil.' });
+        }
+
+        try {
+          const numbersResponse = await fetch(`https://api.telnyx.com/v2/phone_numbers?filter[connection_id]=${encodeURIComponent(connectionId)}`, {
+            headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' }
+          });
+          const numbersBody: any = await numbersResponse.json().catch(() => ({}));
+          didVerified = numbersResponse.ok && Array.isArray(numbersBody?.data)
+            ? numbersBody.data.map((item: any) => String(item.phone_number || '')).filter((value: string) => CALLER_ID_RE.test(value))
+            : [];
+          checks.push({
+            id: 'dids',
+            ok: numbersResponse.ok && didVerified.length > 0,
+            label: 'Números telefónicos',
+            detail: didVerified.length ? `${didVerified.length} número(s) asociado(s) a la conexión.` : 'No se encontraron números asociados a esta conexión.'
+          });
+        } catch {
+          checks.push({ id: 'dids', ok: false, label: 'Números telefónicos', detail: 'No fue posible consultar los números.' });
+        }
+      } else {
+        checks.push({ id: 'connection', ok: false, label: 'Conexión de Telnyx', detail: 'Falta el identificador de conexión o la clave de Telnyx.' });
+        checks.push({ id: 'outboundProfile', ok: false, label: 'Perfil de llamadas salientes', detail: 'No se pudo comprobar el perfil.' });
+        checks.push({ id: 'dids', ok: false, label: 'Números telefónicos', detail: 'No se pudo comprobar la asignación de números.' });
+      }
+
+      try {
+        const generated = await requestTelnyxToken(String(credential.telnyxCredentialId || credential.credentialId || credential.id || credentialSnap.id));
+        telnyxTokenValid = Boolean(generated.token);
+        const tokenPayload = generated.token.split('.')[1];
+        if (tokenPayload) {
+          try {
+            const decodedPayload = JSON.parse(Buffer.from(tokenPayload, 'base64url').toString('utf8'));
+            if (Number.isFinite(decodedPayload.exp)) tokenExpiresAt = new Date(decodedPayload.exp * 1000).toISOString();
+          } catch {}
+        }
+        checks.push({ id: 'token', ok: telnyxTokenValid, label: 'Sesión de telefonía', detail: 'Telnyx generó una sesión válida. El token no se muestra en el diagnóstico.' });
+        console.log(`[telnyx-token] uid=${diagnosticUid} credId=${diagnosticCredentialId} status=200 diagnostics=run`);
+      } catch (tokenError: any) {
+        await recordTokenError({
+          uid: diagnosticUid,
+          credentialId: diagnosticCredentialId,
+          status: Number(tokenError?.status || 502),
+          telnyxStatus: Number(tokenError?.telnyxStatus || tokenError?.status || 502),
+          body: tokenError?.telnyxBody || '',
+          error: tokenError?.message || 'DIAGNOSTIC_TOKEN_FAILED'
+        });
+        checks.push({ id: 'token', ok: false, label: 'Sesión de telefonía', detail: 'No se pudo generar la sesión. Revisa la configuración de Telnyx.' });
+      }
+
+      json(res, 200, {
+        sipAssigned: true,
+        sipCredentialId: diagnosticCredentialId,
+        connectionActive,
+        outboundProfileId,
+        didVerified,
+        tokenValid: telnyxTokenValid,
+        tokenExpiresAt,
+        testCall: { attempted: false, result: 'not_run', message: 'No se realizaron llamadas durante el diagnóstico.' },
+        checks
+      });
+    } catch (diagnosticError: any) {
+      console.error(`[telnyx-token] uid=${diagnosticUid || 'unknown'} credId=${diagnosticCredentialId || 'none'} diagnostics=run failed`, diagnosticError?.message || diagnosticError);
+      respondError(res, 500, 'DIAGNOSTIC_FAILED', 'No se pudo completar el diagnóstico de telefonía.');
+    }
+    return;
+  }
+
   let uid = '';
   let requestedCredentialId = '';
   try {
