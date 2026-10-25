@@ -35,37 +35,25 @@ export default async function handler(req: any, res: any) {
     let sipUsername: string;
 
     if (!operadorDoc.exists) {
-      console.log('[telnyx-token] Operador no existe, creando...');
-      const connectionId = (req.query?.connectionId as string) || process.env.TELNYX_CONNECTION_ID || '';
-      const credential = await TelnyxBackendService.getOrCreateTelephonyCredential(authUser.uid, connectionId);
-
-      operadorData = {
-        id: authUser.uid,
-        email: authUser.email || '',
-        nombre: authUser.email?.split('@')[0] || 'Operador',
-        rol: 'agente',
-        telnyxCredentialId: credential.id,
-        telnyxUsername: credential.sip_username,
-        numerosAsignados: [],
-        horario: {
-          inicio: '00:00',
-          fin: '23:59',
-          zonaHoraria: 'America/Los_Angeles',
-          diasLaborables: ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'],
-        },
-        disponible: false,
-        enLlamada: false,
-        permiteSalientes: true,
-        permiteEntrantes: true,
-        activo: true,
-        creadoEn: new Date().toISOString(),
-      };
-
-      await db.collection('operadores').doc(authUser.uid).set(operadorData);
-      credentialId = credential.id;
-      sipUsername = credential.sip_username;
+      res.statusCode = 403;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Operador no provisionado. Solicita al administrador que habilite tu acceso a telefonía.' }));
+      return;
     } else {
       operadorData = operadorDoc.data();
+      const allowedRoles = ['admin', 'supervisor', 'agente', 'agent', 'tlmk', 'ventas'];
+      if (!allowedRoles.includes(String(operadorData.rol || '').toLowerCase()) || operadorData.activo !== true) {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'El operador no tiene un rol de telefonía autorizado o su cuenta está desactivada.' }));
+        return;
+      }
+      if (operadorData.permiteSalientes === false) {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'El operador no tiene permiso para realizar llamadas salientes.' }));
+        return;
+      }
       credentialId = operadorData.telnyxCredentialId;
       sipUsername = operadorData.telnyxUsername;
 
@@ -84,7 +72,7 @@ export default async function handler(req: any, res: any) {
       }
     }
 
-    if (operadorData.rol !== 'admin' && operadorData.rol !== 'supervisor') {
+    if (!['admin', 'supervisor'].includes(String(operadorData.rol || '').toLowerCase())) {
       const enHorario = verificarHorario(operadorData.horario);
       if (!enHorario) {
         res.statusCode = 403;
@@ -104,7 +92,14 @@ export default async function handler(req: any, res: any) {
       return;
     }
 
-    console.log('[telnyx-token] Generando JWT para credencial:', credentialId);
+    if (!process.env.TELNYX_CONNECTION_ID) {
+      res.statusCode = 503;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'La conexión de telefonía no está configurada en el servidor.' }));
+      return;
+    }
+
+    console.log('[telnyx-token] Generando JWT para operador autorizado.');
     const token = await TelnyxBackendService.generateAgentJwt(credentialId);
 
     await db.collection('operadores').doc(authUser.uid).update({
@@ -139,10 +134,10 @@ export default async function handler(req: any, res: any) {
       allowedNumbers: numerosAsignados.map((n) => n.phoneNumber),
     }));
   } catch (err: any) {
-    console.error('[API /api/telnyx-token] Error:', err);
+    console.error('[API /api/telnyx-token] Error al generar credencial de telefonía.');
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: err.message || 'Error interno al generar credenciales de Telnyx' }));
+    res.end(JSON.stringify({ error: 'Error interno al generar credenciales de Telnyx.' }));
   }
 }
 
