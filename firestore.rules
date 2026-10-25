@@ -26,7 +26,9 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() {
-      return isApproved() && userRole() == "superadmin" && request.auth.token.role == "superadmin";
+      // The approved Firestore profile is authoritative. Requiring a matching custom
+      // claim here can deny a valid SuperAdmin while Firebase tokens are stale.
+      return isApproved() && userRole() == "superadmin";
     }
 
     function isAdmin() {
