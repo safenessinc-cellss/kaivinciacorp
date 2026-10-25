@@ -124,7 +124,7 @@ class TelnyxWebRTCService {
       const data = await res.json();
 
       if (!res.ok || data.error) {
-        throw new Error(data.error || `HTTP ${res.status}`);
+        throw new Error(data.message || data.error || `HTTP ${res.status}`);
       }
 
       if (data.token) {
@@ -142,10 +142,19 @@ class TelnyxWebRTCService {
         message: 'Respuesta del backend sin token.'
       };
     } catch (err: any) {
-      console.error('[TelnyxWebRTC] Error solicitando token del backend:', err);
+      const rawMessage = String(err?.message || '');
+      const message = /SIP_ASSIGNMENT_REQUIRED/i.test(rawMessage)
+        ? 'Tu número de origen no está configurado. El administrador debe asignarte un Caller ID real y una credencial SIP de Telnyx.'
+        : /SIP_ASSIGNMENT_INVALID/i.test(rawMessage)
+          ? 'La asignación de telefonía no coincide con tu perfil. Contacta al administrador para corregirla.'
+          : rawMessage || 'No se pudo conectar con el servicio de telefonía.';
+      console.warn('[TelnyxWebRTC] No se pudo obtener el token de telefonía:', message);
+      this.state.lastError = message;
+      this.state.isConnected = false;
+      this.notify();
       return {
         success: false,
-        message: err.message || 'Error al conectar con /api/telnyx-token'
+        message
       };
     }
   }
@@ -277,7 +286,10 @@ class TelnyxWebRTCService {
     if (!profile || String(profile.status || '').toLowerCase() !== 'approved') {
       throw new Error('Tu cuenta no está aprobada para realizar llamadas.');
     }
-    const assignedCallerId = validateTelnyxCallerId(profile.assignedCallerId || '');
+    if (!profile.assignedCallerId || !profile.assignedSipCredentialId) {
+      throw new Error('Tu número de origen no está configurado. Contacta al administrador para asignarte un Caller ID real y una credencial SIP de Telnyx.');
+    }
+    const assignedCallerId = validateTelnyxCallerId(profile.assignedCallerId);
     if (requestedCallerId !== assignedCallerId) {
       throw new Error('El Caller ID no coincide con el número SIP asignado a tu usuario. Solicita la asignación al SuperAdmin.');
     }
