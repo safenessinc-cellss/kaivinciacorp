@@ -146,12 +146,16 @@ export default function PendingUsersPanel() {
                 <option value="none">Seleccionar rol…</option>
                 <option value="superadmin">SuperAdmin</option>
                 <option value="admin">Administrador</option>
+                <option value="ceo">CEO / Director</option>
                 <option value="gestor">Gestor</option>
-                <option value="sales">Ventas / TLMK</option>
+                <option value="sales">Ventas</option>
+                <option value="tlmk">Agente TLMK</option>
+                <option value="rrhh">Recursos Humanos</option>
                 <option value="collaborator">Colaborador</option>
                 <option value="tutor">Tutor</option>
                 <option value="alumno">Alumno</option>
                 <option value="cliente">Cliente</option>
+                <option value="user">Usuario básico</option>
               </select>
               <button
                 onClick={() => approve(u.id)
