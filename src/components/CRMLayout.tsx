@@ -60,6 +60,10 @@ export default function CRMLayout({ userData }: { userData: any }) {
   }, []);
 
   const handleLogout = async () => {
+    sessionStorage.removeItem('kaivincia_session_confirmed');
+    sessionStorage.removeItem('kaivincia_login_in_progress');
+    localStorage.removeItem('kaivincia_active_user');
+    localStorage.removeItem('kaivincia_operator_session');
     await signOut(auth);
     navigate('/');
   };
