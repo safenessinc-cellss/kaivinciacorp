@@ -150,10 +150,32 @@ async function requestTelnyxToken(telnyxCredentialId: string): Promise<{ token: 
 
 export default async function handler(req: any, res: any) {
   if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
-  // POST is the supported contract. GET remains temporarily compatible with older clients.
+  // POST is the supported token contract. GET remains compatible with older clients.
   if (req.method !== 'POST' && req.method !== 'GET') {
     res.setHeader('Allow', 'GET, POST, OPTIONS');
     respondError(res, 405, 'METHOD_NOT_ALLOWED', 'Método no permitido.');
+    return;
+  }
+
+  // Keep admin diagnostics in this existing serverless function to stay within
+  // the Vercel Hobby function limit. Admin SDK reads bypass client Firestore rules.
+  if (req.method === 'GET' && String(req.query?.diagnostics || '') === 'errors') {
+    try {
+      const diagnosticUser = await getFirebaseUser(req, res);
+      if (!diagnosticUser) return;
+      if (!['superadmin', 'admin', 'ceo', 'gestor'].includes(diagnosticUser.role)) {
+        respondError(res, 403, 'ADMIN_REQUIRED', 'Solo administradores pueden consultar los errores de tokens.');
+        return;
+      }
+      const errorSnapshot = await adminDb.collection('telnyx_token_errors')
+        .orderBy('timestamp', 'desc')
+        .limit(10)
+        .get();
+      json(res, 200, { errors: errorSnapshot.docs.map((item: any) => ({ id: item.id, ...item.data() })) });
+    } catch (diagnosticError: any) {
+      console.error('[telnyx-token] diagnostic read failed', diagnosticError?.message || diagnosticError);
+      respondError(res, 500, 'TOKEN_DIAGNOSTICS_FAILED', 'No se pudieron cargar los errores de tokens.');
+    }
     return;
   }
 
