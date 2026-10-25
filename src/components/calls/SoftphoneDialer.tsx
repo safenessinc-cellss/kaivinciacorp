@@ -90,6 +90,7 @@ export default function SoftphoneDialer({
   const { clients = [] } = useGlobalContext();
 
   const isFloating = mode === 'floating';
+  const softphoneRootRef = useRef<HTMLDivElement>(null);
 
   // Detección responsive para móvil vs tablet/desktop
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
@@ -844,6 +845,22 @@ export default function SoftphoneDialer({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [callStatus, phoneNumber, isFloating, handleClose, copyPhoneNumber, pastePhoneNumber, handleHangup]);
+
+  // Etiquetas accesibles para botones heredados que aún no declaran aria-label.
+  useEffect(() => {
+    const root = softphoneRootRef.current;
+    if (!root) return;
+    const labelButtons = () => {
+      root.querySelectorAll<HTMLButtonElement>('button:not([aria-label])').forEach((button) => {
+        const label = button.getAttribute('title') || button.innerText?.replace(/\\s+/g, ' ').trim() || 'Control del teléfono';
+        button.setAttribute('aria-label', label);
+      });
+    };
+    labelButtons();
+    const observer = new MutationObserver(labelButtons);
+    observer.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['title'] });
+    return () => observer.disconnect();
+  }, [isMinimized, activeTab, callStatus, isFloating, isFloatingExpanded]);
 
   // Limpieza al desmontar
   useEffect(() => {
