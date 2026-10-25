@@ -85,14 +85,28 @@ export default function App() {
           method: 'POST', headers: { Authorization: `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('No se pudo verificar el perfil de acceso.');
+        const bootstrapResult = await response.json();
         if (cancelled) return;
+
+        // The backend may repair the SuperAdmin profile and custom claims during
+        // bootstrap. Refresh the Firebase token before reading protected Firestore data.
+        await currentUser.getIdToken(true);
+        if (bootstrapResult?.user) {
+          setUserData({ ...bootstrapResult.user, uid: currentUser.uid });
+        }
+
         unsubscribeProfile = onSnapshot(doc(db, 'users', currentUser.uid), (snap) => {
           if (cancelled) return;
-          setUserData(snap.exists() ? { ...snap.data(), uid: currentUser.uid } : null);
+          setUserData(snap.exists() ? { ...snap.data(), uid: currentUser.uid } : (bootstrapResult?.user ? { ...bootstrapResult.user, uid: currentUser.uid } : null));
           setLoading(false);
         }, (error) => {
           console.error('No se pudo verificar el estado del usuario:', error);
-          if (!cancelled) { setUserData(null); setLoading(false); }
+          // Keep the authenticated server-verified profile if the realtime listener
+          // cannot initialize; do not downgrade an approved SuperAdmin to no profile.
+          if (!cancelled) {
+            if (bootstrapResult?.user) setUserData({ ...bootstrapResult.user, uid: currentUser.uid });
+            setLoading(false);
+          }
         });
       } catch (error) {
         console.error('Error verificando el perfil:', error);
