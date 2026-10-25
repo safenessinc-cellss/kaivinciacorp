@@ -220,7 +220,7 @@ export default function SoftphoneDialer({
         setConnectionStatus('connecting');
         setConnectionError(null);
         // El servicio comprueba la asignación antes de llamar al backend.
-        const result = await telnyxWebRTCService.fetchFreshTokenFromBackend();
+        const result = await telnyxWebRTCService.fetchFreshTokenFromBackend(true);
         if (cancelled) return;
         if (result.success) {
           setHasSipAssigned(true);
