@@ -233,3 +233,16 @@
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: .55; transform: scale(.88); }
 }
+
+.macos-menubar {
+  color: var(--mac-text-secondary);
+  background: var(--mac-bg-toolbar);
+  border-bottom: 1px solid var(--mac-border);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  user-select: none;
+}
+.macos-menubar nav span { cursor: default; transition: color 120ms ease; }
+.macos-menubar nav span:hover { color: var(--mac-text-primary); }
+:root[data-reduce-transparency="true"] .macos-menubar { background: #fff; backdrop-filter: none; }
+:root[data-mac-appearance="dark"][data-reduce-transparency="true"] .macos-menubar { background: #1e1e1e; }
