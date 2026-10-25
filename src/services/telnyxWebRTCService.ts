@@ -58,6 +58,7 @@ export interface TelnyxWebRTCState {
   lastTokenAttemptAt: string | null;
   lastTokenCredentialId: string | null;
   lastTokenStatus: number | null;
+  callStatus: 'idle' | 'calling' | 'connected' | 'on_hold' | 'ended';
 }
 
 class TelnyxWebRTCService {
@@ -72,7 +73,8 @@ class TelnyxWebRTCService {
     tokenExpiresAt: null,
     lastTokenAttemptAt: null,
     lastTokenCredentialId: null,
-    lastTokenStatus: null
+    lastTokenStatus: null,
+    callStatus: 'idle'
   };
 
   private currentCredentialId: string | null = null;
@@ -343,10 +345,21 @@ class TelnyxWebRTCService {
           const code = String(notification?.code || notification?.data?.code || '');
           const type = String(notification?.type || '');
           if (type === 'callUpdate') {
-            if (notification?.call) {
-              this.state.activeCallId = notification.call.id;
-              this.notify();
+            const call = notification?.call || notification?.data?.call || notification?.data;
+            if (call?.id) this.state.activeCallId = call.id;
+            const callState = String(call?.state || call?.callState || notification?.callState || '').toLowerCase();
+            if (['ringing', 'early', 'trying', 'dialing', 'new'].includes(callState)) {
+              this.state.callStatus = 'calling';
+            } else if (['active', 'connected', 'answered'].includes(callState)) {
+              this.state.callStatus = 'connected';
+            } else if (['held', 'hold', 'on_hold'].includes(callState)) {
+              this.state.callStatus = 'on_hold';
+            } else if (['hangup', 'hungup', 'destroy', 'ended', 'terminated', 'rejected', 'failed'].includes(callState)) {
+              this.state.callStatus = 'ended';
+              this.state.activeCallId = null;
+              this.currentCall = null;
             }
+            this.notify();
             return;
           }
           if (code === '34001' || type === 'TOKEN_EXPIRING_SOON') {
@@ -465,6 +478,9 @@ class TelnyxWebRTCService {
 
     console.log('[TelnyxWebRTC] Llamada creada:', this.currentCall);
 
+    this.state.callStatus = 'calling';
+    this.notify();
+
     // Guardar el ID de la llamada activa
     if (this.currentCall?.id) {
       this.state.activeCallId = this.currentCall.id;
@@ -483,6 +499,7 @@ class TelnyxWebRTCService {
     }
     this.currentCall = null;
     this.state.activeCallId = null;
+    this.state.callStatus = 'idle';
     this.notify();
     if (this.pendingTokenRefresh) {
       this.pendingTokenRefresh = false;
