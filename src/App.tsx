@@ -57,115 +57,50 @@ import CompanyDashboard from './pages/b2b/CompanyDashboard';
 import CallCenterAdmin from './pages/CallCenterAdmin';
 import RouteGuard from "./components/RouteGuard";
 export default function App() {
-  const [user, setUser] = useState<any>(() => {
-    try {
-      const saved = localStorage.getItem('kaivincia_active_user');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState<any>(null);
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
+  const [isGuest, setIsGuest] = useState(() => localStorage.getItem('kaivincia_guest') === 'true');
 
   useEffect(() => {
-    // Check if guest or operator mode was active
-    const guestStatus = localStorage.getItem('kaivincia_guest');
-    const operatorSession = localStorage.getItem('kaivincia_operator_session');
-    if (guestStatus === 'true' || operatorSession) {
-      setIsGuest(true);
-      if (operatorSession && !userData) {
-        try {
-          const parsed = JSON.parse(operatorSession);
-          setUser(parsed);
-          setUserData(parsed);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
-
-    let unsubUserDoc: (() => void) | null = null;
-
+    let unsubscribeProfile: (() => void) | null = null;
+    let cancelled = false;
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
-      if (unsubUserDoc) {
-        unsubUserDoc();
-        unsubUserDoc = null;
-      }
-
-      if (currentUser) {
-        try {
-          const userRef = doc(db, "users", currentUser.uid);
-          const userSnap = await getDoc(userRef);
-
-          const existingData = userSnap.exists() ? userSnap.data() : null;
-          const currentUserRole = existingData?.role ?? null;
-          const isSuperAdmin = currentUserRole === "superadmin" || currentUserRole === "admin";
-
-          let currentProfile: any = null;
-          if (!userSnap.exists()) {
-            const newUser = {
-              uid: currentUser.uid,
-              name: currentUser.displayName || "Agente TLMK",
-              email: currentUser.email,
-              role: isSuperAdmin ? "superadmin" : "tlmk",
-              status: "active",
-              avatarUrl: currentUser.photoURL || "",
-              createdAt: new Date().toISOString(),
-              lastLogin: new Date().toISOString()
-            };
-            await setDoc(userRef, newUser);
-            currentProfile = newUser;
-          } else {
-            const data = existingData!;
-            const updatedRole = data.role && data.role !== "none" ? data.role : (isSuperAdmin ? "superadmin" : "tlmk");
-            const updatedStatus = "active";
-
-            await setDoc(userRef, {
-              lastLogin: new Date().toISOString(),
-              status: updatedStatus,
-              role: updatedRole
-            }, { merge: true });
-
-            currentProfile = { ...data, status: updatedStatus, role: updatedRole };
-          }
-
-          setUserData(currentProfile);
-          setUser(currentUser);
-          localStorage.setItem("kaivincia_active_user", JSON.stringify({ uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName }));
-
-          unsubUserDoc = onSnapshot(userRef, (docSnap) => {
-            if (docSnap.exists()) {
-              const liveData = docSnap.data();
-              const stabilizedData = { ...liveData, status: liveData.status || "active" };
-              setUserData(stabilizedData);
-            }
-          }, (error) => {
-            console.warn("User data listener warning (handled):", error);
-          });
-        } catch (authErr) {
-          console.error("Error setting up user profile:", authErr);
-          const fallback = {
-            name: currentUser.displayName || "Agente TLMK",
-            email: currentUser.email,
-            role: "tlmk",
-            status: "active"
-          };
-          setUser(currentUser);
-          setUserData(fallback);
-        }
-      } else {
-        setUser(null);
-        setUserData(null);
+      if (unsubscribeProfile) { unsubscribeProfile(); unsubscribeProfile = null; }
+      setUser(currentUser);
+      setUserData(null);
+      if (!currentUser) {
         localStorage.removeItem('kaivincia_active_user');
         localStorage.removeItem('kaivincia_user_data');
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+      localStorage.setItem('kaivincia_active_user', JSON.stringify({
+        uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName
+      }));
+      try {
+        const token = await currentUser.getIdToken();
+        const response = await fetch('/api/auth/bootstrap-user', {
+          method: 'POST', headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('No se pudo verificar el perfil de acceso.');
+        if (cancelled) return;
+        unsubscribeProfile = onSnapshot(doc(db, 'users', currentUser.uid), (snap) => {
+          if (cancelled) return;
+          setUserData(snap.exists() ? { ...snap.data(), uid: currentUser.uid } : null);
+          setLoading(false);
+        }, (error) => {
+          console.error('No se pudo verificar el estado del usuario:', error);
+          if (!cancelled) { setUserData(null); setLoading(false); }
+        });
+      } catch (error) {
+        console.error('Error verificando el perfil:', error);
+        if (!cancelled) { setUserData(null); setLoading(false); }
+      }
     });
-
     return () => {
-      if (unsubUserDoc) unsubUserDoc();
+      cancelled = true;
+      if (unsubscribeProfile) unsubscribeProfile();
       unsubscribeAuth();
     };
   }, []);
@@ -245,7 +180,7 @@ export default function App() {
   }
 
   // Usuario logueado pero pendiente de aprobación → pantalla de espera (sin auto-activación)
-  if (user && userData && (userData.status === 'pending' || !userData.role || userData.role === 'none')) {
+  if (user && (!userData || userData.status !== 'approved')) {
     return <PendingApproval />;
   }
 
@@ -253,7 +188,7 @@ export default function App() {
     name: user?.displayName || 'Agente TLMK',
     email: user?.email || 'operador@kaivincia.com',
     role: 'tlmk',
-    status: 'active'
+    status: 'pending'
   };
 
   const hasAccess = Boolean(user || isGuest);
