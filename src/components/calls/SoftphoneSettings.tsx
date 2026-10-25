@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Activity, CheckCircle2, CircleAlert, Copy, RefreshCw, ShieldCheck, Smartphone, Wifi, XCircle } from 'lucide-react';
+import { Activity, CheckCircle2, Copy, RefreshCw, ShieldCheck, Smartphone, Wifi, XCircle } from 'lucide-react';
 import { auth } from '../../firebase';
 
 type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'error';
@@ -80,8 +80,8 @@ export default function SoftphoneSettings({
         return;
       }
       const idToken = await currentUser.getIdToken();
-      const response = await fetch('/api/telnyx-token?diagnostics=run', {
-        method: 'GET',
+      const response = await fetch('/api/telnyx/diagnose', {
+        method: 'POST',
         headers: { Authorization: `Bearer ${idToken}` }
       });
       const data = await response.json().catch(() => ({}));
