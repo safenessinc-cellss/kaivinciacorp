@@ -28,6 +28,7 @@ export default async function handler(req: any, res: any) {
     let credentialIdForAssignment = '';
     let assignedCallerId = '';
     let usesAdminHubAssignment = false;
+    let canAutoProvisionCredential = false;
 
     const agentAssignmentSnap = await adminDb.collection('telnyx_agent_assignments').doc(user.uid).get();
     const agentAssignment = agentAssignmentSnap.exists ? agentAssignmentSnap.data() || {} : null;
@@ -59,10 +60,53 @@ export default async function handler(req: any, res: any) {
         ? defaultCallerId
         : '';
       usesAdminHubAssignment = Boolean(credentialIdForAssignment && assignedCallerId);
+      canAutoProvisionCredential = Boolean(
+        agentAssignmentSnap.exists &&
+        /^\\+[1-9]\\d{7,14}$/.test(defaultCallerId) &&
+        authorizedNumbers.includes(defaultCallerId)
+      );
     }
 
-    if (!credentialIdForAssignment || !/^\+[1-9]\d{7,14}$/.test(assignedCallerId)) {
-      json(res, 403, { error: 'SIP_ASSIGNMENT_REQUIRED', message: 'Falta asignar al usuario una credencial SIP y un Caller ID autorizado. En Telnyx Admin Hub, asigna la credencial y guarda un número predeterminado autorizado.' });
+    if (!/^\\+[1-9]\\d{7,14}$/.test(assignedCallerId)) {
+      json(res, 403, { error: 'SIP_ASSIGNMENT_REQUIRED', message: 'Falta un Caller ID autorizado. En Telnyx Admin Hub, asigna un número al usuario y guárdalo como predeterminado.' });
+      return;
+    }
+
+    // The softphone may provision the per-agent Telnyx credential itself, but
+    // only after an administrator has explicitly allow-listed the caller ID.
+    // The Telnyx API key remains server-side; the browser receives only the JWT.
+    if (!credentialIdForAssignment && canAutoProvisionCredential) {
+      const connectionId = String(
+        agentAssignment?.connectionId ||
+        agentAssignment?.connection_id ||
+        TelnyxBackendService.getDefaultConnectionId() ||
+        ''
+      ).trim();
+      const provisioned = await TelnyxBackendService.getOrCreateTelephonyCredential(user.uid, connectionId || undefined);
+      credentialIdForAssignment = provisioned.id;
+      usesAdminHubAssignment = true;
+      const credentialRecord = {
+        id: provisioned.id,
+        telnyxCredentialId: provisioned.id,
+        credentialId: provisioned.id,
+        sip_username: provisioned.sip_username || '',
+        connectionId: connectionId || TelnyxBackendService.getDefaultConnectionId(),
+        connection_id: connectionId || TelnyxBackendService.getDefaultConnectionId(),
+        assignedTo: user.uid,
+        source: 'softphone-auto-provision',
+        updatedAt: new Date().toISOString()
+      };
+      await Promise.all([
+        adminDb.collection('telnyx_sip_credentials').doc(provisioned.id).set(credentialRecord, { merge: true }),
+        adminDb.collection('telnyx_agent_assignments').doc(user.uid).set({
+          telnyxCredentialId: provisioned.id,
+          updatedAt: new Date().toISOString()
+        }, { merge: true })
+      ]);
+    }
+
+    if (!credentialIdForAssignment) {
+      json(res, 403, { error: 'SIP_ASSIGNMENT_REQUIRED', message: 'No hay credencial SIP asignada. Verifica la asignación autorizada en Telnyx Admin Hub.' });
       return;
     }
 
