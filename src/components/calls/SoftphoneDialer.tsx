@@ -243,54 +243,6 @@ export default function SoftphoneDialer({
     return () => { cancelled = true; };
   }, [user, authLoading, userData?.role, userData?.assignedCallerId, showToast]);
 
-  // ============================================================
-  // Renovación automática del JWT cada 24 horas
-  // ============================================================
-  useEffect(() => {
-    if (authLoading || !user) return;
-
-    let isMounted = true;
-
-    const renewTokenIfNeeded = async () => {
-      try {
-        const currentToken = telnyxWebRTCService.getLoginToken();
-        if (currentToken) {
-          try {
-            const payload = JSON.parse(atob(currentToken.split('.')[1]));
-            const expiresAt = payload.exp * 1000;
-            const now = Date.now();
-            const hoursUntilExpiry = (expiresAt - now) / (1000 * 60 * 60);
-
-            if (hoursUntilExpiry < 2) {
-              if (callStatus !== 'idle' && callStatus !== 'ended') {
-                telnyxWebRTCService.deferTokenRefreshUntilCallEnds();
-                console.log('[SoftphoneDialer] Renovación aplazada hasta terminar la llamada.');
-                return;
-              }
-              console.log('[SoftphoneDialer] Renovando sesión próxima a vencer.');
-              const res = await telnyxWebRTCService.fetchFreshTokenFromBackend();
-              if (res.success && isMounted) {
-                console.log('[SoftphoneDialer] Sesión renovada.');
-              }
-            }
-          } catch (e) {
-            console.warn('[SoftphoneDialer] Error decodificando token:', e);
-          }
-        }
-      } catch (err) {
-        console.error('[SoftphoneDialer] Error en renovación automática:', err);
-      }
-    };
-
-    renewTokenIfNeeded();
-    const interval = setInterval(renewTokenIfNeeded, 60 * 60 * 1000);
-
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, [user, userData?.role, userData?.assignedCallerId, authLoading, callStatus]);
-
   const handleGenerateBackendTelnyxToken = async () => {
     setIsGeneratingBackendToken(true);
     try {
