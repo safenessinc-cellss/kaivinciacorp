@@ -16,6 +16,8 @@ const ROLE_DEFAULTS: Record<string, AppPermission[]> = {
   sales: ['dashboard','tlmk_sales','dialer','calendar','chat','clients'],
   gestor: ['dashboard','tlmk_sales','collections','reports','team_management','calendar','chat','clients','operations'],
   rrhh: ['dashboard','talent','payroll','calendar','chat'],
+  collaborator: ['dashboard','operations','calendar','chat','documents'],
+  cliente: ['academy','billing','clients','chat'],
   alumno: ['academy','chat']
 };
 
