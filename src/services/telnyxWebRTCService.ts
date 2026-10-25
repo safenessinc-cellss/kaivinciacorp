@@ -495,7 +495,7 @@ class TelnyxWebRTCService {
       throw new Error(message);
     }
 
-    console.log('[TelnyxWebRTC] Llamada creada:', this.currentCall);
+    console.log('[TelnyxWebRTC] Llamada saliente iniciada.', { callId: this.currentCall?.id || null });
 
     this.state.callStatus = 'calling';
     this.notify();
