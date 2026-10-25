@@ -20,7 +20,6 @@ import SoftphoneSettings from './SoftphoneSettings';
 import '../../styles/softphone.css';
 import SoftphoneSipConsole from './SoftphoneSipConsole';
 import { telnyxWebRTCService, normalizeTelnyxE164, validateTelnyxCallerId } from '../../services/telnyxWebRTCService';
-import { isPrivilegedRole } from '../../constants/roles';
 import { formatPhoneE164 } from '../../utils/phone';
 
 interface SoftphoneDialerProps {
@@ -187,6 +186,7 @@ export default function SoftphoneDialer({
   // Estados de Telnyx WebRTC login_token (JWT)
   const [isTelnyxTokenModalOpen, setIsTelnyxTokenModalOpen] = useState(false);
   const [rtcState, setRtcState] = useState(() => telnyxWebRTCService.getState());
+  const tokenHoursRemaining = rtcState.tokenExpiresAt ? Math.max(0, Math.floor((new Date(rtcState.tokenExpiresAt).getTime() - Date.now()) / 3600000)) : null;
   const [isGeneratingBackendToken, setIsGeneratingBackendToken] = useState(false);
   const [currentWebRtcJwt, setCurrentWebRtcJwt] = useState(() => telnyxWebRTCService.getLoginToken());
 
@@ -769,12 +769,7 @@ export default function SoftphoneDialer({
     }
   };
 
-  const handleDemoTestCall = () => {
-    const demoNumbers = ['+13055550144', '+14158829901', '+34912345678'];
-    const randomNum = demoNumbers[Math.floor(Math.random() * demoNumbers.length)];
-    setPhoneNumber(randomNum);
-    handleStartCall(randomNum);
-  };
+
 
   const toggleMute = () => {
     setIsMuted(prev => !prev);
@@ -1057,7 +1052,7 @@ export default function SoftphoneDialer({
                   {(selectedCarrier === 'telnyx' || activeCarrierObj?.name?.includes('Telnyx')) && (
                     <button type="button" onClick={() => setIsTelnyxTokenModalOpen(true)} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold transition-all cursor-pointer ${currentWebRtcJwt ? 'bg-cyan-950/70 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-900/60' : 'bg-amber-950/70 text-amber-300 border border-amber-500/30 hover:bg-amber-900/60 animate-pulse'}`} title="Ver estado de la sesión de telefonía">
                       <Radio className="w-2.5 h-2.5 text-cyan-400" />
-                      <span>{connectionStatus === 'connected' ? 'Sesión activa' : connectionStatus === 'connecting' ? 'Conectando…' : currentWebRtcJwt ? 'Sesión lista' : 'Regenerar sesión'}</span>
+                      <span>{connectionStatus === 'connected' ? `Sesión activa · ${tokenHoursRemaining === null ? '--' : tokenHoursRemaining + ' h'}` : connectionStatus === 'connecting' ? 'Conectando…' : currentWebRtcJwt ? 'Sesión lista' : 'Regenerar sesión'}</span>
                     </button>
                   )}
                 </div>
@@ -1080,10 +1075,7 @@ export default function SoftphoneDialer({
                     Pendiente
                   </span>
                 )}
-                <button type="button" onClick={handleDemoTestCall} disabled={callStatus !== 'idle'} className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[9px] font-bold flex items-center gap-1 transition-all disabled:opacity-40 cursor-pointer active:scale-95">
-                  <Sparkles className="w-2.5 h-2.5 text-amber-400" />
-                  <span>Demo</span>
-                </button>
+
               </div>
             )}
           </div>
