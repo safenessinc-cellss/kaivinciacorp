@@ -207,11 +207,7 @@ service cloud.firestore {
     }
 
     match /telnyx_agent_assignments/{assignmentId} {
-      // An agent can read only their own assignment document (document ID = UID).
-      // Admin Hub remains the only client-side writer.
-      allow read: if isSuperAdmin() || isAdmin() ||
-        (isApproved() && hasPermission('dialer') &&
-          (assignmentId == request.auth.uid || existing().get('agentUid', '') == request.auth.uid));
+      allow read: if isSuperAdmin() || isAdmin() || (isApproved() && hasPermission('dialer') && existing().get('agentUid', '') == request.auth.uid);
       allow write: if isSuperAdmin();
     }
 
