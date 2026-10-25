@@ -466,9 +466,19 @@ export default async function handler(req: any, res: any) {
       body: error?.telnyxBody || '',
       error: error?.message || 'TELNYX_TOKEN_FAILED'
     });
+    const telnyxStatus = Number(error?.telnyxStatus || status);
+    const code = /TELNYX_API_KEY/i.test(String(error?.message || '')) || (telnyxStatus >= 400 && telnyxStatus < 500)
+      ? 'API_KEY_INVALID'
+      : (status === 0 || status >= 500 || telnyxStatus >= 500) ? 'TELNYX_DOWN' : 'NETWORK';
+    const message = code === 'API_KEY_INVALID'
+      ? 'La conexión con Telnyx no está configurada correctamente. Contacta al administrador.'
+      : code === 'TELNYX_DOWN'
+        ? 'El servicio de telefonía está tardando. Vuelve a intentar en unos segundos.'
+        : 'Parece que no tienes internet. Verifica tu conexión y vuelve a intentar.';
     json(res, status >= 400 && status <= 599 ? status : 502, {
-      error: 'TELNYX_TOKEN_FAILED',
-      message: error?.message || 'No se pudo generar el token de telefonía. Verifica la configuración de Telnyx.'
+      error: code,
+      code,
+      message
     });
   }
 }
