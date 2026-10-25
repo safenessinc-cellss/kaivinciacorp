@@ -182,7 +182,7 @@ export default async function handler(req: any, res: any) {
   // Admin/settings diagnostics share this existing serverless function so
   // the project stays within the Vercel Hobby function-count limit. This route
   // validates the current user's own assignment and never returns the generated JWT.
-  if (req.method === 'GET' && String(req.query?.diagnostics || '') === 'run') {
+  if ((req.method === 'GET' || req.method === 'POST') && String(req.query?.diagnostics || '') === 'run') {
     let diagnosticUid = '';
     let diagnosticCredentialId = '';
     try {
