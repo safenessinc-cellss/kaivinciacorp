@@ -85,14 +85,50 @@ export default function App() {
           method: 'POST', headers: { Authorization: `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('No se pudo verificar el perfil de acceso.');
+        const bootstrapResult = await response.json();
         if (cancelled) return;
+
+        // The backend may repair the SuperAdmin profile and custom claims during
+        // bootstrap. Refresh the Firebase token before reading protected Firestore data.
+        const refreshedTokenResult = await currentUser.getIdTokenResult(true);
+        // Safe diagnostic only: never log the JWT itself. Approval status lives in
+        // the verified Firestore profile, not in a Firebase custom claim.
+        console.info('[auth] refreshed authorization state', {
+          tokenRole: String(refreshedTokenResult.claims.role || ''),
+          tokenIsSuperAdmin: refreshedTokenResult.claims.isSuperAdmin === true,
+          profileRole: String(bootstrapResult?.user?.role || ''),
+          profileStatus: String(bootstrapResult?.user?.status || ''),
+        });
+        if (bootstrapResult?.user) {
+          setUserData({ ...bootstrapResult.user, uid: currentUser.uid });
+        }
+
         unsubscribeProfile = onSnapshot(doc(db, 'users', currentUser.uid), (snap) => {
           if (cancelled) return;
-          setUserData(snap.exists() ? { ...snap.data(), uid: currentUser.uid } : null);
+          const snapshotProfile = snap.exists() ? { ...snap.data(), uid: currentUser.uid } : null;
+          const verifiedProfile = bootstrapResult?.user && bootstrapResult.user.uid === currentUser.uid
+            ? { ...bootstrapResult.user, uid: currentUser.uid }
+            : null;
+          // Never let a stale Firestore snapshot downgrade a profile that the trusted
+          // bootstrap endpoint has just repaired and verified as an approved SuperAdmin.
+          const verifiedOwner = String(verifiedProfile?.role || '').toLowerCase() === 'superadmin'
+            && String(verifiedProfile?.status || '').toLowerCase() === 'approved';
+          const snapshotNotApproved = !snapshotProfile
+            || String(snapshotProfile.status || '').toLowerCase() !== 'approved';
+          if (verifiedOwner && snapshotNotApproved) {
+            setUserData(verifiedProfile);
+          } else {
+            setUserData(snapshotProfile || verifiedProfile);
+          }
           setLoading(false);
         }, (error) => {
           console.error('No se pudo verificar el estado del usuario:', error);
-          if (!cancelled) { setUserData(null); setLoading(false); }
+          // Keep the authenticated server-verified profile if the realtime listener
+          // cannot initialize; do not downgrade an approved SuperAdmin to no profile.
+          if (!cancelled) {
+            if (bootstrapResult?.user) setUserData({ ...bootstrapResult.user, uid: currentUser.uid });
+            setLoading(false);
+          }
         });
       } catch (error) {
         console.error('Error verificando el perfil:', error);

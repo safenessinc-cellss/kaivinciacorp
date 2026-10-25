@@ -63,6 +63,7 @@ export default function AccessControl() {
   const [notice, setNotice] = useState('');
 
   const selected = users.find(u => u.uid === selectedUid) || null;
+  const isSystemOwner = String(auth.currentUser?.email || '').trim().toLowerCase() === 'safeness.c.a@gmail.com';
   const load = useCallback(async () => {
     setBusy(true); setError('');
     try {
@@ -143,7 +144,7 @@ export default function AccessControl() {
   return <main className="min-h-screen bg-slate-50 p-4 md:p-8 text-slate-900">
     <div className="mx-auto max-w-7xl space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <div><p className="text-xs font-bold uppercase tracking-widest text-cyan-700">Seguridad · RBAC</p><h1 className="text-2xl font-black">Control de acceso</h1><p className="text-sm text-slate-600">Aprobación de usuarios, permisos individuales y asignación exclusiva de números SIP.</p></div>
+        <div><p className="text-xs font-bold uppercase tracking-widest text-cyan-700">Seguridad · RBAC</p><h1 className="text-2xl font-black">Control de acceso</h1><p className="text-sm text-slate-600">Aprobación de usuarios, permisos individuales y asignación exclusiva de números SIP. La edición de cuentas está reservada al propietario safeness.c.a@gmail.com.</p></div>
         <button onClick={() => void load()} disabled={busy} className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold disabled:opacity-50"><RefreshCw size={16}/> Actualizar</button>
       </header>
       {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
@@ -165,22 +166,22 @@ export default function AccessControl() {
               <h2 className="mb-1 text-lg font-black">{selected.name || selected.email}</h2><p className="mb-4 text-sm text-slate-500">{selected.email} · Rol: {selected.role}</p>
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <label htmlFor="base-role" className="text-sm font-bold">Rol base</label>
-                <select id="base-role" value={roleDraft} onChange={e => setRoleDraft(e.target.value)} disabled={busy || selected.role === 'superadmin'} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">
-                  {['none','user','agente','tlmk','sales','supervisor','gestor','rrhh','collaborator','admin','ceo','alumno'].map(role => <option key={role} value={role}>{role}</option>)}
+                <select id="base-role" value={roleDraft} onChange={e => setRoleDraft(e.target.value)} disabled={busy || !isSystemOwner || selected.role === 'superadmin'} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">
+                  {['none','user','agente','tlmk','sales','supervisor','gestor','rrhh','collaborator','admin','ceo','alumno','superadmin'].map(role => <option key={role} value={role}>{role}</option>)}
                 </select>
-                <button onClick={() => void saveRole()} disabled={busy || selected.role === 'superadmin' || roleDraft === selected.role} className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold disabled:opacity-40">Guardar rol</button>
+                <button onClick={() => void saveRole()} disabled={busy || !isSystemOwner || selected.role === 'superadmin' || roleDraft === selected.role} className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold disabled:opacity-40">Guardar rol</button>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => void changeStatus('approved')} disabled={busy || selected.status === 'approved' || selected.role === 'superadmin'} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"><ShieldCheck size={16}/> Aprobar</button>
-                <button onClick={() => void changeStatus('blocked')} disabled={busy || selected.status === 'blocked' || selected.role === 'superadmin'} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"><ShieldX size={16}/> Bloquear</button>
+                <button onClick={() => void changeStatus('approved')} disabled={busy || !isSystemOwner || selected.status === 'approved' || selected.role === 'superadmin'} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"><ShieldCheck size={16}/> Aprobar</button>
+                <button onClick={() => void changeStatus('blocked')} disabled={busy || !isSystemOwner || selected.status === 'blocked' || selected.role === 'superadmin'} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"><ShieldX size={16}/> Bloquear</button>
               </div>
             </section>
             <section className="rounded-2xl border bg-white p-5 shadow-sm">
               <div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="font-black">Permisos individuales</h2><p className="text-xs text-slate-500">Los cambios se validan en el servidor y se registran en auditoría.</p></div><LockKeyhole size={20} className="text-cyan-700"/></div>
               <div className="grid gap-2 sm:grid-cols-2">
-                {MODULES.map(([key, label]) => <label key={key} className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 text-sm"><input type="checkbox" checked={permissions[key] === true} onChange={e => setPermissions(prev => ({ ...prev, [key]: e.target.checked }))} disabled={busy || selected.role === 'superadmin'} className="h-4 w-4 rounded border-slate-300"/> {label}</label>)}
+                {MODULES.map(([key, label]) => <label key={key} className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 text-sm"><input type="checkbox" checked={permissions[key] === true} onChange={e => setPermissions(prev => ({ ...prev, [key]: e.target.checked }))} disabled={busy || !isSystemOwner} className="h-4 w-4 rounded border-slate-300"/> {label}</label>)}
               </div>
-              <button onClick={() => void savePermissions()} disabled={busy || selected.role === 'superadmin'} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"><Save size={16}/> Guardar permisos</button>
+              <button onClick={() => void savePermissions()} disabled={busy || !isSystemOwner} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"><Save size={16}/> Guardar permisos</button>
             </section>
             <section className="rounded-2xl border bg-white p-5 shadow-sm">
               <h2 className="mb-1 flex items-center gap-2 font-black"><Phone size={18}/> Número SIP exclusivo</h2><p className="mb-4 text-xs text-slate-500">Un recurso no puede pertenecer a dos usuarios a la vez. Caller ID tomado del recurso asignado.</p>

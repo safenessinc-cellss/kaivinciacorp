@@ -37,46 +37,96 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const email = String(decoded.email || '').trim().toLowerCase();
+  // Prefer the authoritative Firebase Auth user record over token claims, which may be stale.
+  const authRecord = await adminAuth.getUser(decoded.uid);
+  const email = String(authRecord.email || decoded.email || '').trim().toLowerCase();
   const allowlistedSuperAdmin = SUPERADMINS.has(email);
+  const authRole = String(authRecord.customClaims?.role || '').toLowerCase();
+  const authAlreadySuperAdmin = authRole === 'superadmin' || authRole === 'superuser' || authRecord.customClaims?.isSuperAdmin === true;
   const userRef = adminDb.collection('users').doc(decoded.uid);
   const snap = await userRef.get();
+
+  // Emit a minimal decision trace to diagnose approval mismatches without logging tokens or secrets.
+  console.info('[bootstrap-user] access decision', {
+    uid: decoded.uid,
+    email,
+    allowlistedSuperAdmin,
+    profileExists: snap.exists,
+    profileRole: snap.exists ? String(snap.data()?.role || '') : null,
+    profileStatus: snap.exists ? String(snap.data()?.status || '') : null,
+    authRole: authRole || null,
+    firebaseProject: process.env.FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT || 'service-account-configured',
+  });
 
   if (snap.exists) {
     const existing = snap.data() || {};
     // Existing SuperAdmin roles are server-managed records, not user-editable
     // profile fields. Preserve and repair these accounts instead of demoting them.
-    const registeredSuperAdmin = String(existing.role || '').toLowerCase() === 'superadmin';
-    const shouldBeSuperAdmin = allowlistedSuperAdmin || registeredSuperAdmin;
+    const firestoreRole = String(existing.role || '').trim().toLowerCase();
+    // Honor every already-registered SuperAdmin marker in the trusted profile,
+    // even when status is pending/active or Auth custom claims have gone stale.
+    const registeredSuperAdmin =
+      firestoreRole === 'superadmin' ||
+      firestoreRole === 'superuser' ||
+      existing.isSuperAdmin === true ||
+      existing.isSuperadmin === true;
+    const shouldBeSuperAdmin = allowlistedSuperAdmin || registeredSuperAdmin || authAlreadySuperAdmin;
 
-    if (shouldBeSuperAdmin && (existing.status !== 'approved' || existing.role !== 'superadmin' || decoded.role !== 'superadmin')) {
-      await userRef.set({
-        role: 'superadmin',
-        status: 'approved',
-        permissions: existing.permissions || {},
-        updatedAt: FieldValue.serverTimestamp(),
-      }, { merge: true });
+    if (shouldBeSuperAdmin) {
+      const profileNeedsRepair = existing.status !== 'approved' || existing.role !== 'superadmin';
+      const claimsNeedRepair = authRole !== 'superadmin' || authRecord.customClaims?.isSuperAdmin === true;
 
-      const authRecord = await adminAuth.getUser(decoded.uid);
-      await adminAuth.setCustomUserClaims(decoded.uid, {
-        ...(authRecord.customClaims || {}),
-        role: 'superadmin',
-      });
+      // Always reconcile both authoritative stores for the allowlisted owner. Do not
+      // rely on the browser's possibly stale token claim to decide whether to repair.
+      if (profileNeedsRepair) {
+        await userRef.set({
+          role: 'superadmin',
+          status: 'approved',
+          permissions: existing.permissions || {},
+          updatedAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
 
-      await adminDb.collection('audit_logs').add({
-        action: 'user.superadmin.bootstrap_repaired',
-        actorUid: 'system-bootstrap',
-        targetUid: decoded.uid,
-        targetEmail: email || null,
-        before: { role: existing.role || null, status: existing.status || null },
-        after: { role: 'superadmin', status: 'approved' },
-        createdAt: FieldValue.serverTimestamp(),
-      });
+      if (claimsNeedRepair) {
+        await adminAuth.setCustomUserClaims(decoded.uid, {
+          ...(authRecord.customClaims || {}),
+          role: 'superadmin',
+        });
+      }
+
+      if (profileNeedsRepair || claimsNeedRepair) {
+        await adminDb.collection('audit_logs').add({
+          action: 'user.superadmin.bootstrap_repaired',
+          actorUid: 'system-bootstrap',
+          targetUid: decoded.uid,
+          targetEmail: email || null,
+          before: { role: existing.role || null, status: existing.status || null, authRole: authRole || null },
+          after: { role: 'superadmin', status: 'approved', authRole: 'superadmin' },
+          createdAt: FieldValue.serverTimestamp(),
+        });
+      }
 
       existing.role = 'superadmin';
       existing.status = 'approved';
       existing.permissions = existing.permissions || {};
-    } else if (!shouldBeSuperAdmin && existing.status === 'active') {
+
+      // Return the persisted server-side profile, not only the in-memory repaired object.
+      const verifiedProfile = await userRef.get();
+      if (!verifiedProfile.exists || verifiedProfile.data()?.status !== 'approved' || verifiedProfile.data()?.role !== 'superadmin') {
+        console.error('[bootstrap-user] owner profile repair verification failed', {
+          uid: decoded.uid,
+          email,
+          profileExists: verifiedProfile.exists,
+          profileRole: verifiedProfile.data()?.role || null,
+          profileStatus: verifiedProfile.data()?.status || null,
+        });
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'No se pudo verificar la reparación del perfil SuperAdmin.' }));
+        return;
+      }
+      Object.assign(existing, verifiedProfile.data());
+    } else if (existing.status === 'active') {
       const before = { status: existing.status || null, role: existing.role || null };
       await userRef.set({
         status: 'pending',
@@ -110,7 +160,7 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const isSuperAdmin = allowlistedSuperAdmin;
+  const isSuperAdmin = allowlistedSuperAdmin || authAlreadySuperAdmin;
   const profile = {
     uid: decoded.uid,
     name: decoded.name || email.split('@')[0] || 'Usuario',
@@ -125,7 +175,6 @@ export default async function handler(req: any, res: any) {
 
   await userRef.set(profile, { merge: false });
   if (isSuperAdmin) {
-    const authRecord = await adminAuth.getUser(decoded.uid);
     await adminAuth.setCustomUserClaims(decoded.uid, {
       ...(authRecord.customClaims || {}),
       role: 'superadmin',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Phone,
   Server,
@@ -29,7 +29,7 @@ import {
   AlertTriangle,
   HelpCircle
 } from 'lucide-react';
-import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc , runTransaction, getDoc} from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, runTransaction, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '../../firebase';
 import { useAuth } from '../../hooks/useAuth';
@@ -57,7 +57,33 @@ export default function TelnyxAdminHub() {
   const { user } = useAuth();
   const { users: contextUsers = [] } = useGlobalContext();
 
-  const [activeSubTab, setActiveSubTab] = useState<'connection' | 'numbers' | 'assignments' | 'guide'>('connection');
+  const [activeSubTab, setActiveSubTab] = useState<'connection' | 'numbers' | 'assignments' | 'guide' | 'tokenDiagnostics'>('connection');
+  const [tokenDiagnostics, setTokenDiagnostics] = useState({
+    connected: false,
+    lastAttemptAt: null as string | null,
+    credentialId: null as string | null,
+    status: null as number | null,
+    expiresAt: null as string | null,
+    lastError: null as string | null
+  });
+  const [tokenErrorRecords, setTokenErrorRecords] = useState<any[]>([]);
+  const [tokenDiagnosticMessage, setTokenDiagnosticMessage] = useState<{ success: boolean; message: string } | null>(null);
+
+  const loadTokenErrors = useCallback(async () => {
+    try {
+      const currentUser = getAuth().currentUser;
+      if (!currentUser) return;
+      const idToken = await currentUser.getIdToken();
+      const response = await fetch('/api/telnyx-token?diagnostics=errors', {
+        headers: { Authorization: `Bearer ${idToken}` }
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || `HTTP ${response.status}`);
+      setTokenErrorRecords(Array.isArray(data.errors) ? data.errors : []);
+    } catch (error: any) {
+      console.warn('[TelnyxAdminHub] No se pudieron cargar errores de token:', error?.message || error);
+    }
+  }, []);
   
   // Configuración global
   const [config, setConfig] = useState<TelnyxGlobalConfig>(DEFAULT_CONFIG);
@@ -120,10 +146,22 @@ export default function TelnyxAdminHub() {
         connected: rtcState.isConnected,
         error: rtcState.lastError
       });
+      setTokenDiagnostics({
+        connected: rtcState.isConnected,
+        lastAttemptAt: rtcState.lastTokenAttemptAt,
+        credentialId: rtcState.lastTokenCredentialId,
+        status: rtcState.lastTokenStatus,
+        expiresAt: rtcState.tokenExpiresAt,
+        lastError: rtcState.lastError
+      });
       if (rtcState.loginToken && !loginTokenInput) {
         setLoginTokenInput(rtcState.loginToken);
       }
     });
+
+    // Carga los errores a través del endpoint protegido para no depender de un despliegue
+    // de reglas Firestore separado para poder ver el diagnóstico en esta sesión.
+    void loadTokenErrors();
 
     // 1. Suscripción a config global
     const unsubConfig = onSnapshot(doc(db, 'settings', 'telnyx_config'), (snap) => {
@@ -173,7 +211,7 @@ export default function TelnyxAdminHub() {
       unsubNumbers();
       unsubAssignments();
     };
-  }, []);
+  }, [loadTokenErrors]);
 
   // Cargar lista de agentes para asignar credenciales (al nivel superior del componente)
   useEffect(() => {
@@ -596,13 +634,24 @@ export default function TelnyxAdminHub() {
   // Guardar asignación de colaboradora
   const handleSaveAgentAssignment = async (agent: any, data: Partial<TelnyxAgentAssignment>) => {
     const docId = agent.id;
+    const authorizedNumbers = [...new Set((data.authorizedNumbers || []).map((value) => String(value || '').trim()))];
+    const invalidNumber = authorizedNumbers.find((value) => !/^\+[1-9]\d{7,14}$/.test(value));
+    if (invalidNumber) {
+      alert(`El Caller ID ${invalidNumber} no está en formato E.164. Usa un número autorizado con formato +[código de país][número].`);
+      return;
+    }
+    const defaultCallerId = data.defaultCallerId || authorizedNumbers[0] || '';
+    if (defaultCallerId && !authorizedNumbers.includes(defaultCallerId)) {
+      alert('El Caller ID predeterminado debe estar incluido en la lista de números autorizados.');
+      return;
+    }
     const assignmentDoc: TelnyxAgentAssignment = {
       id: docId,
       agentId: docId,
       agentName: agent.name,
       agentEmail: agent.email,
-      authorizedNumbers: data.authorizedNumbers || [],
-      defaultCallerId: data.defaultCallerId || data.authorizedNumbers?.[0] || '',
+      authorizedNumbers,
+      defaultCallerId,
       allowSharedPool: data.allowSharedPool ?? true,
       strictMode: data.strictMode ?? true,
       recordCalls: data.recordCalls ?? true,
@@ -610,7 +659,35 @@ export default function TelnyxAdminHub() {
     };
 
     try {
-      await setDoc(doc(db, 'telnyx_agent_assignments', docId), assignmentDoc);
+      const agentAssignmentRef = doc(db, 'telnyx_agent_assignments', docId);
+      const existingAssignmentSnap = await getDoc(agentAssignmentRef);
+      const credentialId = String(existingAssignmentSnap.data()?.telnyxCredentialId || '');
+      if (!credentialId) {
+        alert('Primero asigna una credencial SIP Telnyx al usuario; después guarda sus números autorizados.');
+        return;
+      }
+      if (!defaultCallerId) {
+        alert('Selecciona al menos un Caller ID autorizado y guárdalo como predeterminado.');
+        return;
+      }
+      const credentialSnap = await getDoc(doc(db, 'telnyx_sip_credentials', credentialId));
+      if (!credentialSnap.exists() || credentialSnap.data()?.assignedTo !== docId) {
+        alert('La credencial SIP no está vinculada a este usuario. Reasígnala desde la sección de credenciales.');
+        return;
+      }
+
+      // Merge is essential: handleAssignCredential stores telnyxCredentialId in
+      // this same document. Replacing the document here erased that field and
+      // made /api/telnyx-token return SIP_ASSIGNMENT_REQUIRED.
+      await setDoc(agentAssignmentRef, assignmentDoc, { merge: true });
+
+      // Keep the legacy profile fields synchronized for the token endpoint and
+      // other CRM modules, using the credential verified above.
+      await updateDoc(doc(db, 'users', docId), {
+        assignedSipCredentialId: credentialId,
+        assignedCallerId: defaultCallerId,
+        updatedAt: new Date().toISOString(),
+      });
 
       // Actualizar también en los números para reflejar a qué colaboradoras están asignados
       for (const num of phoneNumbers) {
@@ -810,7 +887,8 @@ export default function TelnyxAdminHub() {
           { id: 'connection', label: '1. Conexión & Webhooks', icon: Server, badge: 'Plataforma' },
           { id: 'numbers', label: '2. Números Telefónicos (DIDs)', icon: Phone, badge: `${phoneNumbers.length}` },
           { id: 'assignments', label: '3. Asignación a Colaboradoras', icon: Users, badge: `${collaborators.length}` },
-          { id: 'guide', label: '4. SIP Trunking vs Call Control (Guía)', icon: HelpCircle, badge: 'Info' }
+          { id: 'guide', label: '4. SIP Trunking vs Call Control (Guía)', icon: HelpCircle, badge: 'Info' },
+          { id: 'tokenDiagnostics', label: '5. Diagnóstico de Token', icon: Activity, badge: tokenErrorRecords.length ? String(tokenErrorRecords.length) : 'JWT' }
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeSubTab === tab.id;
@@ -1828,6 +1906,106 @@ export default function TelnyxAdminHub() {
               <li>Selecciona <strong>API Version v2</strong> y guarda la aplicación.</li>
               <li>Copia el <strong>Application ID / Connection ID</strong> generado y pégalo en el campo <em>TELNYX_CONNECTION_ID</em> de esta plataforma. ¡Listo!</li>
             </ol>
+          </div>
+        </div>
+      )}
+
+      {/* PESTAÑA 5: DIAGNÓSTICO DE TOKEN */}
+      {activeSubTab === 'tokenDiagnostics' && (
+        <div className="space-y-5">
+          <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-7 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h4 className="text-base font-black uppercase tracking-tight text-slate-900 dark:text-white">Diagnóstico de Token Telnyx</h4>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">El JWT se solicita al backend. La clave privada de Telnyx nunca se envía al navegador.</p>
+              </div>
+              <button
+                type="button"
+                disabled={isGeneratingBackendToken}
+                onClick={async () => {
+                  setIsGeneratingBackendToken(true);
+                  setTokenDiagnosticMessage(null);
+                  try {
+                    const result = await telnyxWebRTCService.fetchFreshTokenFromBackend();
+                    setTokenDiagnosticMessage({ success: result.success, message: result.message });
+                    await loadTokenErrors();
+                    const state = telnyxWebRTCService.getState();
+                    setTokenDiagnostics({
+                      connected: state.isConnected,
+                      lastAttemptAt: state.lastTokenAttemptAt,
+                      credentialId: state.lastTokenCredentialId,
+                      status: state.lastTokenStatus,
+                      expiresAt: state.tokenExpiresAt,
+                      lastError: state.lastError
+                    });
+                  } catch (error: any) {
+                    setTokenDiagnosticMessage({ success: false, message: error?.message || 'Error al regenerar el token.' });
+                  } finally {
+                    setIsGeneratingBackendToken(false);
+                  }
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-500 px-4 py-2.5 text-xs font-black text-slate-950 disabled:opacity-50"
+              >
+                <RefreshCw className={`h-4 w-4 ${isGeneratingBackendToken ? 'animate-spin' : ''}`} />
+                {isGeneratingBackendToken ? 'Generando…' : 'Regenerar token'}
+              </button>
+            </div>
+
+            {tokenDiagnosticMessage && (
+              <div className={`rounded-xl border p-3 text-xs ${tokenDiagnosticMessage.success ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-rose-500/30 bg-rose-500/10 text-rose-300'}`}>
+                {tokenDiagnosticMessage.message}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
+                <div className="text-[10px] uppercase tracking-wider text-slate-500">Conexión SDK</div>
+                <div className={`mt-1 font-bold ${tokenDiagnostics.connected ? 'text-emerald-400' : 'text-amber-400'}`}>{tokenDiagnostics.connected ? 'Conectado' : 'Desconectado'}</div>
+              </div>
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
+                <div className="text-[10px] uppercase tracking-wider text-slate-500">Último intento</div>
+                <div className="mt-1 text-xs font-mono text-slate-800 dark:text-slate-200">{tokenDiagnostics.lastAttemptAt ? new Date(tokenDiagnostics.lastAttemptAt).toLocaleString() : 'Sin intentos en esta sesión'}</div>
+              </div>
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
+                <div className="text-[10px] uppercase tracking-wider text-slate-500">HTTP</div>
+                <div className="mt-1 text-sm font-bold text-slate-800 dark:text-slate-200">{tokenDiagnostics.status ?? '—'}</div>
+              </div>
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 sm:col-span-2">
+                <div className="text-[10px] uppercase tracking-wider text-slate-500">Credential ID asignado</div>
+                <div className="mt-1 break-all font-mono text-xs text-slate-800 dark:text-slate-200">{tokenDiagnostics.credentialId || 'Sin credencial asignada'}</div>
+              </div>
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
+                <div className="text-[10px] uppercase tracking-wider text-slate-500">Token válido hasta</div>
+                <div className="mt-1 text-xs text-slate-800 dark:text-slate-200">{tokenDiagnostics.expiresAt ? new Date(tokenDiagnostics.expiresAt).toLocaleString() : 'Sin token'}</div>
+              </div>
+            </div>
+
+            {tokenDiagnostics.lastError && (
+              <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+                <strong>Último error del SDK:</strong> {tokenDiagnostics.lastError}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-7">
+            <h5 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">Últimos errores del backend</h5>
+            <p className="mt-1 mb-4 text-xs text-slate-500 dark:text-slate-400">Registros de telnyx_token_errors. El contenido del JWT nunca se almacena en esta colección.</p>
+            {tokenErrorRecords.length === 0 ? (
+              <p className="rounded-xl bg-slate-50 dark:bg-slate-950 p-4 text-xs text-slate-500">No hay errores registrados o no tienes permisos para leerlos.</p>
+            ) : (
+              <div className="space-y-2">
+                {tokenErrorRecords.map((record) => (
+                  <div key={record.id} className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs font-black text-rose-400">HTTP {record.status || record.telnyxStatus || '—'} · {record.error || 'Error Telnyx'}</span>
+                      <span className="text-[10px] text-slate-500">{record.timestamp ? new Date(record.timestamp).toLocaleString() : 'Fecha desconocida'}</span>
+                    </div>
+                    <div className="mt-1 break-all font-mono text-[10px] text-slate-500">UID: {record.uid || 'unknown'} · Credential: {record.credentialId || '—'}</div>
+                    {record.telnyxBody && <div className="mt-2 break-words text-xs text-slate-600 dark:text-slate-300">{record.telnyxBody}</div>}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

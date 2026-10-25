@@ -32,13 +32,31 @@ export default function RouteGuard({ children }: { children: React.ReactNode }) 
   const path = location.pathname.replace(/^\/crm\//, '');
   if (path === '' || path === 'access-denied') return <>{children}</>;
 
-  const role = String(userData.role || '').toLowerCase();
-  if (path === 'superadmin' || path === 'access-control' || path === 'security') {
-    if (role !== 'superadmin') return <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
+  const role = String(userData.role || '').trim().toLowerCase();
+  const isSuperAdmin =
+    role === 'superadmin' ||
+    role === 'superuser' ||
+    userData.isSuperAdmin === true ||
+    userData.isSuperadmin === true;
+
+  // These are privileged routes with no ordinary AppPermission mapping.
+  // Authorize them explicitly and return immediately; otherwise the generic
+  // permission check below rejects them because permission is undefined.
+  if (['superadmin', 'access-control', 'security'].includes(path)) {
+    return isSuperAdmin
+      ? <>{children}</>
+      : <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
   }
-  if (path === 'appearance' && !['superadmin', 'admin'].includes(role)) {
-    return <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
+
+  if (path === 'appearance') {
+    const isAdmin = role === 'admin' || isSuperAdmin;
+    return isAdmin
+      ? <>{children}</>
+      : <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
   }
+
+  // SuperAdmins must not be blocked by per-module permission configuration.
+  if (isSuperAdmin) return <>{children}</>;
 
   const permission = ROUTE_PERMISSIONS[path.split('/')[0]];
   if (!permission || !hasPermission(permission)) {

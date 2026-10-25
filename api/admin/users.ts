@@ -2,7 +2,8 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { adminAuth, adminDb } from '../../server/_lib/firebaseAdmin.js';
 import { json, requireApprovedUser } from '../../server/_lib/authz.js';
 
-const ALLOWED_ROLES = new Set(['none', 'admin', 'supervisor', 'tlmk', 'agente', 'sales', 'rrhh', 'alumno', 'gestor', 'ceo', 'collaborator', 'user']);
+const SYSTEM_OWNER_EMAIL = 'safeness.c.a@gmail.com';
+const ALLOWED_ROLES = new Set(['none', 'admin', 'supervisor', 'tlmk', 'agente', 'sales', 'rrhh', 'alumno', 'gestor', 'ceo', 'collaborator', 'user', 'superadmin']);
 
 const ALLOWED_PERMISSIONS = new Set([
   'dashboard', 'tlmk_sales', 'dialer', 'collections', 'talent', 'payroll',
@@ -14,6 +15,12 @@ const ALLOWED_PERMISSIONS = new Set([
 export default async function handler(req: any, res: any) {
   const actor = await requireApprovedUser(req, res, true);
   if (!actor) return;
+  // The named system owner controls user administration; other registered SuperAdmins retain their role/access but cannot change the owner-controlled user directory.
+  const isSystemOwner = String(actor.email || '').trim().toLowerCase() === SYSTEM_OWNER_EMAIL;
+  if (!isSystemOwner && req.method !== 'GET') {
+    json(res, 403, { error: 'SYSTEM_OWNER_REQUIRED', message: 'Solo el propietario del sistema puede modificar cuentas y permisos.' });
+    return;
+  }
 
   if (req.method === 'GET') {
     try {
@@ -71,7 +78,8 @@ export default async function handler(req: any, res: any) {
         const indexSnap = indexRef ? await tx.get(indexRef) : null;
         return { credentialId, assignmentRef, credentialRef, credentialSnap, assignmentSnap, indexRef, indexSnap, phone };
       };
-      if (target.role === 'superadmin') {
+      // Never demote, block, or delete any previously registered SuperAdmin. The owner may still edit the permission metadata for audit/administration, while SuperAdmin access itself remains unconditional.
+      if (target.role === 'superadmin' && action !== 'permissions') {
         throw Object.assign(new Error('PROTECTED_SUPERADMIN'), { code: 'PROTECTED_SUPERADMIN' });
       }
 

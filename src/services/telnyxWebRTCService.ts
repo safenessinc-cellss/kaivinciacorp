@@ -66,6 +66,10 @@ export interface TelnyxWebRTCState {
   loginToken: string;
   activeCallId: string | null;
   lastError: string | null;
+  tokenExpiresAt: string | null;
+  lastTokenAttemptAt: string | null;
+  lastTokenCredentialId: string | null;
+  lastTokenStatus: number | null;
 }
 
 class TelnyxWebRTCService {
@@ -76,8 +80,15 @@ class TelnyxWebRTCService {
     isConnected: false,
     loginToken: TELNYX_WEBRTC_LOGIN_TOKEN,
     activeCallId: null,
-    lastError: null
+    lastError: null,
+    tokenExpiresAt: null,
+    lastTokenAttemptAt: null,
+    lastTokenCredentialId: null,
+    lastTokenStatus: null
   };
+
+  private currentCredentialId: string | null = null;
+  private refreshInProgress = false;
 
   private listeners: Array<(state: TelnyxWebRTCState) => void> = [];
 
@@ -105,48 +116,149 @@ class TelnyxWebRTCService {
   }
 
   /**
-   * Solicita un nuevo JWT renovado al backend (/api/telnyx-token)
+   * Solicita un token al backend usando la asignación SIP del usuario autenticado.
+   * No llama al endpoint si no existe una asignación SIP.
    */
-  public async fetchFreshTokenFromBackend(): Promise<{ success: boolean; token?: string; message: string }> {
+  public async requestToken(credentialId: string): Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> {
+    const currentUser = auth.currentUser;
+    const attemptAt = new Date().toISOString();
+    this.state.lastTokenAttemptAt = attemptAt;
+    this.state.lastTokenCredentialId = credentialId || null;
+    this.state.lastTokenStatus = null;
+    this.state.lastError = null;
+    this.notify();
+
+    if (!currentUser) {
+      const message = 'Inicia sesión para conectar el softphone.';
+      this.state.lastError = message;
+      this.notify();
+      return { success: false, message, status: 401 };
+    }
+
     try {
-      const currentUser = auth.currentUser;
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
-      if (currentUser) {
-        const idToken = await currentUser.getIdToken();
-        if (idToken) {
-          headers['Authorization'] = `Bearer ${idToken}`;
-        }
+      const idToken = await currentUser.getIdToken();
+      const res = await fetch('/api/telnyx-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ credentialId })
+      });
+      const data = await res.json().catch(() => ({}));
+      this.state.lastTokenStatus = res.status;
+
+      if (!res.ok || data.error || !data.token) {
+        const message = data.message || data.error || `HTTP ${res.status}: no se pudo generar el token.`;
+        this.state.lastError = message;
+        this.state.isConnected = false;
+        this.notify();
+        return { success: false, message, status: res.status };
       }
 
-      const res = await fetch('/api/telnyx-token', { headers });
-      const data = await res.json();
-
-      if (!res.ok || data.error) {
-        throw new Error(data.error || `HTTP ${res.status}`);
-      }
-
-      if (data.token) {
-        await this.setLoginToken(data.token, false);
-        await this.initClient(data.token);
-        return {
-          success: true,
-          token: data.token,
-          message: 'Nuevo login_token JWT obtenido y aplicado en el cliente Telnyx.'
-        };
-      }
-
-      return {
-        success: false,
-        message: 'Respuesta del backend sin token.'
-      };
+      await this.setLoginToken(data.token, false);
+      this.state.tokenExpiresAt = data.expiresAt || this.readTokenExpiry(data.token);
+      this.currentCredentialId = credentialId;
+      this.state.lastError = null;
+      this.notify();
+      return { success: true, token: data.token, expiresAt: this.state.tokenExpiresAt || undefined, message: 'Token Telnyx generado correctamente.', status: res.status };
     } catch (err: any) {
-      console.error('[TelnyxWebRTC] Error solicitando token del backend:', err);
-      return {
-        success: false,
-        message: err.message || 'Error al conectar con /api/telnyx-token'
-      };
+      const message = String(err?.message || 'No se pudo conectar con el servicio de telefonía.');
+      this.state.lastError = message;
+      this.state.isConnected = false;
+      this.notify();
+      return { success: false, message, status: 0 };
+    }
+  }
+
+  /**
+   * Obtiene la asignación SIP y solicita el JWT. Si no hay SIP, no llama al backend.
+   */
+  public async fetchFreshTokenFromBackend(): Promise<{ success: boolean; token?: string; message: string; status?: number }> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      const message = 'Inicia sesión para conectar el softphone.';
+      this.state.lastError = message;
+      this.notify();
+      return { success: false, message, status: 401 };
+    }
+
+    try {
+      // Read the user's own profile first because existing production Firestore
+      // rules already allow self-read. Admin Hub keeps this field synchronized.
+      const profileSnap = await getDoc(doc(db, 'users', currentUser.uid));
+      const profile = profileSnap.exists() ? profileSnap.data() : {};
+      let credentialId = String(profile?.assignedSipCredentialId || '').trim();
+
+      // Prefer the authoritative assignment document when readable. During a
+      // rules rollout, a denied self-read must not prevent using the synchronized
+      // profile assignment; the backend independently validates the assignment.
+      try {
+        const assignmentSnap = await getDoc(doc(db, 'telnyx_agent_assignments', currentUser.uid));
+        const assignment = assignmentSnap.exists() ? assignmentSnap.data() : null;
+        const assignedId = String(assignment?.telnyxCredentialId || '').trim();
+        if (assignedId) credentialId = assignedId;
+      } catch (assignmentReadError: any) {
+        console.warn('[TelnyxWebRTC] No se pudo leer el documento de asignación directamente; usando el perfil sincronizado.', assignmentReadError?.code || '');
+      }
+
+      if (!credentialId) {
+        const message = 'No tienes línea SIP asignada. Contacta al administrador.';
+        this.state.lastError = message;
+        this.state.isConnected = false;
+        this.state.isInitialized = false;
+        this.state.lastTokenCredentialId = null;
+        this.state.lastTokenStatus = null;
+        this.notify();
+        return { success: false, message, status: 0 };
+      }
+
+      const result = await this.requestToken(credentialId);
+      if (!result.success || !result.token) return result;
+
+      const initialized = await this.initClient(result.token);
+      if (!initialized.success) {
+        return { success: false, message: initialized.message, status: result.status };
+      }
+      return { success: true, token: result.token, message: 'Token generado y softphone conectado.', status: result.status };
+    } catch (err: any) {
+      const message = String(err?.message || 'No se pudo obtener la asignación SIP del usuario.');
+      this.state.lastError = message;
+      this.state.isConnected = false;
+      this.notify();
+      return { success: false, message };
+    }
+  }
+
+  private readTokenExpiry(token: string): string | null {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return Number.isFinite(payload.exp) ? new Date(payload.exp * 1000).toISOString() : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async refreshCurrentToken(): Promise<void> {
+    if (this.refreshInProgress || !this.currentCredentialId || !this.client) return;
+    this.refreshInProgress = true;
+    try {
+      const result = await this.requestToken(this.currentCredentialId);
+      if (!result.success || !result.token) throw new Error(result.message);
+      if (typeof this.client?.updateToken === 'function') {
+        await this.client.updateToken(result.token);
+      } else {
+        const newToken = result.token;
+        try { this.client?.disconnect(); } catch {}
+        await this.initClient(newToken);
+      }
+      console.log('[TelnyxWebRTC] Token renovado automáticamente.');
+    } catch (err: any) {
+      this.state.lastError = `No se pudo renovar el token de Telnyx: ${err?.message || 'error desconocido'}`;
+      this.state.isConnected = false;
+      this.notify();
+    } finally {
+      this.refreshInProgress = false;
     }
   }
 
@@ -169,93 +281,111 @@ class TelnyxWebRTCService {
    */
   public async initClient(tokenOverride?: string): Promise<{ success: boolean; message: string }> {
     const token = tokenOverride || this.getLoginToken();
-
     if (!token) {
       const errMsg = 'No se ha configurado login_token (JWT) para el SDK de Telnyx WebRTC.';
       this.state.lastError = errMsg;
+      this.state.isConnected = false;
       this.notify();
       return { success: false, message: errMsg };
     }
 
     try {
-      console.log('[TelnyxWebRTC] Inicializando cliente TelnyxRTC con token de sesión temporal.');
-
-      // Desconectar cliente existente antes de crear uno nuevo
       if (this.client) {
         try { this.client.disconnect(); } catch {}
       }
+      this.state.isConnected = false;
+      this.state.isInitialized = false;
+      this.notify();
 
-      // Crear cliente usando el SDK importado desde @telnyx/webrtc
-      this.client = new TelnyxRTC({
+      const client = new TelnyxRTC({
         login_token: token,
         debug: true,
         debugOutput: 'socket',
         ringbackFile: '/sounds/ringback.mp3',
         ringtoneFile: '/sounds/ringtone.mp3'
       });
+      this.client = client;
 
-      this.client.on('telnyx.ready', () => {
-        console.log('[TelnyxWebRTC] ✅ Cliente conectado y listo.');
-        this.state.isConnected = true;
-        this.state.isInitialized = true;
-        this.state.lastError = null;
-        this.notify();
-      });
+      const readyResult = await new Promise<{ success: boolean; message: string }>((resolve) => {
+        let settled = false;
+        const finish = (result: { success: boolean; message: string }) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timeout);
+          resolve(result);
+        };
+        const timeout = setTimeout(() => finish({
+          success: false,
+          message: 'Telnyx no confirmó la conexión en 5 segundos. Verifica credencial, conexión y red; pulsa Reintentar.'
+        }), 5000);
 
-      this.client.on('telnyx.warning', async (warning: any) => {
-        if (warning?.code === 34001) {
-          console.log('[TelnyxWebRTC] 🔄 Token por expirar, renovando automáticamente...');
-          try {
-            const { getAuth } = await import('firebase/auth');
-            const user = getAuth().currentUser;
-            if (!user) throw new Error('No hay usuario autenticado');
-            const firebaseToken = await user.getIdToken();
+        client.on('telnyx.ready', () => {
+          this.state.isConnected = true;
+          this.state.isInitialized = true;
+          this.state.lastError = null;
+          this.notify();
+          finish({ success: true, message: 'Conectado a Telnyx.' });
+        });
 
-            const res = await fetch('/api/telnyx-token', {
-              headers: { 'Authorization': `Bearer ${firebaseToken}` },
-            });
-            if (!res.ok) throw new Error(`Backend respondió ${res.status}`);
-            const data = await res.json();
-            const newToken = data.token;
-            if (!newToken) throw new Error('Respuesta sin token');
+        client.on('telnyx.warning', (warning: any) => {
+          if (String(warning?.code || '') === '34001') void this.refreshCurrentToken();
+        });
 
-            this.client!.updateToken(newToken);
-            console.log('[TelnyxWebRTC] ✅ Token renovado correctamente');
-          } catch (err: any) {
-            console.error('[TelnyxWebRTC] ❌ Fallo al renovar token:', err.message);
-            try { this.client?.disconnect(); } catch {}
-            this.state.isConnected = false;
-            this.state.lastError = 'Sesión expirada. Vuelve a autenticarte.';
+        client.on('telnyx.notification', (notification: any) => {
+          const code = String(notification?.code || notification?.data?.code || '');
+          const type = String(notification?.type || '');
+          if (type === 'callUpdate') {
+            if (notification?.call) {
+              this.state.activeCallId = notification.call.id;
+              this.notify();
+            }
+            return;
+          }
+          if (code === '34001' || type === 'TOKEN_EXPIRING_SOON') {
+            void this.refreshCurrentToken();
+          }
+          if (notification?.call) {
+            this.state.activeCallId = notification.call.id;
             this.notify();
           }
-        }
-      });
+        });
 
-      this.client.on('telnyx.error', (error: any) => {
-        console.error('[TelnyxWebRTC] ❌ Error en cliente:', error);
-        this.state.lastError = explainTelnyxError(error);
-        this.notify();
-      });
-
-      this.client.on('telnyx.notification', (notification: any) => {
-        console.log('[TelnyxWebRTC] Notificación:', notification);
-        if (notification?.call) {
-          this.state.activeCallId = notification.call.id;
+        client.on('telnyx.error', (error: any) => {
+          const message = explainTelnyxError(error);
+          this.state.lastError = message;
+          this.state.isConnected = false;
           this.notify();
+          finish({ success: false, message });
+        });
+
+        client.on('telnyx.socket.close', (event: any) => {
+          this.state.isConnected = false;
+          if (event?.code) this.state.lastError = `Conexión Telnyx cerrada (${event.code}).`;
+          this.notify();
+        });
+
+        try {
+          const connectResult = client.connect();
+          if (connectResult && typeof connectResult.catch === 'function') {
+            connectResult.catch((error: any) => finish({ success: false, message: explainTelnyxError(error) }));
+          }
+        } catch (error: any) {
+          finish({ success: false, message: explainTelnyxError(error) });
         }
       });
 
-      this.client.connect();
-
-      return {
-        success: true,
-        message: 'SDK de Telnyx WebRTC inicializado correctamente con el nuevo login_token.'
-      };
+      if (!readyResult.success) {
+        this.state.isConnected = false;
+        this.state.lastError = readyResult.message;
+        this.notify();
+      }
+      return readyResult;
     } catch (err: any) {
-      console.error('[TelnyxWebRTC] ❌ Error inicializando SDK:', err);
-      this.state.lastError = err?.message || 'Error desconocido al inicializar Telnyx';
+      const message = explainTelnyxError(err);
+      this.state.lastError = message;
+      this.state.isConnected = false;
       this.notify();
-      return { success: false, message: err?.message || 'Error al inicializar cliente' };
+      return { success: false, message };
     }
   }
 
@@ -277,7 +407,10 @@ class TelnyxWebRTCService {
     if (!profile || String(profile.status || '').toLowerCase() !== 'approved') {
       throw new Error('Tu cuenta no está aprobada para realizar llamadas.');
     }
-    const assignedCallerId = validateTelnyxCallerId(profile.assignedCallerId || '');
+    if (!profile.assignedCallerId || !profile.assignedSipCredentialId) {
+      throw new Error('Tu número de origen no está configurado. Contacta al administrador para asignarte un Caller ID real y una credencial SIP de Telnyx.');
+    }
+    const assignedCallerId = validateTelnyxCallerId(profile.assignedCallerId);
     if (requestedCallerId !== assignedCallerId) {
       throw new Error('El Caller ID no coincide con el número SIP asignado a tu usuario. Solicita la asignación al SuperAdmin.');
     }

@@ -26,7 +26,9 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() {
-      return isApproved() && userRole() == "superadmin" && request.auth.token.role == "superadmin";
+      // The approved Firestore profile is authoritative. Requiring a matching custom
+      // claim here can deny a valid SuperAdmin while Firebase tokens are stale.
+      return isApproved() && userRole() == "superadmin";
     }
 
     function isAdmin() {
@@ -214,6 +216,12 @@ service cloud.firestore {
         (isApproved() && existing().get('assignedTo', '') == request.auth.uid);
       // Credential assignment lifecycle is server-only to avoid race conditions.
       allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Token generation errors are written only by trusted server code using Admin SDK.
+    match /telnyx_token_errors/{errorId} {
+      allow read: if isAdmin();
+      allow create, update, delete: if false;
     }
 
     match /esim_profiles/{profileId} {

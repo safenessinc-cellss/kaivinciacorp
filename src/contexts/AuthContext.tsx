@@ -50,47 +50,90 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let unsubProfile: (() => void) | null = null;
+    let authGeneration = 0;
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      const generation = ++authGeneration;
       setUser(currentUser);
+      setUserData(null);
+      setLoading(true);
 
       if (unsubProfile) { unsubProfile(); unsubProfile = null; }
 
-      if (currentUser) {
-        // Si el doc no existe, pedimos al backend que lo cree (role='none', status='pending')
-        try {
-          const token = await currentUser.getIdToken();
-          const bootstrapResponse = await fetch('/api/auth/bootstrap-user', {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (bootstrapResponse.ok) {
-            // Bootstrap may set/revoke custom role claims. Refresh this session before
-            // any protected route attempts to use Firebase Rules with the old token.
-            await currentUser.getIdToken(true);
-          }
-        } catch (e) {
-          console.warn('bootstrap-user failed:', e);
-        }
-
-        unsubProfile = onSnapshot(
-          doc(db, 'users', currentUser.uid),
-          (snap) => {
-            setUserData(snap.exists() ? (snap.data() as UserProfile) : null);
-            setLoading(false);
-          },
-          (err) => {
-            console.warn('Profile sync handled:', err?.message);
-            setLoading(false);
-          }
-        );
-      } else {
-        setUserData(null);
+      if (!currentUser) {
         setLoading(false);
+        return;
       }
+
+      let verifiedBootstrapProfile: UserProfile | null = null;
+      try {
+        const token = await currentUser.getIdToken();
+        const bootstrapResponse = await fetch('/api/auth/bootstrap-user', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (generation !== authGeneration) return;
+        if (bootstrapResponse.ok) {
+          const payload = await bootstrapResponse.json();
+          const candidate = payload?.user;
+          if (candidate && typeof candidate === 'object' && candidate.uid === currentUser.uid) {
+            verifiedBootstrapProfile = candidate as UserProfile;
+            // Use the server-verified profile immediately; don't leave an owner stuck
+            // on the pending screen while Firestore's initial snapshot is resolving.
+            setUserData(verifiedBootstrapProfile);
+          } else {
+            console.error('[auth] bootstrap returned an invalid profile');
+          }
+          await currentUser.getIdToken(true);
+        } else {
+          console.error('[auth] bootstrap rejected profile initialization', {
+            status: bootstrapResponse.status,
+          });
+        }
+      } catch (e) {
+        console.warn('bootstrap-user failed:', e);
+      }
+
+      if (generation !== authGeneration) return;
+      unsubProfile = onSnapshot(
+        doc(db, 'users', currentUser.uid),
+        (snap) => {
+          if (generation !== authGeneration) return;
+          const snapshotProfile = snap.exists()
+            ? ({ ...snap.data(), uid: currentUser.uid } as UserProfile)
+            : null;
+
+          // A profile explicitly repaired and verified by the trusted server must
+          // not be downgraded by a stale local Firestore snapshot.
+          const bootstrapIsApprovedSuperAdmin =
+            verifiedBootstrapProfile?.status === 'approved' &&
+            String(verifiedBootstrapProfile?.role || '').toLowerCase() === 'superadmin';
+          const snapshotIsPending =
+            !snapshotProfile ||
+            String(snapshotProfile.status || '').toLowerCase() !== 'approved';
+
+          if (bootstrapIsApprovedSuperAdmin && snapshotIsPending) {
+            setUserData(verifiedBootstrapProfile);
+          } else {
+            setUserData(snapshotProfile || verifiedBootstrapProfile);
+          }
+          setLoading(false);
+        },
+        (err) => {
+          if (generation !== authGeneration) return;
+          console.warn('Profile sync handled:', err?.message);
+          if (verifiedBootstrapProfile) setUserData(verifiedBootstrapProfile);
+          setLoading(false);
+        }
+      );
     });
 
-    return () => { unsubscribe(); if (unsubProfile) unsubProfile(); };
+    return () => {
+      authGeneration++;
+      unsubscribe();
+      if (unsubProfile) unsubProfile();
+    };
   }, []);
 
   const handleSignOut = async () => {
@@ -102,7 +145,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserData(null);
   };
 
-  const refreshProfile = async () => { /* no-op: onSnapshot ya es tiempo real */ };
+  const refreshProfile = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    const token = await currentUser.getIdToken();
+    const response = await fetch('/api/auth/bootstrap-user', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('No se pudo actualizar el perfil de acceso.');
+    const payload = await response.json();
+    if (payload?.user?.uid === currentUser.uid) {
+      setUserData(payload.user as UserProfile);
+    }
+  };
 
   return (
     <AuthContext.Provider value={{
