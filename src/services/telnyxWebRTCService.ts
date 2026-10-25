@@ -184,15 +184,22 @@ class TelnyxWebRTCService {
     }
 
     try {
-      const assignmentSnap = await getDoc(doc(db, 'telnyx_agent_assignments', currentUser.uid));
-      const assignment = assignmentSnap.exists() ? assignmentSnap.data() : null;
-      let credentialId = String(assignment?.telnyxCredentialId || '').trim();
+      // Read the user's own profile first because existing production Firestore
+      // rules already allow self-read. Admin Hub keeps this field synchronized.
+      const profileSnap = await getDoc(doc(db, 'users', currentUser.uid));
+      const profile = profileSnap.exists() ? profileSnap.data() : {};
+      let credentialId = String(profile?.assignedSipCredentialId || '').trim();
 
-      // Legacy fallback only for existing explicit profile assignments.
-      if (!credentialId) {
-        const profileSnap = await getDoc(doc(db, 'users', currentUser.uid));
-        const profile = profileSnap.exists() ? profileSnap.data() : {};
-        credentialId = String(profile?.assignedSipCredentialId || '').trim();
+      // Prefer the authoritative assignment document when readable. During a
+      // rules rollout, a denied self-read must not prevent using the synchronized
+      // profile assignment; the backend independently validates the assignment.
+      try {
+        const assignmentSnap = await getDoc(doc(db, 'telnyx_agent_assignments', currentUser.uid));
+        const assignment = assignmentSnap.exists() ? assignmentSnap.data() : null;
+        const assignedId = String(assignment?.telnyxCredentialId || '').trim();
+        if (assignedId) credentialId = assignedId;
+      } catch (assignmentReadError: any) {
+        console.warn('[TelnyxWebRTC] No se pudo leer el documento de asignación directamente; usando el perfil sincronizado.', assignmentReadError?.code || '');
       }
 
       if (!credentialId) {
