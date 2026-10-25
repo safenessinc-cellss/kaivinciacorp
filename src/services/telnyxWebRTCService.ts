@@ -17,7 +17,7 @@ export let TELNYX_WEBRTC_LOGIN_TOKEN = '';
  */
 export function normalizeTelnyxE164(value: unknown, label = 'Número'): string {
   const raw = String(value ?? '').trim();
-  const digits = raw.replace(/\\D/g, '');
+  const digits = raw.replace(/\D/g, '');
   let normalized = '';
 
   if (raw.startsWith('+')) {
@@ -30,7 +30,7 @@ export function normalizeTelnyxE164(value: unknown, label = 'Número'): string {
     throw new Error(`${label}: introduce un número válido en formato internacional (E.164), por ejemplo +12132288500.`);
   }
 
-  if (!/^\\+[1-9]\\d{7,14}$/.test(normalized)) {
+  if (!/^\+[1-9]\d{7,14}$/.test(normalized)) {
     throw new Error(`${label}: formato no válido. Usa el formato internacional E.164, por ejemplo +12132288500.`);
   }
   return normalized;
@@ -42,7 +42,7 @@ export function normalizeTelnyxE164(value: unknown, label = 'Número'): string {
  */
 export function validateTelnyxCallerId(value: unknown): string {
   const callerId = normalizeTelnyxE164(value, 'Caller ID');
-  if (/^\\+1\\d{3}55501\\d{2}$/.test(callerId)) {
+  if (/^\+1\d{3}55501\d{2}$/.test(callerId)) {
     throw new Error('El Caller ID seleccionado es un número de prueba/ficticio (555-0100 a 555-0199). Selecciona un número real, activo y autorizado en Telnyx.');
   }
   return callerId;
