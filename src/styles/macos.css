@@ -264,3 +264,15 @@
   --material-sidebar: var(--mac-bg-sidebar);
   --material-popover: var(--mac-bg-popover);
 }
+
+.macos-window table thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--mac-bg-toolbar);
+  backdrop-filter: blur(18px) saturate(180%);
+}
+.macos-window table tbody tr:nth-child(even) { background: rgba(127,127,140,.045); }
+.macos-window table tbody tr:hover { background: color-mix(in srgb, var(--mac-accent) 8%, transparent); }
+.macos-window table tbody tr[aria-selected="true"] { background: color-mix(in srgb, var(--mac-accent) 20%, transparent); }
+.macos-window table :is(th, td) { font-variant-numeric: tabular-nums; }
