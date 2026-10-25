@@ -207,7 +207,11 @@ service cloud.firestore {
     }
 
     match /telnyx_agent_assignments/{assignmentId} {
-      allow read: if isSuperAdmin() || isAdmin() || (isApproved() && hasPermission('dialer') && existing().get('agentUid', '') == request.auth.uid);
+      // An agent can read only their own assignment document (document ID = UID).
+      // Admin Hub remains the only client-side writer.
+      allow read: if isSuperAdmin() || isAdmin() ||
+        (isApproved() && hasPermission('dialer') &&
+          (assignmentId == request.auth.uid || existing().get('agentUid', '') == request.auth.uid));
       allow write: if isSuperAdmin();
     }
 
@@ -216,6 +220,12 @@ service cloud.firestore {
         (isApproved() && existing().get('assignedTo', '') == request.auth.uid);
       // Credential assignment lifecycle is server-only to avoid race conditions.
       allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Token generation errors are written only by trusted server code using Admin SDK.
+    match /telnyx_token_errors/{errorId} {
+      allow read: if isAdmin();
+      allow create, update, delete: if false;
     }
 
     match /esim_profiles/{profileId} {
