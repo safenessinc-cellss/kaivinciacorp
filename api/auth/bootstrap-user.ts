@@ -62,8 +62,14 @@ export default async function handler(req: any, res: any) {
     const existing = snap.data() || {};
     // Existing SuperAdmin roles are server-managed records, not user-editable
     // profile fields. Preserve and repair these accounts instead of demoting them.
-    const firestoreRole = String(existing.role || '').toLowerCase();
-    const registeredSuperAdmin = firestoreRole === 'superadmin' || firestoreRole === 'superuser';
+    const firestoreRole = String(existing.role || '').trim().toLowerCase();
+    // Honor every already-registered SuperAdmin marker in the trusted profile,
+    // even when status is pending/active or Auth custom claims have gone stale.
+    const registeredSuperAdmin =
+      firestoreRole === 'superadmin' ||
+      firestoreRole === 'superuser' ||
+      existing.isSuperAdmin === true ||
+      existing.isSuperadmin === true;
     const shouldBeSuperAdmin = allowlistedSuperAdmin || registeredSuperAdmin || authAlreadySuperAdmin;
 
     if (shouldBeSuperAdmin) {
