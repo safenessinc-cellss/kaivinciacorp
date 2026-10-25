@@ -20,9 +20,11 @@ async function main() {
     let nextStatus = String(user.status || '').toLowerCase();
     let nextRole = String(user.role || 'none').toLowerCase();
     if (SUPERADMINS.has(email)) { nextStatus = 'approved'; nextRole = 'superadmin'; }
-    else if (nextStatus !== 'approved') { nextStatus = 'pending'; }
-    else if (nextStatus === 'active' || !nextStatus) { nextStatus = 'pending'; }
-    const changed = user.status !== nextStatus || (SUPERADMINS.has(email) && user.role !== 'superadmin');
+    else {
+      if (nextStatus !== 'approved' || user.role === 'superadmin') nextStatus = 'pending';
+      if (nextRole === 'superadmin') nextRole = 'none';
+    }
+    const changed = user.status !== nextStatus || user.role !== nextRole;
     if (!changed) continue;
     console.log(`user ${userDoc.id}: ${user.status || '(missing)'} -> ${nextStatus}`);
     if (APPLY) {
