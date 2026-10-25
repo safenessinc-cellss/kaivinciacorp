@@ -36,9 +36,12 @@ export default async function handler(req: any, res: any) {
   if (snap.exists) {
     const existing = snap.data() || {};
     // Migración acotada: solo una cuenta configurada explícitamente puede conservar el acceso administrativo.
-    if (configuredSuperAdmin && (existing.role === 'superadmin' || existing.role === 'admin') && existing.status !== 'approved') {
-      await userRef.update({ status: 'approved', lastLogin: FieldValue.serverTimestamp() });
-      return sendJson(res, 200, { user: { ...existing, status: 'approved' } });
+    if (configuredSuperAdmin && (
+      (existing.role !== 'superadmin' && existing.role !== 'admin') || existing.status !== 'approved'
+    )) {
+      const role = existing.role === 'admin' ? 'admin' : 'superadmin';
+      await userRef.update({ role, status: 'approved', lastLogin: FieldValue.serverTimestamp() });
+      return sendJson(res, 200, { user: { ...existing, role, status: 'approved' } });
     }
     await userRef.update({ lastLogin: FieldValue.serverTimestamp() }).catch(() => undefined);
     return sendJson(res, 200, { user: existing });
