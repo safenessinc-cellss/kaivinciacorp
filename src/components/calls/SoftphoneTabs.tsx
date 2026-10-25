@@ -25,7 +25,7 @@ export default function SoftphoneTabs({
   const showSettings = ['admin', 'superadmin', 'owner', 'ceo', 'gestor', 'supervisor'].includes(String(role || '').toLowerCase());
 
   return (
-    <div className="flex items-center justify-between bg-white/70 p-1 rounded-2xl border border-black/10 mb-3 shadow-sm">
+    <div className="flex items-center justify-between bg-slate-900/90 p-1 rounded-2xl border border-slate-800/80 mb-3 shadow-inner">
       <div className={`grid ${showSettings ? "grid-cols-3" : "grid-cols-2"} gap-1 w-full`}>
         {/* Pestaña 1: Marcador */}
         <button
@@ -33,8 +33,8 @@ export default function SoftphoneTabs({
           onClick={() => onTabChange('dialer')}
           className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'dialer'
-              ? 'bg-white text-black shadow-sm'
-              : 'text-[#3C3C43]/70 hover:bg-black/5'
+              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-black shadow-[0_0_12px_rgba(0,240,255,0.3)]'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
           }`}
         >
           <Phone className={`w-3.5 h-3.5 ${activeTab === 'dialer' ? 'fill-current' : ''}`} />
