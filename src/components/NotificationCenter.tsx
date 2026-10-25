@@ -108,9 +108,35 @@ export default function NotificationCenter() {
       });
     };
 
+    const qAccountNotifications = query(
+      collection(db, 'notifications'),
+      where('ownerId', '==', uid),
+      orderBy('createdAt', 'desc'),
+      limit(20)
+    );
+    const unsubAccountNotifications = onSnapshot(qAccountNotifications, (snapshot) => {
+      const accountNotifications = snapshot.docs.map((item) => {
+        const data = item.data();
+        const createdAt = data.createdAt?.toDate
+          ? data.createdAt.toDate().toISOString()
+          : data.createdAt || new Date().toISOString();
+        return {
+          id: item.id,
+          type: 'approval',
+          title: data.title || 'Aviso de cuenta',
+          message: data.message || '',
+          priority: data.priority || 'medium',
+          timestamp: createdAt,
+          path: data.path || '/crm/dashboard',
+        };
+      });
+      updateNotifications('approval', accountNotifications);
+    }, (error) => handleFirestoreError(error, OperationType.GET, 'notifications'));
+
     return () => {
       unsubTasks();
       unsubMessages();
+      unsubAccountNotifications();
     };
   }, [user, authLoading]);
 
@@ -167,10 +193,10 @@ export default function NotificationCenter() {
                     >
                       <div className={`mt-0.5 rounded-full p-1.5 ${
                         notif.priority === 'high' ? 'bg-red-100 text-red-600' : 
-                        notif.type === 'message' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'
+                        notif.type === 'message' ? 'bg-blue-100 text-blue-600' : notif.type === 'approval' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-600'
                       }`}>
                         {notif.priority === 'high' ? <AlertTriangle className="w-4 h-4" /> : 
-                         notif.type === 'message' ? <MessageSquare className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                         notif.type === 'message' ? <MessageSquare className="w-4 h-4" /> : notif.type === 'approval' ? <CheckCircle2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start mb-0.5">
