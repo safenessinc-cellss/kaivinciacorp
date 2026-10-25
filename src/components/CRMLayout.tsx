@@ -476,7 +476,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
+        <header className="h-16 border-b flex items-center justify-between px-6 shrink-0 z-10 shadow-sm ios-glass" style={{ backgroundColor: "var(--color-header-bg)", color: "var(--color-text-primary)", borderColor: "color-mix(in srgb, var(--color-secondary) 55%, transparent)" }}>
           <div className="flex flex-1 items-center gap-4">
             <button 
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
