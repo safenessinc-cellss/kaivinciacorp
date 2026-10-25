@@ -176,17 +176,34 @@ export default function SuperAdmin() {
 
   const updateUserStatus = async (userId: string, status: string) => {
     try {
-      await updateDoc(doc(db, 'users', userId), { status });
+      const target = users.find((item) => item.id === userId);
+      if (status === 'approved' && (!target || !target.role || target.role === 'none')) {
+        triggerFeedback('Asigna un rol antes de aprobar la cuenta.');
+        return;
+      }
+      const changes: Record<string, any> = { status };
+      if (status === 'approved') {
+        changes.approvedBy = auth.currentUser?.uid || '';
+        changes.approvedAt = serverTimestamp();
+        changes.rejectionReason = '';
+        changes.rejectedBy = '';
+        changes.rejectedAt = null;
+      } else if (status === 'rejected') {
+        changes.rejectionReason = 'La solicitud fue rechazada por un administrador.';
+        changes.rejectedBy = auth.currentUser?.uid || '';
+        changes.rejectedAt = serverTimestamp();
+      }
+      await updateDoc(doc(db, 'users', userId), changes);
       await addDoc(collection(db, 'audit_logs'), {
-        userId: 'system_superadmin',
-        action: 'UPDATE_USER_STATUS',
+        userId: auth.currentUser?.uid || 'system_superadmin',
+        action: status === 'approved' ? 'APPROVE_USER' : status === 'rejected' ? 'REJECT_USER' : 'UPDATE_USER_STATUS',
         resourceType: 'User',
         resourceId: userId,
         details: `Estado actualizado a ${status}`,
         timestamp: serverTimestamp(),
         ipAddress: '127.0.0.1'
       });
-      triggerFeedback(`Estado de usuario actualizado a "${status}".`);
+      triggerFeedback(status === 'approved' ? 'Cuenta aprobada correctamente.' : status === 'rejected' ? 'Solicitud rechazada.' : `Estado actualizado a "${status}".`);
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `users/${userId}`);
     }
@@ -226,7 +243,6 @@ export default function SuperAdmin() {
 
       await updateDoc(doc(db, 'users', userId), { 
         permissions: newPerms,
-        status: 'active'
       });
 
       await addDoc(collection(db, 'audit_logs'), {
@@ -553,16 +569,16 @@ export default function SuperAdmin() {
                             value={user.status || 'pending'}
                             onChange={(e) => updateUserStatus(user.id, e.target.value)}
                             className={`text-[11px] border-0 rounded-full px-3 py-1 font-bold ${
-                              user.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 
+                              user.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 
                               user.status === 'suspended' ? 'bg-rose-100 text-rose-800' : 
                               user.status === 'frozen' ? 'bg-cyan-100 text-cyan-800' :
                               'bg-amber-100 text-amber-800'
                             }`}
                           >
-                            <option value="active">Activo</option>
+                            <option value="approved">Aprobado</option>
                             <option value="pending">Pendiente</option>
+                            <option value="rejected">Rechazado</option>
                             <option value="suspended">Suspendido</option>
-                            <option value="frozen">Congelado</option>
                           </select>
                         </td>
 
