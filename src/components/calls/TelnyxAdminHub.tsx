@@ -151,6 +151,14 @@ export default function TelnyxAdminHub() {
       if (snap.exists()) {
         const data = snap.data() as TelnyxGlobalConfig;
         setConfig(prev => ({ ...prev, ...data }));
+        if (data.login_token || data.webrtcJwt) {
+          void updateDoc(doc(db, 'settings', 'telnyx_config'), {
+            login_token: deleteField(),
+            webrtcJwt: deleteField()
+          }).catch((cleanupError: any) => {
+            console.warn('[TelnyxAdminHub] No se pudo retirar el JWT legado de la configuración:', cleanupError?.code || 'permission-denied');
+          });
+        }
         setConnectionIdInput(data.connectionId || DEFAULT_CONFIG.connectionId);
         setConnectionNameInput(data.connectionName || DEFAULT_CONFIG.connectionName || '');
         setConnectionTypeInput(data.connectionType || 'sip_credential');
