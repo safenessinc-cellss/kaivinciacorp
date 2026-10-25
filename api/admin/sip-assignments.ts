@@ -67,9 +67,13 @@ export default async function handler(req: any, res: any) {
 
       if (action === 'release') {
         if (!currentUid) return { released: true };
+        const existingPhone = toE164(currentAssignment.phoneNumber || credential.phoneNumber || credential.phone_number || credential.callerIdNumber || credential.caller_id_number);
+        const numberIndexRef = existingPhone ? adminDb.collection('sip_number_index').doc(existingPhone) : null;
+        const numberIndexSnap = numberIndexRef ? await tx.get(numberIndexRef) : null;
         const previousUserRef = adminDb.collection('users').doc(String(currentUid));
         const previousUserSnap = await tx.get(previousUserRef);
         tx.delete(assignmentRef);
+        if (numberIndexRef && numberIndexSnap?.exists && numberIndexSnap.data()?.credentialId === credentialId) tx.delete(numberIndexRef);
         tx.update(credentialRef, { assignedTo: null, assignmentUpdatedAt: FieldValue.serverTimestamp() });
         if (previousUserSnap.exists) {
           tx.update(previousUserRef, {
@@ -108,7 +112,18 @@ export default async function handler(req: any, res: any) {
       if (!phoneNumber) {
         throw Object.assign(new Error('CALLER_ID_NOT_CONFIGURED'), { code: 'CALLER_ID_NOT_CONFIGURED' });
       }
+      const numberIndexRef = adminDb.collection('sip_number_index').doc(phoneNumber);
+      const numberIndexSnap = await tx.get(numberIndexRef);
+      if (numberIndexSnap.exists) {
+        const numberIndex = numberIndexSnap.data() || {};
+        if (numberIndex.credentialId !== credentialId && numberIndex.assignedTo !== uid) {
+          const otherUserSnap = numberIndex.assignedTo ? await tx.get(adminDb.collection('users').doc(String(numberIndex.assignedTo))) : null;
+          const otherUser = otherUserSnap?.exists ? otherUserSnap.data() || {} : {};
+          throw Object.assign(new Error('NUMBER_ALREADY_ASSIGNED'), { code: 'NUMBER_ALREADY_ASSIGNED', assignedName: otherUser.name || otherUser.email || numberIndex.assignedName || 'otro agente' });
+        }
+      }
       const assignedName = target.name || target.displayName || target.email || uid;
+      tx.set(numberIndexRef, { phoneNumber, credentialId, assignedTo: uid, assignedName, updatedAt: FieldValue.serverTimestamp() });
       tx.set(assignmentRef, {
         credentialId, assignedTo: uid, assignedName, phoneNumber,
         assignedBy: actor.uid, assignedAt: FieldValue.serverTimestamp()
