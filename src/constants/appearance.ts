@@ -53,11 +53,11 @@ export const DEFAULT_APPEARANCE: AppearanceSettings = {
 export function applyAppearanceToDOM(settings: AppearanceSettings): void {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
-  root.style.setProperty('--color-primary', settings.colors.primary);
-  root.style.setProperty('--color-primary-hover', settings.colors.hover);
-  root.style.setProperty('--color-primary-light', settings.colors.light);
-  root.style.setProperty('--color-accent', settings.colors.accent);
-  root.style.setProperty('--color-accent-light', settings.colors.accentLight);
+  root.style.setProperty('--color-primary', 'var(--mac-accent, ' + settings.colors.primary + ')');
+  root.style.setProperty('--color-primary-hover', 'var(--mac-accent-hover, ' + settings.colors.hover + ')');
+  root.style.setProperty('--color-primary-light', 'var(--mac-accent-soft, ' + settings.colors.light + ')');
+  root.style.setProperty('--color-accent', 'var(--mac-accent, ' + settings.colors.accent + ')');
+  root.style.setProperty('--color-accent-light', 'var(--mac-accent-soft, ' + settings.colors.accentLight + ')');
   root.style.setProperty('--color-bg', settings.mode === 'dark' ? '#0F172A' : settings.colors.background);
   root.style.setProperty('--radius-base', settings.radius + 'px');
   const sp = settings.density === 'compact' ? '0.5rem' : settings.density === 'comfortable' ? '1.5rem' : '1rem';
