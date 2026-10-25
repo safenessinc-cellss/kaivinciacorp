@@ -14,26 +14,38 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("role", "none");
     }
 
-    function isAdmin() {
-      return isAuthenticated() && (
-        request.auth.token.email in ["safeness.c.a@gmail.com", "deuwyrobert@gmail.com"] ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         userRole() in ["admin", "superadmin", "ceo", "gestor"])
-      );
-    }
-
-    function isSuperAdmin() {
-      return isAuthenticated() && (
-        request.auth.token.email in ["safeness.c.a@gmail.com", "deuwyrobert@gmail.com"] ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         userRole() in ["superadmin", "admin"])
-      );
+    function hasUserProfile() {
+      return isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
     function isApproved() {
-      return isAuthenticated() &&
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("status", "approved") == "approved";
+      return hasUserProfile() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("status", "pending") == "approved";
+    }
+
+    function userRole() {
+      return hasUserProfile()
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("role", "none")
+        : "none";
+    }
+
+    function isSuperAdmin() {
+      return isApproved() && (
+        request.auth.token.role == "superadmin" ||
+        userRole() == "superadmin"
+      );
+    }
+
+    function isAdmin() {
+      return isApproved() && (
+        isSuperAdmin() || userRole() in ["admin", "ceo", "gestor"]
+      );
+    }
+
+    function hasPermission(permissionKey) {
+      return isSuperAdmin() ||
+        (isApproved() &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("permissions", {}).get(permissionKey, false) == true);
     }
 
     function isUser(userId) {
@@ -76,14 +88,24 @@ service cloud.firestore {
     // Users
     // ===============================================================
     match /users/{userId} {
-      allow read:   if isAuthenticated() && (isUser(userId) || isAdmin());
-      allow create: if isAdmin();
-      allow update: if isAdmin() || (
-        isUser(userId) &&
+      allow read: if isAuthenticated() && (isUser(userId) || isAdmin());
+      // Only trusted server APIs may create profiles or change approval/role/permissions.
+      allow create: if false;
+      allow update: if isUser(userId) && isApproved() &&
         !request.resource.data.diff(resource.data).affectedKeys()
-          .hasAny(['role', 'status', 'permissions', 'uid'])
-      );
-      allow delete: if isAdmin();
+          .hasAny(['role', 'status', 'permissions', 'uid', 'assignedCallerId', 'assignedSipCredentialId']);
+      allow delete: if isSuperAdmin();
+    }
+
+    match /sip_assignments/{credentialId} {
+      allow read: if isSuperAdmin() || isAdmin() ||
+        (isApproved() && resource.data.get('assignedTo', '') == request.auth.uid);
+      allow create, update, delete: if false;
+    }
+
+    match /audit_logs/{auditId} {
+      allow read: if isSuperAdmin();
+      allow create, update, delete: if false;
     }
 
     match /user_sessions/{sessionId} {
@@ -190,14 +212,10 @@ service cloud.firestore {
     }
 
     match /telnyx_sip_credentials/{sipId} {
-      allow read: if isAdmin() || (isApproved() && existing().get('assignedTo', '') == request.auth.uid);
-      allow create: if isAdmin() && incoming().get('assignedTo', null) == null;
-      allow update: if isAdmin() && (
-        existing().get('assignedTo', null) == null ||
-        incoming().get('assignedTo', null) == null ||
-        isSuperAdmin()
-      );
-      allow delete: if isAdmin();
+      allow read: if isSuperAdmin() || isAdmin() ||
+        (isApproved() && existing().get('assignedTo', '') == request.auth.uid);
+      // Credential assignment lifecycle is server-only to avoid race conditions.
+      allow create, update, delete: if isSuperAdmin();
     }
 
     match /esim_profiles/{profileId} {
