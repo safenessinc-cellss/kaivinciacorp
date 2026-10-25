@@ -481,7 +481,16 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
+        <div className="macos-menubar flex h-8 shrink-0 items-center gap-5 px-4 text-[11px]" role="menubar" aria-label="Menú global">
+          <span className="font-semibold" style={{ color: 'var(--mac-text-primary)' }}>Kaivincia</span>
+          <nav className="hidden sm:flex items-center gap-4" aria-label="Menú de aplicación">
+            <span>Archivo</span><span>Editar</span><span>Ver</span><span>Ventana</span><span>Ayuda</span>
+          </nav>
+          <span className="ml-auto inline-flex items-center gap-1.5" title="Estado de interfaz">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" /> Sesión
+          </span>
+        </div>
+        <header className="macos-toolbar h-16 border-b flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
           <div className="flex flex-1 items-center gap-4">
             <button 
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
