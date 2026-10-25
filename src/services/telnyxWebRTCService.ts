@@ -4,7 +4,7 @@
  * Documentación oficial: https://developers.telnyx.com/docs/webrtc
  */
 
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { TelnyxRTC } from '@telnyx/webrtc';
 
@@ -81,31 +81,6 @@ class TelnyxWebRTCService {
 
   private listeners: Array<(state: TelnyxWebRTCState) => void> = [];
 
-  constructor() {
-    this.initTokenSync();
-  }
-
-  /**
-   * Sincroniza el login_token (JWT) desde Firestore (settings/telnyx_config)
-   */
-  private initTokenSync() {
-    try {
-      onSnapshot(doc(db, 'settings', 'telnyx_config'), (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          const token = (data.login_token || data.webrtcJwt || '').trim();
-          if (token && token !== this.state.loginToken) {
-            this.setLoginToken(token, false);
-          }
-        }
-      }, (err) => {
-        console.warn('[TelnyxWebRTC] No se pudo sincronizar login_token desde Firestore:', err);
-      });
-    } catch (err) {
-      console.warn('[TelnyxWebRTC] Error al inicializar listener de Firestore:', err);
-    }
-  }
-
   /**
    * Actualiza el login_token (JWT) en memoria y opcionalmente en Firestore
    */
@@ -153,7 +128,7 @@ class TelnyxWebRTCService {
       }
 
       if (data.token) {
-        await this.setLoginToken(data.token, true);
+        await this.setLoginToken(data.token, false);
         await this.initClient(data.token);
         return {
           success: true,
@@ -203,7 +178,7 @@ class TelnyxWebRTCService {
     }
 
     try {
-      console.log('[TelnyxWebRTC] Inicializando TelnyxRTC con login_token:', `${token.slice(0, 15)}...${token.slice(-10)}`);
+      console.log('[TelnyxWebRTC] Inicializando cliente TelnyxRTC con token de sesión temporal.');
 
       // Desconectar cliente existente antes de crear uno nuevo
       if (this.client) {
@@ -364,6 +339,6 @@ class TelnyxWebRTCService {
 
 export const telnyxWebRTCService = new TelnyxWebRTCService();
 
-export const updateTelnyxLoginToken = (jwt: string, persistToFirestore = true) => {
+export const updateTelnyxLoginToken = (jwt: string, persistToFirestore = false) => {
   return telnyxWebRTCService.setLoginToken(jwt, persistToFirestore);
 };
