@@ -169,7 +169,7 @@ export default function AccessControl() {
                 <select id="base-role" value={roleDraft} onChange={e => setRoleDraft(e.target.value)} disabled={busy || !isSystemOwner || selected.role === 'superadmin'} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">
                   {['none','user','agente','tlmk','sales','supervisor','gestor','rrhh','collaborator','admin','ceo','alumno','superadmin'].map(role => <option key={role} value={role}>{role}</option>)}
                 </select>
-                <button onClick={() => void saveRole()} disabled={busy || !isSystemOwner || selected.role === 'superadmin' || roleDraft === selected.role className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold disabled:opacity-40">Guardar rol</button>
+                <button onClick={() => void saveRole()} disabled={busy || !isSystemOwner || selected.role === 'superadmin' || roleDraft === selected.role} className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold disabled:opacity-40">Guardar rol</button>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => void changeStatus('approved')} disabled={busy || !isSystemOwner || selected.status === 'approved' || selected.role === 'superadmin'} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"><ShieldCheck size={16}/> Aprobar</button>
