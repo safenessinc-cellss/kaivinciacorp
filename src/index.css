@@ -31,8 +31,22 @@
 
 @theme {
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, sans-serif;
+  --font-serif: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif;
   --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, monospace;
   --color-primary: var(--mac-accent);
+  /* Preserve the app's existing Tailwind semantic color utilities. */
+  --color-secondary: var(--mac-text-secondary);
+  --color-background: var(--mac-bg-window);
+  --color-surface: var(--mac-material-window);
+  --color-text-primary: var(--mac-text-primary);
+  --color-text-secondary: var(--mac-text-secondary);
+  --color-sidebar-bg: var(--mac-material-sidebar);
+  --color-sidebar-text: var(--mac-text-primary);
+  --color-sidebar-active: var(--mac-accent);
+  --color-header-bg: var(--mac-bg-toolbar);
+  --color-cyber-dark: var(--mac-bg-window);
+  --color-cyber-glass: var(--mac-material-window);
+  --color-cyber-border: var(--mac-border);
 }
 
 :root[data-macos-theme="dark"] {
@@ -450,3 +464,15 @@ table, .tabular-nums, [data-numeric="true"] { font-variant-numeric: tabular-nums
 @media (max-width: 900px) {
   .mac-sidebar, .mac-main { height: 100dvh !important; }
 }
+
+/* Compatibility aliases for components that still use the legacy design utilities. */
+.glass-panel {
+  background: var(--mac-material-window) !important;
+  color: var(--mac-text-primary);
+  border: 1px solid var(--mac-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 28px rgba(25,30,45,.07) !important;
+  -webkit-backdrop-filter: blur(var(--mac-material-blur)) saturate(180%);
+  backdrop-filter: blur(var(--mac-material-blur)) saturate(180%);
+}
+.glow-primary { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--mac-accent) 38%, transparent)); }
