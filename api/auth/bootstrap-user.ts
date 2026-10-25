@@ -41,19 +41,23 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const isSuperAdmin = SUPERADMINS.includes(decoded.email || '');
+  const isSuperAdmin = SUPERADMINS.includes(String(decoded.email || '').toLowerCase());
   const profile = {
     uid: decoded.uid,
     name: decoded.name || (decoded.email || '').split('@')[0] || 'Usuario',
     email: decoded.email || null,
     role: isSuperAdmin ? 'superadmin' : 'none',
-    status: isSuperAdmin ? 'active' : 'pending',
+    status: isSuperAdmin ? 'approved' : 'pending',
+    permissions: {},
     avatarUrl: decoded.picture || '',
     createdAt: new Date().toISOString(),
     lastLogin: FieldValue.serverTimestamp(),
   };
 
-  await userRef.set(profile, { merge: true });
+  await userRef.set(profile, { merge: false });
+  if (isSuperAdmin) {
+    await adminAuth.setCustomUserClaims(decoded.uid, { role: 'superadmin' });
+  }
   res.statusCode = 201;
   res.setHeader('Content-Type', 'application/json');
   res.end(JSON.stringify({ user: profile }));
