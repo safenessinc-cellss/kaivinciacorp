@@ -67,6 +67,8 @@ export default function TelnyxAdminHub() {
     lastError: null as string | null
   });
   const [tokenErrorRecords, setTokenErrorRecords] = useState<any[]>([]);
+  const [phoneDiagnosticResult, setPhoneDiagnosticResult] = useState<any | null>(null);
+  const [isRunningPhoneDiagnostic, setIsRunningPhoneDiagnostic] = useState(false);
   const [tokenDiagnosticMessage, setTokenDiagnosticMessage] = useState<{ success: boolean; message: string } | null>(null);
 
   const loadTokenErrors = useCallback(async () => {
@@ -1921,6 +1923,35 @@ export default function TelnyxAdminHub() {
               </div>
               <button
                 type="button"
+                disabled={isRunningPhoneDiagnostic}
+                onClick={async () => {
+                  if (isRunningPhoneDiagnostic) return;
+                  setIsRunningPhoneDiagnostic(true);
+                  setPhoneDiagnosticResult(null);
+                  try {
+                    const currentUser = getAuth().currentUser;
+                    if (!currentUser) throw new Error('Inicia sesión para ejecutar el diagnóstico.');
+                    const idToken = await currentUser.getIdToken();
+                    const response = await fetch('/api/telnyx/diagnose', {
+                      method: 'POST',
+                      headers: { Authorization: `Bearer ${idToken}` }
+                    });
+                    const data = await response.json().catch(() => ({}));
+                    setPhoneDiagnosticResult({ ...data, httpStatus: response.status });
+                    await loadTokenErrors();
+                  } catch (error: any) {
+                    setPhoneDiagnosticResult({ message: error?.message || 'No se pudo completar el diagnóstico.', checks: [] });
+                  } finally {
+                    setIsRunningPhoneDiagnostic(false);
+                  }
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-black text-slate-900 disabled:opacity-50"
+              >
+                <Activity className={`h-4 w-4 ${isRunningPhoneDiagnostic ? 'animate-pulse' : ''}`} />
+                {isRunningPhoneDiagnostic ? 'Verificando…' : 'Ejecutar diagnóstico'}
+              </button>
+              <button
+                type="button"
                 disabled={isGeneratingBackendToken}
                 onClick={async () => {
                   setIsGeneratingBackendToken(true);
@@ -1950,6 +1981,23 @@ export default function TelnyxAdminHub() {
                 {isGeneratingBackendToken ? 'Generando…' : 'Regenerar token'}
               </button>
             </div>
+
+            {phoneDiagnosticResult && (
+              <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-2" aria-live="polite">
+                <div className="flex items-center justify-between gap-2">
+                  <strong className="text-sm text-slate-900">Diagnóstico de conexión</strong>
+                  <span className="text-xs text-slate-500">{phoneDiagnosticResult.httpStatus ? `HTTP ${phoneDiagnosticResult.httpStatus}` : 'Sin respuesta'}</span>
+                </div>
+                {(phoneDiagnosticResult.checks || []).map((check: any) => (
+                  <div key={check.id} className="flex items-start gap-2 text-xs">
+                    <span className={check.ok ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>{check.ok ? '✓' : '✕'}</span>
+                    <div><strong className="text-slate-900">{check.label}</strong>{check.detail && <p className="text-slate-500">{check.detail}</p>}</div>
+                  </div>
+                ))}
+                {phoneDiagnosticResult.message && <p className="text-sm text-red-700">{phoneDiagnosticResult.message}</p>}
+                <p className="text-[11px] text-slate-500">No se realizó ninguna llamada de prueba. Si no tienes una línea SIP asignada a tu usuario, ejecuta el diagnóstico desde el softphone de una cuenta asignada.</p>
+              </div>
+            )}
 
             {tokenDiagnosticMessage && (
               <div className={`rounded-xl border p-3 text-xs ${tokenDiagnosticMessage.success ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-rose-500/30 bg-rose-500/10 text-rose-300'}`}>
