@@ -104,6 +104,7 @@ class TelnyxWebRTCService {
   private refreshInProgress = false;
   private pendingTokenRefresh = false;
   private tokenRequestPromise: Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> | null = null;
+  private tokenRequestKey: string | null = null;
   private tokenRequestAbortController: AbortController | null = null;
 
   private listeners: Array<(state: TelnyxWebRTCState) => void> = [];
@@ -126,13 +127,18 @@ class TelnyxWebRTCService {
   public requestToken(credentialId: string): Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> {
     // Single-flight: multiple UI events reuse the same request and cannot mint
     // parallel sessions for one user.
-    if (this.tokenRequestPromise) return this.tokenRequestPromise;
+    const requestKey = `${auth.currentUser?.uid || 'anonymous'}:${credentialId}`;
+    if (this.tokenRequestPromise && this.tokenRequestKey === requestKey) return this.tokenRequestPromise;
     this.tokenRequestAbortController?.abort();
     const controller = new AbortController();
     this.tokenRequestAbortController = controller;
+    this.tokenRequestKey = requestKey;
     const pending = this.performTokenRequest(credentialId, controller.signal).finally(() => {
       if (this.tokenRequestAbortController === controller) this.tokenRequestAbortController = null;
-      if (this.tokenRequestPromise === pending) this.tokenRequestPromise = null;
+      if (this.tokenRequestPromise === pending) {
+        this.tokenRequestPromise = null;
+        this.tokenRequestKey = null;
+      }
     });
     this.tokenRequestPromise = pending;
     return pending;
