@@ -37,14 +37,26 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const email = String(decoded.email || '').trim().toLowerCase();
-  const allowlistedSuperAdmin = SUPERADMINS.has(email);
-  // Preserve existing Firebase Auth superadmins even if their Firestore profile is stale.
+  // Prefer the authoritative Firebase Auth user record over token claims, which may be stale.
   const authRecord = await adminAuth.getUser(decoded.uid);
+  const email = String(authRecord.email || decoded.email || '').trim().toLowerCase();
+  const allowlistedSuperAdmin = SUPERADMINS.has(email);
   const authRole = String(authRecord.customClaims?.role || '').toLowerCase();
   const authAlreadySuperAdmin = authRole === 'superadmin' || authRole === 'superuser' || authRecord.customClaims?.isSuperAdmin === true;
   const userRef = adminDb.collection('users').doc(decoded.uid);
   const snap = await userRef.get();
+
+  // Emit a minimal decision trace to diagnose approval mismatches without logging tokens or secrets.
+  console.info('[bootstrap-user] access decision', {
+    uid: decoded.uid,
+    email,
+    allowlistedSuperAdmin,
+    profileExists: snap.exists,
+    profileRole: snap.exists ? String(snap.data()?.role || '') : null,
+    profileStatus: snap.exists ? String(snap.data()?.status || '') : null,
+    authRole: authRole || null,
+    firebaseProject: process.env.FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT || 'service-account-configured',
+  });
 
   if (snap.exists) {
     const existing = snap.data() || {};
@@ -91,6 +103,23 @@ export default async function handler(req: any, res: any) {
       existing.role = 'superadmin';
       existing.status = 'approved';
       existing.permissions = existing.permissions || {};
+
+      // Return the persisted server-side profile, not only the in-memory repaired object.
+      const verifiedProfile = await userRef.get();
+      if (!verifiedProfile.exists || verifiedProfile.data()?.status !== 'approved' || verifiedProfile.data()?.role !== 'superadmin') {
+        console.error('[bootstrap-user] owner profile repair verification failed', {
+          uid: decoded.uid,
+          email,
+          profileExists: verifiedProfile.exists,
+          profileRole: verifiedProfile.data()?.role || null,
+          profileStatus: verifiedProfile.data()?.status || null,
+        });
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'No se pudo verificar la reparación del perfil SuperAdmin.' }));
+        return;
+      }
+      Object.assign(existing, verifiedProfile.data());
     } else if (existing.status === 'active') {
       const before = { status: existing.status || null, role: existing.role || null };
       await userRef.set({
