@@ -5,6 +5,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 // without a code change through SUPERADMIN_EMAILS (comma-separated).
 const SUPERADMINS = new Set([
   'safeness.c.a@gmail.com',
+  'safeness.ca@gmail.com',
   ...(process.env.SUPERADMIN_EMAILS || '')
     .split(',')
     .map((e) => e.trim().toLowerCase())
