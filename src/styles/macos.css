@@ -31,7 +31,7 @@
 :root[data-mac-accent="pink"] { --mac-accent:#FF2D55; --mac-accent-hover:#e01e45; }
 :root[data-mac-accent="red"] { --mac-accent:#FF3B30; --mac-accent-hover:#dc2e25; }
 :root[data-mac-accent="orange"] { --mac-accent:#FF9500; --mac-accent-hover:#d97e00; }
-:root[data-mac-accent="yellow"] { --mac-accent:#b88700; --mac-accent-hover:#946c00; }
+:root[data-mac-accent="yellow"] { --mac-accent:#FFCC00; --mac-accent-hover:#d9a900; }
 :root[data-mac-accent="green"] { --mac-accent:#34C759; --mac-accent-hover:#229b40; }
 :root[data-mac-accent="mint"] { --mac-accent:#00C7BE; --mac-accent-hover:#009e97; }
 :root[data-mac-accent="teal"] { --mac-accent:#30B0C7; --mac-accent-hover:#258a9c; }
@@ -246,3 +246,5 @@
 .macos-menubar nav span:hover { color: var(--mac-text-primary); }
 :root[data-reduce-transparency="true"] .macos-menubar { background: #fff; backdrop-filter: none; }
 :root[data-mac-appearance="dark"][data-reduce-transparency="true"] .macos-menubar { background: #1e1e1e; }
+
+:root[data-mac-accent="yellow"] .macos-button-primary { color: #1d1d1f; }
