@@ -1,173 +1,83 @@
 import { adminDb } from '../server/_lib/firebaseAdmin.js';
+import { authorizeRequest, sendAuthError } from '../server/_lib/authorizeRequest.js';
 import { TelnyxBackendService } from '../server/telnyxBackend.js';
 
 export default async function handler(req: any, res: any) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
-
   if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
-  if (req.method !== 'GET') {
-    res.statusCode = 405;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Method Not Allowed' }));
-    return;
-  }
+  if (req.method !== 'GET') { res.statusCode = 405; res.end(JSON.stringify({ error: 'Method Not Allowed' })); return; }
+
+  const auth = await authorizeRequest(req, ['superadmin', 'admin', 'owner', 'supervisor', 'tlmk', 'ventas', 'agente', 'agent']);
+  if (!auth.ok) return sendAuthError(res, auth);
 
   try {
-    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
-    const authUser = await TelnyxBackendService.verifyAuthToken(authHeader);
-
-    if (!authUser?.uid) {
-      res.statusCode = 401;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'No autorizado. Se requiere token de Firebase.' }));
-      return;
+    const operatorRef = adminDb.collection('operadores').doc(auth.uid);
+    const operatorSnap = await operatorRef.get();
+    if (!operatorSnap.exists) {
+      res.statusCode = 403; res.end(JSON.stringify({ error: 'No existe una asignación de telefonía para este usuario. Solicita al administrador que la configure.' })); return;
+    }
+    const operator: any = operatorSnap.data() || {};
+    if (operator.activo === false || operator.permiteSalientes === false) {
+      res.statusCode = 403; res.end(JSON.stringify({ error: 'Tu cuenta no tiene habilitadas las llamadas salientes.' })); return;
+    }
+    if (operator.horario && !verificarHorario(operator.horario)) {
+      res.statusCode = 403; res.end(JSON.stringify({ error: 'Fuera del horario laboral autorizado.' })); return;
+    }
+    if (!operator.telnyxCredentialId) {
+      res.statusCode = 409; res.end(JSON.stringify({ error: 'No hay una credencial SIP asignada. Solicita una asignación al administrador.' })); return;
     }
 
-    console.log('[telnyx-token] Usuario autenticado:', authUser.uid, authUser.email);
-
-    const db = adminDb;
-    const operadorDoc = await db.collection('operadores').doc(authUser.uid).get();
-
-    let operadorData: any;
-    let credentialId: string;
-    let sipUsername: string;
-
-    if (!operadorDoc.exists) {
-      console.log('[telnyx-token] Operador no existe, creando...');
-      const connectionId = (req.query?.connectionId as string) || process.env.TELNYX_CONNECTION_ID || '';
-      const credential = await TelnyxBackendService.getOrCreateTelephonyCredential(authUser.uid, connectionId);
-
-      operadorData = {
-        id: authUser.uid,
-        email: authUser.email || '',
-        nombre: authUser.email?.split('@')[0] || 'Operador',
-        rol: 'agente',
-        telnyxCredentialId: credential.id,
-        telnyxUsername: credential.sip_username,
-        numerosAsignados: [],
-        horario: {
-          inicio: '00:00',
-          fin: '23:59',
-          zonaHoraria: 'America/Los_Angeles',
-          diasLaborables: ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'],
-        },
-        disponible: false,
-        enLlamada: false,
-        permiteSalientes: true,
-        permiteEntrantes: true,
-        activo: true,
-        creadoEn: new Date().toISOString(),
-      };
-
-      await db.collection('operadores').doc(authUser.uid).set(operadorData);
-      credentialId = credential.id;
-      sipUsername = credential.sip_username;
-    } else {
-      operadorData = operadorDoc.data();
-      credentialId = operadorData.telnyxCredentialId;
-      sipUsername = operadorData.telnyxUsername;
-
-      if (!credentialId) {
-        console.log('[telnyx-token] Operador sin credencial, creando...');
-        const connectionId = (req.query?.connectionId as string) || process.env.TELNYX_CONNECTION_ID || '';
-        const credential = await TelnyxBackendService.getOrCreateTelephonyCredential(authUser.uid, connectionId);
-        credentialId = credential.id;
-        sipUsername = credential.sip_username;
-
-        await db.collection('operadores').doc(authUser.uid).update({
-          telnyxCredentialId: credentialId,
-          telnyxUsername: sipUsername,
-          actualizadoEn: new Date().toISOString(),
-        });
-      }
+    const credentialId = String(operator.telnyxCredentialId);
+    const connectionId = String(operator.connectionId || process.env.TELNYX_CONNECTION_ID || '');
+    const sipUsername = String(operator.telnyxUsername || '');
+    if (!connectionId || !sipUsername) {
+      res.statusCode = 409; res.end(JSON.stringify({ error: 'La asignación SIP está incompleta; verifica conexión y usuario SIP.' })); return;
     }
 
-    if (operadorData.rol !== 'admin' && operadorData.rol !== 'supervisor') {
-      const enHorario = verificarHorario(operadorData.horario);
-      if (!enHorario) {
-        res.statusCode = 403;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({
-          error: 'Fuera de horario laboral. Contacta a tu supervisor.',
-          horario: operadorData.horario,
-        }));
-        return;
-      }
-    }
-
-    if (operadorData.activo === false) {
-      res.statusCode = 403;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'Cuenta desactivada. Contacta al administrador.' }));
-      return;
-    }
-
-    console.log('[telnyx-token] Generando JWT para credencial:', credentialId);
     const token = await TelnyxBackendService.generateAgentJwt(credentialId);
+    const numbers: any[] = [];
+    for (const numberId of (Array.isArray(operator.numerosAsignados) ? operator.numerosAsignados : [])) {
+      const numberSnap = await adminDb.collection('telnyx_phone_numbers').doc(String(numberId)).get();
+      if (numberSnap.exists) {
+        const number: any = numberSnap.data() || {};
+        if (number.status !== 'disabled' && number.phoneNumber) numbers.push({ id: numberSnap.id, ...number });
+      }
+    }
 
-    await db.collection('operadores').doc(authUser.uid).update({
-      disponible: true,
-      ultimaActividad: new Date().toISOString(),
+    const now = new Date().toISOString();
+    await operatorRef.set({ disponible: true, ultimaActividad: now }, { merge: true });
+    await adminDb.collection('security_audit').add({
+      action: 'telnyx.webrtc_token.issued', actorUid: auth.uid, role: auth.role,
+      credentialId, connectionId, createdAt: now,
     });
 
-    const numerosAsignados: any[] = [];
-    if (operadorData.numerosAsignados && operadorData.numerosAsignados.length > 0) {
-      for (const numId of operadorData.numerosAsignados) {
-        const numDoc = await db.collection('telnyx_phone_numbers').doc(numId).get();
-        if (numDoc.exists) {
-          numerosAsignados.push({ id: numDoc.id, ...numDoc.data() });
-        }
-      }
-    }
-
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
+    res.statusCode = 200; res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({
-      token,
-      sipUsername,
-      credentialId,
-      connectionId: process.env.TELNYX_CONNECTION_ID || '',
-      operador: {
-        uid: authUser.uid,
-        nombre: operadorData.nombre,
-        rol: operadorData.rol,
-        horario: operadorData.horario,
-      },
-      numerosAsignados,
-      allowedNumbers: numerosAsignados.map((n) => n.phoneNumber),
+      token, sipUsername, credentialId, connectionId,
+      operador: { uid: auth.uid, nombre: operator.nombre || auth.profile.name || '', rol: auth.role, horario: operator.horario || null },
+      numerosAsignados: numbers, allowedNumbers: numbers.map(n => n.phoneNumber),
     }));
-  } catch (err: any) {
-    console.error('[API /api/telnyx-token] Error:', err);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: err.message || 'Error interno al generar credenciales de Telnyx' }));
+  } catch (error) {
+    console.error('[api/telnyx-token] token generation failed');
+    res.statusCode = 500; res.end(JSON.stringify({ error: 'No se pudo generar la sesión de telefonía.' }));
   }
 }
 
 function verificarHorario(horario: any): boolean {
-  if (!horario || !horario.inicio || !horario.fin) return true;
   try {
-    const zonaHoraria = horario.zonaHoraria || 'America/Los_Angeles';
-    const ahora = new Date().toLocaleString('en-US', { timeZone: zonaHoraria });
-    const fecha = new Date(ahora);
-    const horaActual = fecha.getHours() * 60 + fecha.getMinutes();
-    const [inicioH, inicioM] = horario.inicio.split(':').map(Number);
-    const [finH, finM] = horario.fin.split(':').map(Number);
-    const horaInicio = inicioH * 60 + inicioM;
-    const horaFin = finH * 60 + finM;
-
-    if (horario.diasLaborables && Array.isArray(horario.diasLaborables)) {
-      const diasMap = ['dom', 'lun', 'mar', 'mie', 'jue', 'vie', 'sab'];
-      const diaActual = diasMap[fecha.getDay()];
-      if (!horario.diasLaborables.includes(diaActual)) return false;
+    if (!horario?.inicio || !horario?.fin) return true;
+    const zone = horario.zonaHoraria || 'America/Sao_Paulo';
+    const parts = new Intl.DateTimeFormat('en-US', { timeZone: zone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' }).formatToParts(new Date());
+    const value = (type: string) => parts.find(p => p.type === type)?.value || '';
+    const minutes = Number(value('hour')) * 60 + Number(value('minute'));
+    const [sh, sm] = String(horario.inicio).split(':').map(Number);
+    const [eh, em] = String(horario.fin).split(':').map(Number);
+    const start = sh * 60 + sm, end = eh * 60 + em;
+    if (Array.isArray(horario.diasLaborables)) {
+      const days: Record<string, string> = { Sun: 'dom', Mon: 'lun', Tue: 'mar', Wed: 'mie', Thu: 'jue', Fri: 'vie', Sat: 'sab' };
+      if (!horario.diasLaborables.includes(days[value('weekday')])) return false;
     }
-
-    if (horaFin < horaInicio) return horaActual >= horaInicio || horaActual <= horaFin;
-    return horaActual >= horaInicio && horaActual <= horaFin;
-  } catch (err) {
-    console.error('[verificarHorario] Error:', err);
-    return true;
-  }
+    return end < start ? minutes >= start || minutes <= end : minutes >= start && minutes <= end;
+  } catch { return false; }
 }
