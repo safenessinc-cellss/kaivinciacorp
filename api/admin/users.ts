@@ -112,7 +112,8 @@ export default async function handler(req: any, res: any) {
     });
     if (action === 'role') {
       // Keep Firebase's role claim synchronized with the authoritative Firestore profile.
-      await adminAuth.setCustomUserClaims(uid, { role: String(role) });
+      const authRecord = await adminAuth.getUser(uid);
+      await adminAuth.setCustomUserClaims(uid, { ...(authRecord.customClaims || {}), role: String(role) });
     }
     json(res, 200, { ok: true, ...result });
   } catch (error: any) {
