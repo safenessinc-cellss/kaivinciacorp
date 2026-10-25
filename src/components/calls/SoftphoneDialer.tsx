@@ -852,7 +852,7 @@ export default function SoftphoneDialer({
     if (!root) return;
     const labelButtons = () => {
       root.querySelectorAll<HTMLButtonElement>('button:not([aria-label])').forEach((button) => {
-        const label = button.getAttribute('title') || button.innerText?.replace(/\\s+/g, ' ').trim() || 'Control del teléfono';
+        const label = button.getAttribute('title') || button.innerText?.replace(/\s+/g, ' ').trim() || 'Control del teléfono';
         button.setAttribute('aria-label', label);
       });
     };
