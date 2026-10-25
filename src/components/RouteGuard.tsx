@@ -5,13 +5,19 @@ import { AppPermission, usePermissions } from '../hooks/usePermissions';
 import PendingApproval from '../pages/PendingApproval';
 
 const ROUTE_PERMISSIONS: Record<string, AppPermission> = {
-  dashboard: 'dashboard', pipeline: 'tlmk_sales', calls: 'dialer',
-  cobranza: 'collections', recruitment: 'talent', payroll: 'payroll',
-  accounting: 'accounting', billing: 'billing', marketing: 'marketing',
-  projects: 'projects', reports: 'reports', 'academy-internal': 'academy',
-  team: 'team_management', calendar: 'calendar', chat: 'chat',
-  clients: 'clients', operations: 'operations', 'call-center': 'call_center',
-  integrations: 'integrations', drive: 'documents', audits: 'audits'
+  dashboard: 'dashboard', 'strategic-report': 'reports', clients: 'clients',
+  pipeline: 'tlmk_sales', tasks: 'operations', calendar: 'calendar', chat: 'chat',
+  cobranza: 'collections', 'call-center': 'call_center', automations: 'operations',
+  'form-templates': 'operations', integrations: 'integrations',
+  'academy-internal': 'academy', 'academy-external': 'academy',
+  'digital-products': 'academy', calls: 'dialer', recruitment: 'talent',
+  team: 'team_management', payroll: 'payroll', accounting: 'accounting',
+  'client-management': 'clients', billing: 'billing', operations: 'operations',
+  marketing: 'marketing', projects: 'projects', reports: 'reports',
+  commissions: 'billing', tactical: 'operations', manuales: 'documents',
+  turs: 'operations', helpdesk: 'chat', drive: 'documents', audits: 'audits',
+  nervous: 'dashboard', 'strategy-blog': 'reports', 'client-portal': 'clients',
+  'user-portal': 'academy'
 };
 
 export default function RouteGuard({ children }: { children: React.ReactNode }) {
@@ -24,14 +30,18 @@ export default function RouteGuard({ children }: { children: React.ReactNode }) 
   if (!userData || String(userData.status || '').toLowerCase() !== 'approved') return <PendingApproval />;
 
   const path = location.pathname.replace(/^\/crm\//, '');
-  if (path === 'access-denied') return <>{children}</>;
+  if (path === '' || path === 'access-denied') return <>{children}</>;
+
+  const role = String(userData.role || '').toLowerCase();
   if (path === 'superadmin' || path === 'access-control' || path === 'security') {
-    if (String(userData.role || '').toLowerCase() !== 'superadmin') {
-      return <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
-    }
+    if (role !== 'superadmin') return <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
   }
+  if (path === 'appearance' && !['superadmin', 'admin'].includes(role)) {
+    return <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
+  }
+
   const permission = ROUTE_PERMISSIONS[path.split('/')[0]];
-  if (permission && !hasPermission(permission)) {
+  if (!permission || !hasPermission(permission)) {
     return <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
   }
   return <>{children}</>;
