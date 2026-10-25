@@ -30,7 +30,7 @@ export default function RouteGuard({ children }: { children: React.ReactNode }) 
       return <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
     }
   }
-  const permission = ROUTE_PERMISSIONS[path];
+  const permission = ROUTE_PERMISSIONS[path.split('/')[0]];
   if (permission && !hasPermission(permission)) {
     return <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
   }
