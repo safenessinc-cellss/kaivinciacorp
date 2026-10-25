@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth } from '../firebase';
-import { usePermissions } from '../hooks/usePermissions';
+import { usePermissions, type AppPermission } from '../hooks/usePermissions';
 import { signOut } from 'firebase/auth';
 import { LOGO_FULL, LOGO_ICON } from '../constants/images';
 import CommandBar from './CommandBar';
@@ -22,7 +22,7 @@ import LanguageSelector from './LanguageSelector';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAppearance } from '../contexts/AppearanceContext';
 
-const PERMISSION_FOR_PATH: Record<string, string> = {
+const PERMISSION_FOR_PATH: Record<string, AppPermission> = {
   '/crm/dashboard': 'dashboard', '/crm/pipeline': 'tlmk_sales', '/crm/calls': 'dialer',
   '/crm/cobranza': 'collections', '/crm/recruitment': 'talent', '/crm/payroll': 'payroll',
   '/crm/accounting': 'accounting', '/crm/billing': 'billing', '/crm/marketing': 'marketing',
