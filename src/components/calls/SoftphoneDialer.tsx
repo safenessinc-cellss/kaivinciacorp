@@ -690,6 +690,11 @@ export default function SoftphoneDialer({
       showToast('⚠️ No hay Caller ID seleccionado. Sincroniza números desde Telnyx en el admin.');
       return;
     }
+    const normalizedCallerId = String(selectedCallerId).replace(/[^0-9+]/g, '');
+    if (!/^[+][1-9][0-9]{7,14}$/.test(normalizedCallerId) || !authorizedCallerIds.includes(selectedCallerId)) {
+      showToast('El Caller ID no tiene formato internacional válido o no está autorizado para este agente.');
+      return;
+    }
 
     currentCallStartedAtRef.current = new Date().toISOString();
     setCallStatus('calling');
@@ -713,6 +718,28 @@ export default function SoftphoneDialer({
       try {
         console.log(`[SoftphoneDialer] Llamando vía Telnyx SDK a ${dialNum} con Caller ID ${selectedCallerId}`);
         const call = await telnyxWebRTCService.makeCall(dialNum, selectedCallerId);
+        const activeCallId = call?.id || call?.callID || call?.callId;
+        if (!activeCallId) throw new Error('Telnyx no devolvió un ID de llamada; no se puede verificar su estado.');
+        let unsubscribeCallUpdates = () => {};
+        unsubscribeCallUpdates = telnyxWebRTCService.subscribeCallUpdates((updatedCall: any) => {
+          const updatedCallId = updatedCall?.id || updatedCall?.callID || updatedCall?.callId;
+          if (!updatedCallId || updatedCallId !== activeCallId) return;
+          const state = String(updatedCall?.state || '').toLowerCase();
+          if (state === 'ringing') {
+            startRingback();
+            setCallStatus('calling');
+          } else if (state === 'active' || state === 'answered') {
+            stopRingback();
+            playConnectBeep();
+            setCallStatus('connected');
+            if (!callDurationIntervalRef.current) {
+              callDurationIntervalRef.current = setInterval(() => setDuration(prev => prev + 1), 1000);
+            }
+          } else if (['hangup', 'destroy', 'purge', 'failed', 'error'].includes(state)) {
+            unsubscribeCallUpdates();
+            handleHangup();
+          }
+        });
         setSipLogs(prev => [
           `[${new Date().toLocaleTimeString()}] ✅ Llamada Telnyx iniciada (ID: ${call?.id || 'unknown'})`,
           `[${new Date().toLocaleTimeString()}] Caller ID: ${selectedCallerId}`,
