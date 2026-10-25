@@ -41,7 +41,8 @@ export default async function handler(req: any, res: any) {
     // SuperAdmin may be repaired to approved; everyone else is moved to pending.
     if (allowlistedSuperAdmin && (existing.status !== 'approved' || existing.role !== 'superadmin')) {
       await userRef.set({ role: 'superadmin', status: 'approved', permissions: existing.permissions || {}, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-      await adminAuth.setCustomUserClaims(decoded.uid, { role: 'superadmin' });
+      const authRecord = await adminAuth.getUser(decoded.uid);
+      await adminAuth.setCustomUserClaims(decoded.uid, { ...(authRecord.customClaims || {}), role: 'superadmin' });
       await adminDb.collection('audit_logs').add({
         action: 'user.superadmin.bootstrap_repaired', actorUid: 'system-bootstrap',
         targetUid: decoded.uid, targetEmail: decoded.email || null,
@@ -82,7 +83,8 @@ export default async function handler(req: any, res: any) {
 
   await userRef.set(profile, { merge: false });
   if (isSuperAdmin) {
-    await adminAuth.setCustomUserClaims(decoded.uid, { role: 'superadmin' });
+    const authRecord = await adminAuth.getUser(decoded.uid);
+    await adminAuth.setCustomUserClaims(decoded.uid, { ...(authRecord.customClaims || {}), role: 'superadmin' });
   }
   res.statusCode = 201;
   res.setHeader('Content-Type', 'application/json');
