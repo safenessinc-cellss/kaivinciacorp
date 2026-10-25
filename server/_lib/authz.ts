@@ -45,8 +45,8 @@ export async function requireApprovedUser(req: any, res: any, superadminOnly = f
     return null;
   }
 
-  const role = String(data.role || decoded.role || 'none').toLowerCase();
-  const isSuperAdmin = role === 'superadmin' || decoded.role === 'superadmin';
+  const role = decoded.role === 'superadmin' ? 'superadmin' : String(data.role || decoded.role || 'none').toLowerCase();
+  const isSuperAdmin = role === 'superadmin';
   if (superadminOnly && !isSuperAdmin) {
     json(res, 403, { error: 'SUPERADMIN_REQUIRED', message: 'Solo el SuperAdmin puede realizar esta operación.' });
     return null;
