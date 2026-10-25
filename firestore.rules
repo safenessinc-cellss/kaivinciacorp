@@ -443,6 +443,12 @@ service cloud.firestore {
       allow read, write: if isSuperAdmin();
     }
 
+    match /telnyx_token_errors/{errorId} {
+      // Error records are written only by the trusted Firebase Admin SDK.
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // ===============================================================
     // Deny-all
     // ===============================================================
