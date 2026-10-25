@@ -626,6 +626,26 @@ export default function SoftphoneDialer({
     timeoutsRef.current.push(resetTimeout);
   }, [duration, phoneNumber, selectedClientName, selectedCallerId, activeCarrierObj, selectedProject, isRecording, agentAssignment, onCallEnd, stopRingback, clearAllTimeouts, playHangupBeep, user]);
 
+  // Reflect real SDK call states; never mark a Telnyx call connected on a timer.
+  useEffect(() => {
+    if (rtcState.callStatus === 'connected' && callStatus !== 'connected') {
+      stopRingback();
+      setIsOnHold(false);
+      setCallStatus('connected');
+      playConnectBeep();
+      if (!callDurationIntervalRef.current) {
+        callDurationIntervalRef.current = setInterval(() => setDuration(prev => prev + 1), 1000);
+      }
+    } else if (rtcState.callStatus === 'calling' && callStatus === 'idle') {
+      setCallStatus('calling');
+    } else if (rtcState.callStatus === 'on_hold' && callStatus !== 'on_hold') {
+      setIsOnHold(true);
+      setCallStatus('on_hold');
+    } else if (rtcState.callStatus === 'ended' && callStatus !== 'idle' && callStatus !== 'ended') {
+      handleHangup();
+    }
+  }, [rtcState.callStatus, callStatus, stopRingback, playConnectBeep, handleHangup]);
+
   const handleStartCall = async (targetPhone?: string) => {
     let dialNum = targetPhone || phoneNumber;
     if (!dialNum || dialNum.trim().length === 0) return;
