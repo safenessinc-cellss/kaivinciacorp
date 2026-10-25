@@ -1,6 +1,8 @@
 name: Softphone and RBAC validation
 
 on:
+  push:
+    branches: [security/approval-rbac-telnyx]
   pull_request:
     branches: [main]
     paths:
