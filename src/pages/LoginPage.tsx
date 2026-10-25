@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../firebase';
 import { LOGO_FULL } from '../constants/images';
-import { ShieldCheck } from 'lucide-react';
 
 export default function LoginPage() {
   const [error, setError] = useState('');
