@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Palette, Save, RotateCcw, Check, Sun, Moon, Sparkles } from 'lucide-react';
+import MacAppearanceSettings from './MacAppearanceSettings';
 import {
   PREDEFINED_PALETTES,
   DEFAULT_APPEARANCE,
@@ -54,7 +55,8 @@ export default function ThemeModule({ initial, onSave, autoApplyDefault = true }
   };
 
   return (
-    <div className="space-y-6 p-6 bg-white rounded-lg border">
+    <div className="mac-theme-module space-y-6 p-6 bg-white rounded-lg border">
+      <MacAppearanceSettings />
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
