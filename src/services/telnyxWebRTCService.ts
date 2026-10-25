@@ -41,10 +41,13 @@ function explainTokenError(codeValue: unknown, status = 0): string {
   if (['NO_SIP', 'SIP_ASSIGNMENT_REQUIRED', 'SIP_ASSIGNMENT_INVALID'].includes(code)) {
     return 'No tienes una línea telefónica asignada. Pide a tu administrador que te asigne una.';
   }
+  if (['API_KEY_INVALID', 'TELNYX_TOKEN_FAILED', 'TELNYX_CREDENTIAL_MISSING'].includes(code)) {
+    return 'La conexión con Telnyx no está configurada correctamente. Contacta al administrador.';
+  }
   if (['NO_AUTH', 'UNAUTHENTICATED', 'INVALID_TOKEN', 'AUTHENTICATION_REQUIRED'].includes(code) || status === 401) {
     return 'Tu sesión ha caducado. Vuelve a iniciar sesión.';
   }
-  if (['API_KEY_INVALID', 'TELNYX_TOKEN_FAILED', 'TELNYX_CREDENTIAL_MISSING'].includes(code) || status === 403 || status === 404) {
+  if (status === 403 || status === 404) {
     return 'La conexión con Telnyx no está configurada correctamente. Contacta al administrador.';
   }
   if (['TELNYX_DOWN', 'TOKEN_DIAGNOSTICS_FAILED'].includes(code) || status >= 500) {
