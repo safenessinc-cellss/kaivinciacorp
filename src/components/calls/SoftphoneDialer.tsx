@@ -209,6 +209,9 @@ export default function SoftphoneDialer({
           console.log('[SoftphoneDialer] Cliente Telnyx inicializado con credencial asignada.');
         } else {
           console.warn('[SoftphoneDialer] No se pudo inicializar Telnyx:', result.message);
+          if (/número de origen no está configurado|asignación de telefonía no coincide/i.test(result.message)) {
+            showToast(result.message);
+          }
         }
       } catch (err: any) {
         console.error('[SoftphoneDialer] Error inicializando Telnyx:', err);
