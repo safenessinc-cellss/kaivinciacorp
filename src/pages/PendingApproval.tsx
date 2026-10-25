@@ -5,6 +5,7 @@ import { Clock, LogOut, ShieldAlert, Mail } from 'lucide-react';
 export default function PendingApproval() {
   const { userData, signOut, user } = useAuth();
   const status = String((userData as any)?.status || 'pending').toLowerCase();
+  const isDenied = ['blocked', 'rejected', 'suspended'].includes(status);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -16,11 +17,11 @@ export default function PendingApproval() {
         </div>
 
         <h1 className="text-xl font-bold text-gray-900 text-center mb-2">
-          {status === 'blocked' || status === 'rejected' ? 'Acceso denegado' : 'Cuenta pendiente de aprobación'}
+          {isDenied ? 'Acceso denegado' : 'Cuenta pendiente de aprobación'}
         </h1>
         <p className="text-sm text-gray-600 text-center mb-6">
-          {status === 'blocked' || status === 'rejected'
-            ? <>El acceso de <span className="text-blue-700 font-mono">{user?.email}</span> está bloqueado. Contacta al SuperAdmin si crees que se trata de un error.</>
+          {isDenied
+            ? <>El acceso de <span className="text-blue-700 font-mono">{user?.email}</span> está suspendido o rechazado. Contacta al SuperAdmin si crees que se trata de un error.</>
             : <>Tu cuenta <span className="text-blue-700 font-mono">{user?.email}</span> ha sido creada, pero aún requiere aprobación explícita del SuperAdmin.</>}
         </p>
 
@@ -44,6 +45,8 @@ export default function PendingApproval() {
         </p>
 
         <button
+          type="button"
+          aria-label="Cerrar sesión"
           onClick={() => signOut()}
           className="w-full px-4 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
         >

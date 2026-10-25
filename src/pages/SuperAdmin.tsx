@@ -175,7 +175,17 @@ export default function SuperAdmin() {
 
   const updateUserStatus = async (userId: string, status: string) => {
     try {
-      await updateDoc(doc(db, 'users', userId), { status });
+      const targetUser = users.find((item: any) => item.id === userId);
+      const update: Record<string, any> = { status };
+      if (status === 'approved') {
+        const existingRole = String(targetUser?.role || '').toLowerCase();
+        // Preserve an assigned business role (e.g. TLMK/Sales); only give the
+        // standard agent role when the profile has no usable role yet.
+        if (!existingRole || ['none', 'pending'].includes(existingRole)) update.role = 'agent';
+        update.approvedBy = auth.currentUser?.uid || user?.uid || 'superadmin';
+        update.approvedAt = serverTimestamp();
+      }
+      await updateDoc(doc(db, 'users', userId), update);
       await addDoc(collection(db, 'audit_logs'), {
         userId: 'system_superadmin',
         action: 'UPDATE_USER_STATUS',

@@ -105,7 +105,9 @@ export default function App() {
 
         unsubscribeProfile = onSnapshot(doc(db, 'users', currentUser.uid), (snap) => {
           if (cancelled) return;
-          const snapshotProfile = snap.exists() ? { ...snap.data(), uid: currentUser.uid } : null;
+          const snapshotProfile: (Record<string, any> & { uid: string }) | null = snap.exists()
+            ? { ...(snap.data() as Record<string, any>), uid: currentUser.uid }
+            : null;
           const verifiedProfile = bootstrapResult?.user && bootstrapResult.user.uid === currentUser.uid
             ? { ...bootstrapResult.user, uid: currentUser.uid }
             : null;

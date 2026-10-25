@@ -4,9 +4,10 @@
  * Documentación oficial: https://developers.telnyx.com/docs/webrtc
  */
 
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { TelnyxRTC } from '@telnyx/webrtc';
+import { formatPhoneE164 } from '../utils/phone';
 
 // Token JWT por defecto para inicialización del SDK de Telnyx WebRTC
 export let TELNYX_WEBRTC_LOGIN_TOKEN = '';
@@ -16,24 +17,11 @@ export let TELNYX_WEBRTC_LOGIN_TOKEN = '';
  * 10 dígitos nacionales o 11 empezando por 1; otros países deben incluir +.
  */
 export function normalizeTelnyxE164(value: unknown, label = 'Número'): string {
-  const raw = String(value ?? '').trim();
-  const digits = raw.replace(/\D/g, '');
-  let normalized = '';
-
-  if (raw.startsWith('+')) {
-    normalized = `+${digits}`;
-  } else if (digits.length === 10) {
-    normalized = `+1${digits}`;
-  } else if (digits.length === 11 && digits.startsWith('1')) {
-    normalized = `+${digits}`;
-  } else {
-    throw new Error(`${label}: introduce un número válido en formato internacional (E.164), por ejemplo +12132288500.`);
+  try {
+    return formatPhoneE164(value, 'MX');
+  } catch {
+    throw new Error(`${label}: introduce un número válido en formato internacional E.164, por ejemplo +525512345678.`);
   }
-
-  if (!/^\+[1-9]\d{7,14}$/.test(normalized)) {
-    throw new Error(`${label}: formato no válido. Usa el formato internacional E.164, por ejemplo +12132288500.`);
-  }
-  return normalized;
 }
 
 /**
@@ -46,6 +34,29 @@ export function validateTelnyxCallerId(value: unknown): string {
     throw new Error('El Caller ID seleccionado es un número de prueba/ficticio (555-0100 a 555-0199). Selecciona un número real, activo y autorizado en Telnyx.');
   }
   return callerId;
+}
+
+function explainTokenError(codeValue: unknown, status = 0): string {
+  const code = String(codeValue || '').toUpperCase();
+  if (['NO_SIP', 'SIP_ASSIGNMENT_REQUIRED', 'SIP_ASSIGNMENT_INVALID'].includes(code)) {
+    return 'No tienes una línea telefónica asignada. Pide a tu administrador que te asigne una.';
+  }
+  if (['API_KEY_INVALID', 'TELNYX_TOKEN_FAILED', 'TELNYX_CREDENTIAL_MISSING'].includes(code)) {
+    return 'La conexión con Telnyx no está configurada correctamente. Contacta al administrador.';
+  }
+  if (['NO_AUTH', 'UNAUTHENTICATED', 'INVALID_TOKEN', 'AUTHENTICATION_REQUIRED'].includes(code) || status === 401) {
+    return 'Tu sesión ha caducado. Vuelve a iniciar sesión.';
+  }
+  if (status === 403 || status === 404) {
+    return 'La conexión con Telnyx no está configurada correctamente. Contacta al administrador.';
+  }
+  if (['TELNYX_DOWN', 'TOKEN_DIAGNOSTICS_FAILED'].includes(code) || status >= 500) {
+    return 'El servicio de telefonía está tardando. Vuelve a intentar en unos segundos.';
+  }
+  if (status === 0 || code === 'NETWORK') {
+    return 'Parece que no tienes internet. Verifica tu conexión y vuelve a intentar.';
+  }
+  return 'El servicio de telefonía está tardando. Vuelve a intentar en unos segundos.';
 }
 
 function explainTelnyxError(error: any): string {
@@ -70,6 +81,7 @@ export interface TelnyxWebRTCState {
   lastTokenAttemptAt: string | null;
   lastTokenCredentialId: string | null;
   lastTokenStatus: number | null;
+  callStatus: 'idle' | 'calling' | 'connected' | 'on_hold' | 'ended';
 }
 
 class TelnyxWebRTCService {
@@ -84,42 +96,55 @@ class TelnyxWebRTCService {
     tokenExpiresAt: null,
     lastTokenAttemptAt: null,
     lastTokenCredentialId: null,
-    lastTokenStatus: null
+    lastTokenStatus: null,
+    callStatus: 'idle'
   };
 
   private currentCredentialId: string | null = null;
   private refreshInProgress = false;
+  private pendingTokenRefresh = false;
+  private tokenRequestPromise: Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> | null = null;
+  private tokenRequestKey: string | null = null;
+  private tokenRequestAbortController: AbortController | null = null;
 
   private listeners: Array<(state: TelnyxWebRTCState) => void> = [];
 
   /**
-   * Actualiza el login_token (JWT) en memoria y opcionalmente en Firestore
+   * Retiene el token solo en memoria. Los JWT individuales nunca se escriben en Firestore.
+   * El parámetro legacy se mantiene para compatibilidad y se ignora.
    */
-  public async setLoginToken(newJwt: string, persistToFirestore = false): Promise<void> {
+  public async setLoginToken(newJwt: string, _persistToFirestore = false): Promise<void> {
     const cleanToken = (newJwt || '').trim();
     TELNYX_WEBRTC_LOGIN_TOKEN = cleanToken;
     this.state.loginToken = cleanToken;
     this.notify();
-
-    if (persistToFirestore && cleanToken) {
-      try {
-        await setDoc(doc(db, 'settings', 'telnyx_config'), {
-          login_token: cleanToken,
-          webrtcJwt: cleanToken,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-        console.log('[TelnyxWebRTC] login_token actualizado y persistido en Firestore (settings/telnyx_config).');
-      } catch (err) {
-        console.error('[TelnyxWebRTC] Error guardando login_token en Firestore:', err);
-      }
-    }
   }
 
   /**
    * Solicita un token al backend usando la asignación SIP del usuario autenticado.
    * No llama al endpoint si no existe una asignación SIP.
    */
-  public async requestToken(credentialId: string): Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> {
+  public requestToken(credentialId: string): Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> {
+    // Single-flight: multiple UI events reuse the same request and cannot mint
+    // parallel sessions for one user.
+    const requestKey = `${auth.currentUser?.uid || 'anonymous'}:${credentialId}`;
+    if (this.tokenRequestPromise && this.tokenRequestKey === requestKey) return this.tokenRequestPromise;
+    this.tokenRequestAbortController?.abort();
+    const controller = new AbortController();
+    this.tokenRequestAbortController = controller;
+    this.tokenRequestKey = requestKey;
+    const pending: Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> = this.performTokenRequest(credentialId, controller.signal).finally(() => {
+      if (this.tokenRequestAbortController === controller) this.tokenRequestAbortController = null;
+      if (this.tokenRequestPromise === pending) {
+        this.tokenRequestPromise = null;
+        this.tokenRequestKey = null;
+      }
+    });
+    this.tokenRequestPromise = pending;
+    return pending;
+  }
+
+  private async performTokenRequest(credentialId: string, signal: AbortSignal): Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> {
     const currentUser = auth.currentUser;
     const attemptAt = new Date().toISOString();
     this.state.lastTokenAttemptAt = attemptAt;
@@ -143,13 +168,14 @@ class TelnyxWebRTCService {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${idToken}`
         },
-        body: JSON.stringify({ credentialId })
+        body: JSON.stringify({ credentialId }),
+        signal
       });
       const data = await res.json().catch(() => ({}));
       this.state.lastTokenStatus = res.status;
 
       if (!res.ok || data.error || !data.token) {
-        const message = data.message || data.error || `HTTP ${res.status}: no se pudo generar el token.`;
+        const message = explainTokenError(data.code || data.error, res.status);
         this.state.lastError = message;
         this.state.isConnected = false;
         this.notify();
@@ -163,7 +189,7 @@ class TelnyxWebRTCService {
       this.notify();
       return { success: true, token: data.token, expiresAt: this.state.tokenExpiresAt || undefined, message: 'Token Telnyx generado correctamente.', status: res.status };
     } catch (err: any) {
-      const message = String(err?.message || 'No se pudo conectar con el servicio de telefonía.');
+      const message = explainTokenError('NETWORK', 0);
       this.state.lastError = message;
       this.state.isConnected = false;
       this.notify();
@@ -174,7 +200,7 @@ class TelnyxWebRTCService {
   /**
    * Obtiene la asignación SIP y solicita el JWT. Si no hay SIP, no llama al backend.
    */
-  public async fetchFreshTokenFromBackend(): Promise<{ success: boolean; token?: string; message: string; status?: number }> {
+  public async fetchFreshTokenFromBackend(force = false): Promise<{ success: boolean; token?: string; message: string; status?: number }> {
     const currentUser = auth.currentUser;
     if (!currentUser) {
       const message = 'Inicia sesión para conectar el softphone.';
@@ -213,6 +239,12 @@ class TelnyxWebRTCService {
         return { success: false, message, status: 0 };
       }
 
+      const tokenExpiry = this.state.tokenExpiresAt ? new Date(this.state.tokenExpiresAt).getTime() : 0;
+      if (!force && this.client && this.state.isConnected && this.currentCredentialId === credentialId &&
+          tokenExpiry > Date.now() + 60 * 60 * 1000 && this.state.loginToken) {
+        return { success: true, token: this.state.loginToken, message: 'La sesión de telefonía ya está activa.', status: this.state.lastTokenStatus || 200 };
+      }
+
       const result = await this.requestToken(credentialId);
       if (!result.success || !result.token) return result;
 
@@ -222,7 +254,7 @@ class TelnyxWebRTCService {
       }
       return { success: true, token: result.token, message: 'Token generado y softphone conectado.', status: result.status };
     } catch (err: any) {
-      const message = String(err?.message || 'No se pudo obtener la asignación SIP del usuario.');
+      const message = explainTokenError('NETWORK', 0);
       this.state.lastError = message;
       this.state.isConnected = false;
       this.notify();
@@ -239,8 +271,17 @@ class TelnyxWebRTCService {
     }
   }
 
+  public deferTokenRefreshUntilCallEnds(): void {
+    if (this.currentCall) {
+      this.pendingTokenRefresh = true;
+      return;
+    }
+    void this.refreshCurrentToken();
+  }
+
   private async refreshCurrentToken(): Promise<void> {
     if (this.refreshInProgress || !this.currentCredentialId || !this.client) return;
+    if (this.currentCall) { this.pendingTokenRefresh = true; return; }
     this.refreshInProgress = true;
     try {
       const result = await this.requestToken(this.currentCredentialId);
@@ -335,10 +376,21 @@ class TelnyxWebRTCService {
           const code = String(notification?.code || notification?.data?.code || '');
           const type = String(notification?.type || '');
           if (type === 'callUpdate') {
-            if (notification?.call) {
-              this.state.activeCallId = notification.call.id;
-              this.notify();
+            const call = notification?.call || notification?.data?.call || notification?.data;
+            if (call?.id) this.state.activeCallId = call.id;
+            const callState = String(call?.state || call?.callState || notification?.callState || '').toLowerCase();
+            if (['ringing', 'early', 'trying', 'dialing', 'new'].includes(callState)) {
+              this.state.callStatus = 'calling';
+            } else if (['active', 'connected', 'answered'].includes(callState)) {
+              this.state.callStatus = 'connected';
+            } else if (['held', 'hold', 'on_hold'].includes(callState)) {
+              this.state.callStatus = 'on_hold';
+            } else if (['hangup', 'hungup', 'destroy', 'ended', 'terminated', 'rejected', 'failed'].includes(callState)) {
+              this.state.callStatus = 'ended';
+              this.state.activeCallId = null;
+              this.currentCall = null;
             }
+            this.notify();
             return;
           }
           if (code === '34001' || type === 'TOKEN_EXPIRING_SOON') {
@@ -407,12 +459,33 @@ class TelnyxWebRTCService {
     if (!profile || String(profile.status || '').toLowerCase() !== 'approved') {
       throw new Error('Tu cuenta no está aprobada para realizar llamadas.');
     }
-    if (!profile.assignedCallerId || !profile.assignedSipCredentialId) {
-      throw new Error('Tu número de origen no está configurado. Contacta al administrador para asignarte un Caller ID real y una credencial SIP de Telnyx.');
+
+    // The assignment document is authoritative; the user profile is a legacy fallback.
+    let assignment: any = null;
+    try {
+      const assignmentSnap = await getDoc(doc(db, 'telnyx_agent_assignments', currentUser.uid));
+      if (assignmentSnap.exists()) assignment = assignmentSnap.data();
+    } catch {
+      // The token endpoint independently validates ownership before issuing a session.
     }
-    const assignedCallerId = validateTelnyxCallerId(profile.assignedCallerId);
-    if (requestedCallerId !== assignedCallerId) {
-      throw new Error('El Caller ID no coincide con el número SIP asignado a tu usuario. Solicita la asignación al SuperAdmin.');
+    const assignedCredentialId = String(assignment?.telnyxCredentialId || profile.assignedSipCredentialId || '').trim();
+    const assignedCallerIdValue = String(assignment?.defaultCallerId || profile.assignedCallerId || '').trim();
+    const allowedCallerIds = Array.isArray(assignment?.authorizedNumbers)
+      ? assignment.authorizedNumbers.map((value: unknown) => {
+          try { return validateTelnyxCallerId(value); } catch { return ''; }
+        }).filter(Boolean)
+      : [];
+
+    if (!assignedCallerIdValue || !assignedCredentialId) {
+      throw new Error('Tu línea telefónica no está configurada. Contacta al administrador para asignarte una línea SIP y un Caller ID.');
+    }
+
+    const assignedCallerId = validateTelnyxCallerId(assignedCallerIdValue);
+    if (requestedCallerId !== assignedCallerId && !allowedCallerIds.includes(requestedCallerId)) {
+      throw new Error('El Caller ID no está autorizado para tu usuario. Selecciona un número asignado por tu administrador.');
+    }
+    if (allowedCallerIds.length > 0 && !allowedCallerIds.includes(requestedCallerId)) {
+      throw new Error('El Caller ID seleccionado no está en tu lista de números autorizados.');
     }
 
     if (!this.client?.newCall) {
@@ -425,7 +498,7 @@ class TelnyxWebRTCService {
         destinationNumber: normalizedDestination,
         callerNumber: assignedCallerId,
         remoteElement: 'remote-audio',
-        clientState: btoa(JSON.stringify({ userId: currentUser.uid, sipCredentialId: profile.assignedSipCredentialId || null }))
+        clientState: btoa(JSON.stringify({ userId: currentUser.uid, sipCredentialId: assignedCredentialId || null }))
       });
     } catch (error) {
       const message = explainTelnyxError(error);
@@ -434,7 +507,10 @@ class TelnyxWebRTCService {
       throw new Error(message);
     }
 
-    console.log('[TelnyxWebRTC] Llamada creada:', this.currentCall);
+    console.log('[TelnyxWebRTC] Llamada saliente iniciada.', { callId: this.currentCall?.id || null });
+
+    this.state.callStatus = 'calling';
+    this.notify();
 
     // Guardar el ID de la llamada activa
     if (this.currentCall?.id) {
@@ -454,7 +530,12 @@ class TelnyxWebRTCService {
     }
     this.currentCall = null;
     this.state.activeCallId = null;
+    this.state.callStatus = 'idle';
     this.notify();
+    if (this.pendingTokenRefresh) {
+      this.pendingTokenRefresh = false;
+      void this.refreshCurrentToken();
+    }
   }
 
   public subscribe(listener: (state: TelnyxWebRTCState) => void): () => void {

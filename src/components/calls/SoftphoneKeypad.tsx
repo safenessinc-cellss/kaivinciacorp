@@ -7,7 +7,7 @@ interface SoftphoneKeypadProps {
 }
 
 const KEYPAD_BUTTONS = [
-  { key: '1', sub: '—' },
+  { key: '1', sub: '' },
   { key: '2', sub: 'ABC' },
   { key: '3', sub: 'DEF' },
   { key: '4', sub: 'GHI' },
@@ -16,9 +16,9 @@ const KEYPAD_BUTTONS = [
   { key: '7', sub: 'PQRS' },
   { key: '8', sub: 'TUV' },
   { key: '9', sub: 'WXYZ' },
-  { key: '*', sub: 'SEC' },
+  { key: '*', sub: '' },
   { key: '0', sub: '+' },
-  { key: '#', sub: 'HASH' },
+  { key: '#', sub: '' },
 ];
 
 export default function SoftphoneKeypad({
@@ -27,23 +27,21 @@ export default function SoftphoneKeypad({
   compact = false
 }: SoftphoneKeypadProps) {
   return (
-    <div className={`grid grid-cols-3 ${compact ? 'gap-1.5' : 'gap-2'}`}>
+    <div className={`grid grid-cols-3 justify-items-center ${compact ? 'gap-2' : 'gap-3'} py-2`} aria-label="Teclado numérico">
       {KEYPAD_BUTTONS.map((btn) => (
         <button
           key={btn.key}
           type="button"
+          aria-label={`Marcar ${btn.key}`}
           disabled={disabled}
-          onClick={() => onDigitPress(btn.key)}
-          className={`group bg-slate-900/80 hover:bg-cyan-500/10 active:bg-cyan-500/20 border border-slate-800 hover:border-cyan-500/40 rounded-xl flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 disabled:opacity-40 disabled:pointer-events-none select-none ${
-            compact ? 'py-1.5 px-1' : 'py-2 px-1.5'
-          }`}
+          onClick={() => {
+            onDigitPress(btn.key);
+            if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate?.(10);
+          }}
+          className={`softphone-key group flex flex-col items-center justify-center select-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-40 disabled:pointer-events-none ${compact ? 'h-14 w-14' : ''}`}
         >
-          <span className="text-base sm:text-lg font-mono font-bold text-white group-hover:text-cyan-400 transition-colors leading-tight">
-            {btn.key}
-          </span>
-          <span className="text-[8px] font-mono text-slate-500 group-hover:text-cyan-300/70 tracking-wider uppercase leading-none mt-0.5">
-            {btn.sub}
-          </span>
+          <span className="text-2xl font-normal leading-none">{btn.key}</span>
+          {btn.sub && <span className="softphone-muted text-[9px] font-semibold tracking-[.12em] leading-none mt-1">{btn.sub}</span>}
         </button>
       ))}
     </div>
