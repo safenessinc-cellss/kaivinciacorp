@@ -489,6 +489,8 @@ table, .tabular-nums, [data-numeric="true"] { font-variant-numeric: tabular-nums
   border-color: #1e293b !important;
   color-scheme: dark;
 }
+.mac-app-shell .softphone-legacy.text-white:not(button):not([role="button"]):not(a) { color: #fff !important; }
+.mac-app-shell .softphone-legacy button.text-white:not(.bg-blue-500):not(.bg-blue-600):not(.bg-indigo-500):not(.bg-indigo-600):not(.bg-emerald-500):not(.bg-emerald-600):not(.bg-green-600):not(.bg-red-500):not(.bg-red-600):not(.bg-rose-500):not(.bg-purple-600) { color: #fff !important; }
 .mac-app-shell .softphone-legacy [class*="bg-slate-950"] { background-color: rgba(2, 6, 23, .85) !important; }
 .mac-app-shell .softphone-legacy [class*="bg-slate-900"] { background-color: rgba(15, 23, 42, .92) !important; }
 .mac-app-shell .softphone-legacy [class*="bg-slate-800"] { background-color: rgba(30, 41, 59, .88) !important; }
