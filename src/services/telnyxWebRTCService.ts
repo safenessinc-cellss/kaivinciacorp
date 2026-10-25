@@ -133,7 +133,7 @@ class TelnyxWebRTCService {
     const controller = new AbortController();
     this.tokenRequestAbortController = controller;
     this.tokenRequestKey = requestKey;
-    const pending = this.performTokenRequest(credentialId, controller.signal).finally(() => {
+    const pending: Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> = this.performTokenRequest(credentialId, controller.signal).finally(() => {
       if (this.tokenRequestAbortController === controller) this.tokenRequestAbortController = null;
       if (this.tokenRequestPromise === pending) {
         this.tokenRequestPromise = null;
