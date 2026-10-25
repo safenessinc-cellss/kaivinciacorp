@@ -263,7 +263,7 @@ export default function SoftphoneDialer({
       isMounted = false;
       clearInterval(interval);
     };
-  }, [user, authLoading]);
+  }, [user, userData?.role, userData?.assignedCallerId, authLoading]);
 
   const handleSaveTelnyxToken = async () => {
     const token = telnyxTokenInput.trim();
@@ -352,55 +352,24 @@ export default function SoftphoneDialer({
             credentials: {
               domain: p.sipCredentials?.sipDomain || 'sip.zadarma.com',
               username: p.sipCredentials?.sipUsername || p.phone?.replace(/\D/g, '') || '345678',
-              callerId: p.phone || '+1 323 555 0122'
+              callerId: p.phone || ''
             }
           }));
         updateCombined();
       }
     }, (err) => console.warn('Could not read esim_profiles:', err));
 
-    // ── Caller IDs: privilegiados ven todos; agentes solo los asignados ──────
+    // Caller ID único: siempre procede de la asignación verificada del perfil.
     let assignmentData: any | null = null;
-    let allTelnyxNumbers: string[] = [];
     const recomputeAuthorizedCallerIds = () => {
-      const isPrivileged = isPrivilegedRole(userData?.role);
-
-      if (isPrivileged) {
-        setAuthorizedCallerIds(allTelnyxNumbers);
-        setSelectedCallerId(allTelnyxNumbers[0] || '');
-        return;
+      const assigned = String(userData?.assignedCallerId || '').trim();
+      let authorized: string[] = [];
+      if (assigned) {
+        try { authorized = [validateTelnyxCallerId(assigned)]; } catch { authorized = []; }
       }
-
-      const authorized: string[] = Array.isArray(assignmentData?.authorizedNumbers)
-        ? assignmentData.authorizedNumbers.filter(Boolean)
-        : [];
       setAuthorizedCallerIds(authorized);
-
-      const defaultId = assignmentData?.defaultCallerId;
-      if (defaultId && authorized.includes(defaultId)) {
-        setSelectedCallerId(defaultId);
-      } else {
-        setSelectedCallerId(authorized[0] || '');
-      }
+      setSelectedCallerId(current => current && authorized.includes(current) ? current : (authorized[0] || ''));
     };
-
-    const isPrivilegedUser = isPrivilegedRole(userData?.role);
-
-    let unsubNumbers: (() => void) | null = null;
-    if (isPrivilegedUser) {
-      unsubNumbers = onSnapshot(collection(db, 'telnyx_phone_numbers'), (snapshot) => {
-        const dbNumbers = snapshot.docs
-          .map(d => d.data())
-          .filter((n: any) => n.status !== 'disabled' && n.phoneNumber)
-          .map((n: any) => n.phoneNumber)
-          .filter(Boolean);
-        allTelnyxNumbers = dbNumbers;
-        recomputeAuthorizedCallerIds();
-      }, (err) => {
-        console.warn('Could not read telnyx_phone_numbers:', err);
-        recomputeAuthorizedCallerIds();
-      });
-    }
 
     const unsubAssignments = onSnapshot(collection(db, 'telnyx_agent_assignments'), (snapshot) => {
       if (!snapshot.empty) {
@@ -428,7 +397,6 @@ export default function SoftphoneDialer({
 
     return () => {
       unsubVoip(); unsubEsim(); unsubAssignments();
-      if (unsubNumbers) unsubNumbers();
     };
   }, [user, authLoading]);
 
