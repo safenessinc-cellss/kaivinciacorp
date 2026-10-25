@@ -35,14 +35,7 @@ export default function RouteGuard({ children }: RouteGuardProps) {
 
   // 4. Auth OK pero aún sin doc de perfil (bootstrap en curso)
   if (userData === null) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
-        <div className="w-12 h-12 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
-        <p className="mt-4 text-xs font-mono text-gray-700 tracking-widest uppercase">
-          Cargando perfil...
-        </p>
-      </div>
-    );
+    return <PendingApproval />;
   }
 
   // 5. No inferir aprobación a partir del rol: el estado debe ser explícito.
