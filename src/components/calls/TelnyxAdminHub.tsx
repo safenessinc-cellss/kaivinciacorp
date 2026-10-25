@@ -596,13 +596,24 @@ export default function TelnyxAdminHub() {
   // Guardar asignación de colaboradora
   const handleSaveAgentAssignment = async (agent: any, data: Partial<TelnyxAgentAssignment>) => {
     const docId = agent.id;
+    const authorizedNumbers = [...new Set((data.authorizedNumbers || []).map((value) => String(value || '').trim()))];
+    const invalidNumber = authorizedNumbers.find((value) => !/^\+[1-9]\d{7,14}$/.test(value));
+    if (invalidNumber) {
+      alert(`El Caller ID ${invalidNumber} no está en formato E.164. Usa un número autorizado con formato +[código de país][número].`);
+      return;
+    }
+    const defaultCallerId = data.defaultCallerId || authorizedNumbers[0] || '';
+    if (defaultCallerId && !authorizedNumbers.includes(defaultCallerId)) {
+      alert('El Caller ID predeterminado debe estar incluido en la lista de números autorizados.');
+      return;
+    }
     const assignmentDoc: TelnyxAgentAssignment = {
       id: docId,
       agentId: docId,
       agentName: agent.name,
       agentEmail: agent.email,
-      authorizedNumbers: data.authorizedNumbers || [],
-      defaultCallerId: data.defaultCallerId || data.authorizedNumbers?.[0] || '',
+      authorizedNumbers,
+      defaultCallerId,
       allowSharedPool: data.allowSharedPool ?? true,
       strictMode: data.strictMode ?? true,
       recordCalls: data.recordCalls ?? true,
@@ -610,7 +621,10 @@ export default function TelnyxAdminHub() {
     };
 
     try {
-      await setDoc(doc(db, 'telnyx_agent_assignments', docId), assignmentDoc);
+      // Merge is essential: handleAssignCredential stores telnyxCredentialId in
+      // this same document. Replacing the document here erased that field and
+      // made /api/telnyx-token return SIP_ASSIGNMENT_REQUIRED.
+      await setDoc(doc(db, 'telnyx_agent_assignments', docId), assignmentDoc, { merge: true });
 
       // Actualizar también en los números para reflejar a qué colaboradoras están asignados
       for (const num of phoneNumbers) {
