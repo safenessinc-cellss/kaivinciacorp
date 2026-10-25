@@ -163,3 +163,7 @@
 .ios-softphone [aria-label*="llamar" i],
 .ios-softphone [aria-label*="call" i] { background-color: #34C759; color: white; }
 .ios-softphone .ios-softphone-muted { color: #3c3c43; }
+
+:root[data-mac-density="compact"] { --mac-font-size: 12px; --mac-density: .8; }
+:root[data-mac-density="comfortable"] { --mac-font-size: 13px; --mac-density: 1; }
+@media (max-width: 640px) { .macos-app-shell { --mac-font-size: 14px; } }
