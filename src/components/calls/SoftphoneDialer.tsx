@@ -223,7 +223,7 @@ export default function SoftphoneDialer({
           setConnectionError(null);
           console.log('[SoftphoneDialer] Token obtenido y evento telnyx.ready recibido.');
         } else {
-          const noSip = /no tienes línea sip asignada/i.test(result.message);
+          const noSip = /no tienes (?:línea sip|una línea telefónica) asignada/i.test(result.message);
           setHasSipAssigned(!noSip);
           setConnectionStatus('error');
           setConnectionError(result.message);
@@ -568,8 +568,11 @@ export default function SoftphoneDialer({
     if (activeCarrierObj.type === 'sip') {
       return !!(activeCarrierObj.credentials?.username || activeCarrierObj.credentials?.domain);
     }
+    if (activeCarrierObj.id === 'telnyx' || activeCarrierObj.name.toLowerCase().includes('telnyx')) {
+      return hasSipAssigned === true;
+    }
     return true;
-  }, [activeCarrierObj]);
+  }, [activeCarrierObj, hasSipAssigned]);
 
   const handleHangup = useCallback(() => {
     stopRingback();
