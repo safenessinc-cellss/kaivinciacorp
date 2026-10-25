@@ -111,8 +111,9 @@ service cloud.firestore {
     }
 
     match /user_sessions/{sessionId} {
-      allow read:   if isAuthenticated();
-      allow create, update: if isAuthenticated();
+      allow read: if isApproved() && (isUser(resource.data.get('uid', '')) || isAdmin());
+      allow create, update: if isApproved() && request.resource.data.get('uid', request.auth.uid) == request.auth.uid;
+      allow delete: if isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -139,15 +140,15 @@ service cloud.firestore {
     }
 
     match /form_templates/{templateId} {
-      allow read:   if isAuthenticated();
-      allow create, update: if isAuthenticated();
+      allow read: if hasPermission('operations');
+      allow create, update: if isAdmin();
+      allow delete: if isSuperAdmin();
       allow delete: if isAdmin();
     }
 
     match /client_interactions/{interactionId} {
-      allow read:   if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated();
+      allow read, create, update: if hasPermission('clients');
+      allow delete: if isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -181,11 +182,11 @@ service cloud.firestore {
     // Omnicanal & VoIP
     // ===============================================================
     match /omnichannel_threads/{threadId} {
-      allow read, create, update: if isAuthenticated();
+      allow read, create, update: if hasPermission('chat');
       allow delete: if isAdmin();
 
       match /messages/{messageId} {
-        allow read, create, update: if isAuthenticated();
+        allow read, create, update: if hasPermission('chat');
         allow delete: if isAdmin();
       }
     }
@@ -219,13 +220,13 @@ service cloud.firestore {
     }
 
     match /esim_profiles/{profileId} {
-      allow read, create, update: if isAuthenticated();
-      allow delete: if isAdmin();
+      allow read: if hasPermission('dialer');
+      allow create, update, delete: if isSuperAdmin();
     }
 
     match /shared_whatsapp_chats/{chatId} {
-      allow read, create, update: if isAuthenticated();
-      allow delete: if isAdmin();
+      allow read, create, update: if hasPermission('chat');
+      allow delete: if isSuperAdmin();
     }
 
     match /company_profiles/{profileId} {
@@ -238,12 +239,14 @@ service cloud.firestore {
     }
 
     match /appointments/{appointmentId} {
-      allow read, create, update: if isAuthenticated();
+      allow read, create, update: if hasPermission('calendar');
+      allow delete: if isAdmin();
       allow delete: if isAdmin();
     }
 
     match /call_dispositions/{dispositionId} {
-      allow read, create, update: if isAuthenticated();
+      allow read, create, update: if hasPermission('dialer');
+      allow delete: if isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -267,17 +270,17 @@ service cloud.firestore {
     // B2B, suscripciones, academia
     // ===============================================================
     match /b2b_entities/{entityId} {
-      allow read:  if isAuthenticated();
+      allow read: if isApproved() && hasPermission('clients');
       allow write: if isAdmin();
     }
 
     match /subscriptions/{subId} {
-      allow read:  if isAuthenticated();
+      allow read: if isApproved() && hasPermission('billing');
       allow write: if isAdmin();
     }
 
     match /academic_progress/{progressId} {
-      allow read:  if isAuthenticated();
+      allow read: if hasPermission('academy');
       allow write: if isAdmin();
     }
 
@@ -306,14 +309,15 @@ service cloud.firestore {
     // Integraciones
     // ===============================================================
     match /integrations/{integrationId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated();
+      allow read: if hasPermission('integrations');
+      allow create, update: if isAdmin();
+      allow delete: if isSuperAdmin();
       allow delete: if isAdmin();
     }
 
     match /integration_test_logs/{logId} {
-      allow read:   if isAuthenticated();
-      allow create: if isAuthenticated();
+      allow read: if isAdmin();
+      allow create: if isAdmin();
       allow update, delete: if false;
     }
 
@@ -334,26 +338,27 @@ service cloud.firestore {
     }
 
     match /automation_rules/{ruleId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated();
+      allow read: if hasPermission('operations');
+      allow create, update: if isAdmin();
+      allow delete: if isSuperAdmin();
       allow delete: if isAdmin();
     }
 
     match /automation_logs/{logId} {
-      allow read:   if isAuthenticated();
-      allow create: if isAuthenticated();
+      allow read: if hasPermission('operations');
+      allow create: if isApproved() && hasPermission('operations');
       allow update, delete: if false;
     }
 
     match /collaborators/{collaboratorId} {
-      allow read:  if isAuthenticated();
+      allow read: if hasPermission('team_management');
       allow write: if isAdmin();
     }
 
     match /prospects/{prospectId} {
-      allow read:   if isAdmin() || existing().get('ownerId', '') == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.get('ownerId', '') == request.auth.uid;
-      allow update: if isAdmin() || existing().get('ownerId', '') == request.auth.uid;
+      allow read: if isAdmin() || (isApproved() && hasPermission('tlmk_sales') && existing().get('ownerId', '') == request.auth.uid);
+      allow create: if isApproved() && hasPermission('tlmk_sales') && request.resource.data.get('ownerId', '') == request.auth.uid;
+      allow update: if isAdmin() || (isApproved() && hasPermission('tlmk_sales') && existing().get('ownerId', '') == request.auth.uid);
       allow delete: if isAdmin();
     }
 
