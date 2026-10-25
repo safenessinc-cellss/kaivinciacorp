@@ -317,7 +317,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
         {/* Quick Access Icons */}
         {!isSidebarCollapsed && (
-          <div className="flex items-center justify-around p-3 border-b border-gray-800 shrink-0 bg-[#111]">
+          <div className="flex items-center justify-around p-3 border-b shrink-0" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-secondary)" }}>
             <Link to="/crm/chat" className="p-2 rounded-lg hover:bg-gray-800 hover:text-[#00F0FF] transition-colors relative group" title={t('nav.neural_chat', 'Chat Interno')}>
               <MessageSquare className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -380,6 +380,11 @@ export default function CRMLayout({ userData }: { userData: any }) {
                               ? 'bg-white/10 text-white border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)]' 
                               : 'text-gray-500 hover:bg-white/5 hover:text-gray-200'
                           } ${item.highlight && !isActive ? 'text-gray-300 font-bold' : ''}`}
+                          style={{
+                            backgroundColor: isActive ? 'color-mix(in srgb, var(--color-sidebar-active) 14%, transparent)' : undefined,
+                            color: isActive ? 'var(--color-sidebar-active)' : 'var(--color-sidebar-text)',
+                            borderColor: isActive ? 'color-mix(in srgb, var(--color-sidebar-active) 35%, transparent)' : 'transparent'
+                          }}
                         >
                           <item.icon className={`${!isSidebarCollapsed ? 'mr-3' : ''} h-4 w-4 shrink-0 transition-transform group-hover:scale-125 ${
                             isActive 
@@ -415,7 +420,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
         </div>
 
         {/* User Profile Footer */}
-        <div className="p-4 border-t border-gray-800 shrink-0 bg-[#111]">
+        <div className="p-4 border-t shrink-0" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-secondary)" }}>
           {!isSidebarCollapsed ? (
             <>
               <div className="flex items-center gap-3 mb-4 px-2">
