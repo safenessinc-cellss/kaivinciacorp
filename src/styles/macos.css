@@ -276,3 +276,35 @@
 .macos-window table tbody tr:hover { background: color-mix(in srgb, var(--mac-accent) 8%, transparent); }
 .macos-window table tbody tr[aria-selected="true"] { background: color-mix(in srgb, var(--mac-accent) 20%, transparent); }
 .macos-window table :is(th, td) { font-variant-numeric: tabular-nums; }
+
+/* HIG refinements: compact native titlebars, density and accessibility materials. */
+:root { --mac-radius-window:12px; --mac-font-size:13px; --sidebar-width:240px; }
+.macos-window-titlebar { min-height:28px; padding-inline:12px; }
+.macos-app-shell { font-family:var(--font-mac); font-size:13px; }
+.macos-app-shell :is(button,input,select,textarea) { font-size:13px; }
+.macos-button-primary { background:var(--accent); border-radius:6px; color:#fff; }
+.macos-button-primary:hover { background:var(--accent-hover); }
+.macos-app-shell :is(input,select,textarea):focus { border-color:var(--accent); box-shadow:var(--shadow-focus); }
+:root[data-mac-density="compact"] .macos-sidebar a { padding-top:3px!important; padding-bottom:3px!important; }
+:root[data-mac-density="comfortable"] .macos-sidebar a { padding-top:5px; padding-bottom:5px; }
+:root[data-reduce-transparency="true"] .macos-sidebar,
+:root[data-reduce-transparency="true"] .macos-toolbar,
+:root[data-reduce-transparency="true"] .macos-window,
+:root[data-reduce-transparency="true"] .macos-window-titlebar,
+:root[data-reduce-transparency="true"] .macos-popover {
+  backdrop-filter:none!important; -webkit-backdrop-filter:none!important;
+  background:#F6F6F6!important;
+}
+:root[data-mac-appearance="dark"][data-reduce-transparency="true"] .macos-sidebar,
+:root[data-mac-appearance="dark"][data-reduce-transparency="true"] .macos-toolbar,
+:root[data-mac-appearance="dark"][data-reduce-transparency="true"] .macos-window,
+:root[data-mac-appearance="dark"][data-reduce-transparency="true"] .macos-window-titlebar,
+:root[data-mac-appearance="dark"][data-reduce-transparency="true"] .macos-popover {
+  background:#1E1E1E!important;
+}
+@media(prefers-reduced-transparency:reduce) {
+  .macos-sidebar,.macos-toolbar,.macos-window,.macos-window-titlebar,.macos-popover {
+    backdrop-filter:none!important; -webkit-backdrop-filter:none!important;
+  }
+}
+.ios-softphone { color:#000!important; color-scheme:light!important; }
