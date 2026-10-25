@@ -35,7 +35,7 @@ export default function SoftphoneKeypad({
           disabled={disabled}
           onClick={() => onDigitPress(btn.key)}
           className={`group bg-[#D1D1D6]/60 hover:bg-white active:bg-white border border-white/60 hover:border-[#34C759]/40 rounded-full flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 disabled:opacity-40 disabled:pointer-events-none select-none ${
-            compact ? 'py-1.5 px-1' : 'py-2 px-1.5'
+            compact ? 'w-14 h-14 py-1.5 px-1' : 'w-[72px] h-[72px] py-2 px-1.5'
           }`}
         >
           <span className="text-2xl font-medium text-black group-hover:text-[#248A3D] transition-colors leading-tight">
