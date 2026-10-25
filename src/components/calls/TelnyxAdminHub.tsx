@@ -29,7 +29,7 @@ import {
   AlertTriangle,
   HelpCircle
 } from 'lucide-react';
-import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, runTransaction, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, runTransaction, getDoc, deleteField } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '../../firebase';
 import { useAuth } from '../../hooks/useAuth';
