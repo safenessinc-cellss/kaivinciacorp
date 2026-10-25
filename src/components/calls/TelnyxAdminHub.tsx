@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Phone,
   Server,
@@ -29,7 +29,7 @@ import {
   AlertTriangle,
   HelpCircle
 } from 'lucide-react';
-import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, runTransaction, getDoc, query, orderBy, limit } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, runTransaction, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '../../firebase';
 import { useAuth } from '../../hooks/useAuth';
@@ -68,6 +68,22 @@ export default function TelnyxAdminHub() {
   });
   const [tokenErrorRecords, setTokenErrorRecords] = useState<any[]>([]);
   const [tokenDiagnosticMessage, setTokenDiagnosticMessage] = useState<{ success: boolean; message: string } | null>(null);
+
+  const loadTokenErrors = useCallback(async () => {
+    try {
+      const currentUser = getAuth().currentUser;
+      if (!currentUser) return;
+      const idToken = await currentUser.getIdToken();
+      const response = await fetch('/api/telnyx-token-errors', {
+        headers: { Authorization: `Bearer ${idToken}` }
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || `HTTP ${response.status}`);
+      setTokenErrorRecords(Array.isArray(data.errors) ? data.errors : []);
+    } catch (error: any) {
+      console.warn('[TelnyxAdminHub] No se pudieron cargar errores de token:', error?.message || error);
+    }
+  }, [loadTokenErrors]);
   
   // Configuración global
   const [config, setConfig] = useState<TelnyxGlobalConfig>(DEFAULT_CONFIG);
@@ -143,12 +159,9 @@ export default function TelnyxAdminHub() {
       }
     });
 
-    // Diagnóstico reciente de errores de token (solo lectura para administradores).
-    const unsubTokenErrors = onSnapshot(
-      query(collection(db, 'telnyx_token_errors'), orderBy('timestamp', 'desc'), limit(10)),
-      (snap) => setTokenErrorRecords(snap.docs.map((item) => ({ id: item.id, ...item.data() }))),
-      (err) => console.warn('[TelnyxAdminHub] No se pudieron leer errores de token:', err)
-    );
+    // Carga los errores a través del endpoint protegido para no depender de un despliegue
+    // de reglas Firestore separado para poder ver el diagnóstico en esta sesión.
+    void loadTokenErrors();
 
     // 1. Suscripción a config global
     const unsubConfig = onSnapshot(doc(db, 'settings', 'telnyx_config'), (snap) => {
@@ -194,7 +207,6 @@ export default function TelnyxAdminHub() {
 
     return () => {
       unsubWebRtc();
-      unsubTokenErrors();
       unsubConfig();
       unsubNumbers();
       unsubAssignments();
@@ -1916,6 +1928,7 @@ export default function TelnyxAdminHub() {
                   try {
                     const result = await telnyxWebRTCService.fetchFreshTokenFromBackend();
                     setTokenDiagnosticMessage({ success: result.success, message: result.message });
+                    await loadTokenErrors();
                     const state = telnyxWebRTCService.getState();
                     setTokenDiagnostics({
                       connected: state.isConnected,
