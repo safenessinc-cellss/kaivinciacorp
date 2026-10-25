@@ -873,7 +873,7 @@ export default function SoftphoneDialer({
           } catch {}
         }
       }}
-      className={`softphone-liquid ${isMobile ? 'softphone-mobile-full' : ''} bg-slate-950/95 backdrop-blur-xl text-white border border-slate-800 shadow-2xl transition-all ${
+      className={`softphone-legacy bg-slate-950/95 backdrop-blur-xl text-white border border-slate-800 shadow-2xl transition-all ${
         isFloating
           ? isMobile
             ? 'fixed bottom-0 left-0 right-0 w-full rounded-t-3xl rounded-b-none border-b-0 border-x-0 border-t border-slate-800 p-4 z-50 shadow-[0_-10px_35px_rgba(0,0,0,0.85)]'
@@ -1150,7 +1150,7 @@ export default function SoftphoneDialer({
               initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.96, opacity: 0 }}
-              className="softphone-liquid w-full max-w-md p-5 space-y-4"
+              className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-5 text-white shadow-2xl space-y-4"
               role="dialog"
               aria-modal="true"
               aria-labelledby="softphone-session-title"
@@ -1158,13 +1158,13 @@ export default function SoftphoneDialer({
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h4 id="softphone-session-title" className="text-lg font-semibold">Sesión de telefonía</h4>
-                  <p className="softphone-muted text-sm">La sesión se genera de forma segura desde el servidor.</p>
+                  <p className="text-sm text-slate-400">La sesión se genera de forma segura desde el servidor.</p>
                 </div>
-                <button type="button" aria-label="Cerrar detalles de sesión" onClick={() => setIsTelnyxTokenModalOpen(false)} className="rounded-full bg-white/80 p-2 border border-black/10 focus-visible:ring-2">
+                <button type="button" aria-label="Cerrar detalles de sesión" onClick={() => setIsTelnyxTokenModalOpen(false)} className="rounded-full bg-slate-800 p-2 border border-slate-700 text-slate-300 hover:bg-slate-700 focus-visible:ring-2 focus-visible:ring-cyan-500">
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <div className="softphone-glass-card p-3 space-y-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-900 p-3 space-y-2">
                 <div className="flex items-center justify-between gap-2 text-sm">
                   <span>Estado</span>
                   <strong>{connectionStatus === 'connected' ? 'Conectado' : connectionStatus === 'connecting' ? 'Conectando…' : 'Desconectado'}</strong>
@@ -1178,10 +1178,10 @@ export default function SoftphoneDialer({
                   <strong className="text-right">{rtcState.tokenExpiresAt ? new Date(rtcState.tokenExpiresAt).toLocaleString('es-MX') : 'No disponible'}</strong>
                 </div>
               </div>
-              <p className="softphone-muted text-xs">Por seguridad, el token completo no se muestra, copia ni guarda en Firestore desde el softphone.</p>
+              <p className="text-xs text-slate-400">Por seguridad, el token completo no se muestra, copia ni guarda en Firestore desde el softphone.</p>
               <div className="flex gap-2">
-                <button type="button" onClick={() => setIsTelnyxTokenModalOpen(false)} className="flex-1 rounded-full bg-white border border-black/10 px-4 py-3 text-sm font-semibold focus-visible:ring-2">Cerrar</button>
-                <button type="button" onClick={() => { setIsTelnyxTokenModalOpen(false); void handleGenerateBackendTelnyxToken(); }} disabled={isGeneratingBackendToken || (callStatus !== 'idle' && callStatus !== 'ended')} className="flex-1 rounded-full bg-[#007AFF] text-white px-4 py-3 text-sm font-semibold disabled:opacity-50 focus-visible:ring-2">
+                <button type="button" onClick={() => setIsTelnyxTokenModalOpen(false)} className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-700 focus-visible:ring-2 focus-visible:ring-cyan-500">Cerrar</button>
+                <button type="button" onClick={() => { setIsTelnyxTokenModalOpen(false); void handleGenerateBackendTelnyxToken(); }} disabled={isGeneratingBackendToken || (callStatus !== 'idle' && callStatus !== 'ended')} className="flex-1 rounded-xl border border-cyan-400/30 bg-cyan-500 px-4 py-3 text-sm font-semibold text-slate-950 hover:bg-cyan-400 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-cyan-500">
                   {isGeneratingBackendToken ? 'Generando…' : 'Regenerar sesión'}
                 </button>
               </div>
