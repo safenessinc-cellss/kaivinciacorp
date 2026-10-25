@@ -14,31 +14,34 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("role", "none");
     }
 
+    function isApproved() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("status", "") == "approved";
+    }
+
+    function isRoot() {
+      // ROOT_USER: cuenta única autorizada para eliminar usuarios.
+      return isAuthenticated() && request.auth.token.email == "safeness.c.a@gmail.com";
+    }
+
     function isAdmin() {
       return isAuthenticated() && (
-        request.auth.token.email in ["safeness.c.a@gmail.com", "deuwyrobert@gmail.com"] ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         userRole() in ["admin", "superadmin", "ceo", "gestor"])
+        isRoot() ||
+        (isApproved() && (
+          request.auth.token.email == "deuwyrobert@gmail.com" ||
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+           userRole() in ["admin", "superadmin", "ceo", "gestor"])
+        ))
       );
     }
 
     function isSuperAdmin() {
       return isAuthenticated() && (
-        request.auth.token.email in ["safeness.c.a@gmail.com", "deuwyrobert@gmail.com"] ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        isRoot() ||
+        (isApproved() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
          userRole() in ["superadmin", "admin"])
       );
-    }
-
-    function isApproved() {
-      return isAuthenticated() &&
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("status", "approved") == "approved";
-    }
-
-    // ROOT_USER: cuenta única autorizada para eliminar usuarios.
-    function isRoot() {
-      return isAuthenticated() && request.auth.token.email == "safeness.c.a@gmail.com";
     }
 
     function canApprove() {
