@@ -1,104 +1,36 @@
 import { MetaBackendService } from '../server/metaBackend.js';
+import { json, requireApprovedUser } from '../server/_lib/authz.js';
 
 export default async function handler(req: any, res: any) {
-  // Configuración de encabezados CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Dev-UID');
-  res.setHeader('Content-Type', 'application/json');
-
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 200;
-    res.end();
+  if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
+  if (!['GET', 'POST'].includes(req.method)) {
+    res.setHeader('Allow', 'GET, POST, OPTIONS');
+    json(res, 405, { error: 'METHOD_NOT_ALLOWED' });
     return;
   }
-
-  // GET: Obtener estado de configuración sin exponer tokens sensibles
+  const actor = await requireApprovedUser(req, res, true);
+  if (!actor) return;
   if (req.method === 'GET') {
-    try {
-      const config = MetaBackendService.getConfig();
-      res.statusCode = 200;
-      res.end(JSON.stringify(config));
-      return;
-    } catch (err: any) {
-      console.error('[API /api/meta-config GET] Error:', err);
-      res.statusCode = 500;
-      res.end(JSON.stringify({ error: err.message || 'Error al obtener configuración de Meta' }));
-      return;
+    try { json(res, 200, MetaBackendService.getConfig()); }
+    catch (error) {
+      console.error('[meta-config] read failed', error);
+      json(res, 500, { error: 'META_CONFIG_READ_FAILED', message: 'No se pudo leer la configuración de Meta.' });
     }
+    return;
   }
-
-  // POST: Actualizar credenciales y configuración de Meta
-  if (req.method === 'POST') {
-    try {
-      // 1. Verificación de Autenticación
-      const authHeader = req.headers['authorization'] || '';
-      const authUser = await MetaBackendService.verifyAuthToken(authHeader);
-
-      // Si no hay token de autenticación válido y no es modo desarrollo asistido, requerir login
-      if (!authUser && !req.headers['x-dev-uid'] && process.env.NODE_ENV === 'production') {
-        res.statusCode = 401;
-        res.end(JSON.stringify({
-          success: false,
-          error: 'No autorizado. Se requiere token de sesión administrativo.'
-        }));
-        return;
-      }
-
-      // 2. Parseo del cuerpo de la petición
-      let body = req.body;
-      if (typeof body === 'string') {
-        try {
-          body = JSON.parse(body);
-        } catch {
-          body = {};
-        }
-      } else if (!body && typeof req.on === 'function') {
-        // En entornos de Node stream tradicional
-        const buffers: any[] = [];
-        for await (const chunk of req) {
-          buffers.push(chunk);
-        }
-        const dataStr = Buffer.concat(buffers).toString();
-        body = dataStr ? JSON.parse(dataStr) : {};
-      }
-
-      // 3. Actualizar la configuración en el servicio de backend
-      const updatedConfig = MetaBackendService.updateConfig({
-        appId: body.appId,
-        appSecret: body.appSecret,
-        verifyToken: body.verifyToken,
-        whatsappPhoneNumberId: body.whatsappPhoneNumberId,
-        whatsappBusinessAccountId: body.whatsappBusinessAccountId,
-        whatsappAccessToken: body.whatsappAccessToken,
-        facebookPageId: body.facebookPageId,
-        facebookPageAccessToken: body.facebookPageAccessToken,
-        instagramAccountId: body.instagramAccountId,
-        instagramAccessToken: body.instagramAccessToken
-      });
-
-      // 4. Registrar acción en audit logs del sistema si está disponible
-      console.log(`[AUDIT] Action: META_CONFIGURED | User: ${authUser?.email || 'admin@kaivincia.com'} | Timestamp: ${new Date().toISOString()}`);
-
-      res.statusCode = 200;
-      res.end(JSON.stringify({
-        success: true,
-        config: updatedConfig,
-        message: 'Configuración de Meta actualizada correctamente.'
-      }));
-      return;
-    } catch (err: any) {
-      console.error('[API /api/meta-config POST] Error:', err);
-      res.statusCode = 500;
-      res.end(JSON.stringify({
-        success: false,
-        error: err.message || 'Error interno al actualizar configuración de Meta'
-      }));
-      return;
-    }
+  try {
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
+    const config = MetaBackendService.updateConfig({
+      appId: body.appId, appSecret: body.appSecret, verifyToken: body.verifyToken,
+      whatsappPhoneNumberId: body.whatsappPhoneNumberId, whatsappBusinessAccountId: body.whatsappBusinessAccountId,
+      whatsappAccessToken: body.whatsappAccessToken, facebookPageId: body.facebookPageId,
+      facebookPageAccessToken: body.facebookPageAccessToken, instagramAccountId: body.instagramAccountId,
+      instagramAccessToken: body.instagramAccessToken
+    });
+    console.log(`[AUDIT] META_CONFIGURED actor=${actor.uid} at=${new Date().toISOString()}`);
+    json(res, 200, { success: true, config, message: 'Configuración de Meta actualizada correctamente.' });
+  } catch (error) {
+    console.error('[meta-config] update failed', error);
+    json(res, 400, { success: false, error: 'INVALID_META_CONFIG', message: 'La configuración de Meta no es válida.' });
   }
-
-  // Método no permitido
-  res.statusCode = 405;
-  res.end(JSON.stringify({ error: `Method ${req.method} Not Allowed` }));
 }
