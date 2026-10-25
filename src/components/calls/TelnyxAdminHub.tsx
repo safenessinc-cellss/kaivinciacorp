@@ -321,7 +321,7 @@ export default function TelnyxAdminHub() {
     setIsGeneratingBackendToken(true);
     setWebRtcTestMsg(null);
     try {
-      const res = await telnyxWebRTCService.fetchFreshTokenFromBackend();
+      const res = await telnyxWebRTCService.fetchFreshTokenFromBackend(true);
       if (res.success && res.token) {
         setWebRtcTestMsg({ success: true, message: 'Sesión de telefonía generada y conectada.' });
         const state = telnyxWebRTCService.getState();
@@ -1775,7 +1775,7 @@ export default function TelnyxAdminHub() {
                   setIsGeneratingBackendToken(true);
                   setTokenDiagnosticMessage(null);
                   try {
-                    const result = await telnyxWebRTCService.fetchFreshTokenFromBackend();
+                    const result = await telnyxWebRTCService.fetchFreshTokenFromBackend(true);
                     setTokenDiagnosticMessage({ success: result.success, message: result.message });
                     await loadTokenErrors();
                     const state = telnyxWebRTCService.getState();
