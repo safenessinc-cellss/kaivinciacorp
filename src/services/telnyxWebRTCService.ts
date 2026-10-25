@@ -233,8 +233,8 @@ class TelnyxWebRTCService {
       throw new Error('Falta el login_token de Telnyx WebRTC.');
     }
 
-    const normalizedDestination = String(destinationNumber || '').replace(/[\\s().-]/g, '');
-    if (!/^\\+?[1-9]\\d{7,14}$/.test(normalizedDestination)) {
+    const normalizedDestination = String(destinationNumber || '').replace(/[^0-9+]/g, '');
+    if (!/^[+]?[1-9][0-9]{7,14}$/.test(normalizedDestination)) {
       throw new Error('El número de destino no tiene un formato internacional válido.');
     }
     if (!this.state.isConnected) {
