@@ -70,6 +70,8 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
   agente: ['dashboard','dialer','calendar','chat','clients'],
   sales: ['dashboard','tlmk_sales','dialer','calendar','chat','clients'],
   rrhh: ['dashboard','talent','payroll','calendar','chat'],
+  collaborator: ['dashboard','operations','calendar','chat','documents'],
+  cliente: ['academy','billing','clients','chat'],
   alumno: ['academy','chat']
 };
 
