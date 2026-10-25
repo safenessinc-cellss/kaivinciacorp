@@ -248,3 +248,19 @@
 :root[data-mac-appearance="dark"][data-reduce-transparency="true"] .macos-menubar { background: #1e1e1e; }
 
 :root[data-mac-accent="yellow"] .macos-button-primary { color: #1d1d1f; }
+
+:root {
+  --accent: var(--mac-accent);
+  --accent-hover: var(--mac-accent-hover);
+  --bg-window: var(--mac-bg-window);
+  --bg-sidebar: var(--mac-bg-sidebar);
+  --bg-toolbar: var(--mac-bg-toolbar);
+  --text-primary: var(--mac-text-primary);
+  --text-secondary: var(--mac-text-secondary);
+  --border: var(--mac-border);
+  --shadow-window: var(--mac-shadow-window);
+  --material-blur: var(--mac-material-blur);
+  --material-window: var(--mac-bg-window);
+  --material-sidebar: var(--mac-bg-sidebar);
+  --material-popover: var(--mac-bg-popover);
+}
