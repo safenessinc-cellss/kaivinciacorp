@@ -268,6 +268,14 @@ class TelnyxWebRTCService {
     }
   }
 
+  public deferTokenRefreshUntilCallEnds(): void {
+    if (this.currentCall) {
+      this.pendingTokenRefresh = true;
+      return;
+    }
+    void this.refreshCurrentToken();
+  }
+
   private async refreshCurrentToken(): Promise<void> {
     if (this.refreshInProgress || !this.currentCredentialId || !this.client) return;
     if (this.currentCall) { this.pendingTokenRefresh = true; return; }
