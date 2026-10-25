@@ -56,3 +56,23 @@
     transition-duration: 100ms !important; scroll-behavior: auto !important;
   }
 }
+
+/* Override legacy Tailwind dark utility classes only inside the softphone. */
+.softphone-liquid { background: rgba(255,255,255,.78) !important; color: #000 !important; }
+.softphone-liquid [class*="bg-slate-950"],
+.softphone-liquid [class*="bg-slate-900"],
+.softphone-liquid [class*="bg-slate-800"],
+.softphone-liquid [class*="bg-black/"],
+.softphone-liquid [class*="bg-[#05070a]"] {
+  background-color: rgba(242,242,247,.88) !important;
+  border-color: rgba(60,60,67,.12) !important;
+  color: #000 !important;
+}
+.softphone-liquid [class*="text-white"],
+.softphone-liquid [class*="text-slate-300"],
+.softphone-liquid [class*="text-slate-400"] { color: #3C3C43 !important; }
+.softphone-liquid [class*="border-slate-"] { border-color: rgba(60,60,67,.12) !important; }
+.softphone-liquid [class*="bg-emerald-500"] { background-color: #34C759 !important; color: #fff !important; }
+.softphone-liquid [class*="bg-rose-500"] { background-color: #FF3B30 !important; color: #fff !important; }
+.softphone-liquid [class*="bg-cyan-500"] { background-color: #007AFF !important; color: #fff !important; }
+.softphone-liquid .softphone-settings button { min-height: 40px; }
