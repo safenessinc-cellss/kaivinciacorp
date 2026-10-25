@@ -11,6 +11,43 @@ import { TelnyxRTC } from '@telnyx/webrtc';
 // Token JWT por defecto para inicialización del SDK de Telnyx WebRTC
 export let TELNYX_WEBRTC_LOGIN_TOKEN = '';
 
+/**
+ * Normaliza un número telefónico a E.164. Para destinos de EE. UU. acepta
+ * 10 dígitos nacionales o 11 empezando por 1; otros países deben incluir +.
+ */
+export function normalizeTelnyxE164(value: unknown, label = 'Número'): string {
+  const raw = String(value ?? '').trim();
+  const digits = raw.replace(/\\D/g, '');
+  let normalized = '';
+
+  if (raw.startsWith('+')) {
+    normalized = `+${digits}`;
+  } else if (digits.length === 10) {
+    normalized = `+1${digits}`;
+  } else if (digits.length === 11 && digits.startsWith('1')) {
+    normalized = `+${digits}`;
+  } else {
+    throw new Error(`${label}: introduce un número válido en formato internacional (E.164), por ejemplo +12132288500.`);
+  }
+
+  if (!/^\\+[1-9]\\d{7,14}$/.test(normalized)) {
+    throw new Error(`${label}: formato no válido. Usa el formato internacional E.164, por ejemplo +12132288500.`);
+  }
+  return normalized;
+}
+
+/**
+ * Evita usar Caller IDs ficticios reservados por NANPA (555-0100 a 555-0199).
+ * La autorización real del número sigue correspondiendo a Telnyx.
+ */
+export function validateTelnyxCallerId(value: unknown): string {
+  const callerId = normalizeTelnyxE164(value, 'Caller ID');
+  if (/^\\+1\\d{3}55501\\d{2}$/.test(callerId)) {
+    throw new Error('El Caller ID seleccionado es un número de prueba/ficticio (555-0100 a 555-0199). Selecciona un número real, activo y autorizado en Telnyx.');
+  }
+  return callerId;
+}
+
 export interface TelnyxWebRTCState {
   isInitialized: boolean;
   isConnected: boolean;
@@ -239,21 +276,25 @@ class TelnyxWebRTCService {
    * Realiza una llamada saliente mediante Telnyx WebRTC
    * Incluye remoteElement para reproducir el audio del otro lado
    */
-  public async makeCall(destinationNumber: string, callerIdNumber?: string): Promise<any> {
+  public async makeCall(destinationNumber: string, callerIdNumber: string): Promise<any> {
     if (!this.state.loginToken) {
       throw new Error('Falta el login_token de Telnyx WebRTC.');
     }
 
-    console.log(`[TelnyxWebRTC] Iniciando llamada a ${destinationNumber} con Caller ID ${callerIdNumber || 'default'}`);
+    const normalizedDestination = normalizeTelnyxE164(destinationNumber, 'Destino');
+    const normalizedCallerId = validateTelnyxCallerId(callerIdNumber);
 
     if (!this.client?.newCall) {
       throw new Error('El cliente TelnyxRTC no está inicializado. Ve a la pestaña de configuración del softphone y pulsa "Configurar JWT" para autenticarte con Telnyx.');
     }
 
-    // Crear la llamada con remoteElement para reproducir el audio entrante
+    console.log(`[TelnyxWebRTC] Iniciando llamada a ${normalizedDestination} con Caller ID ${normalizedCallerId}`);
+
+    // No se envían llamadas con Caller ID vacío, mal formado o ficticio.
+    // Telnyx sigue siendo la autoridad final sobre propiedad/verificación del número.
     this.currentCall = this.client.newCall({
-      destinationNumber: destinationNumber,
-      callerNumber: callerIdNumber,
+      destinationNumber: normalizedDestination,
+      callerNumber: normalizedCallerId,
       remoteElement: 'remote-audio'
     });
 
