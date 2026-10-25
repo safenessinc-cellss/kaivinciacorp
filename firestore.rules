@@ -48,8 +48,10 @@ service cloud.firestore {
           (userRole() == "gestor" && permissionKey in ["dashboard", "tlmk_sales", "collections", "reports", "team_management", "calendar", "chat", "clients", "operations"]) ||
           (userRole() == "supervisor" && permissionKey in ["dashboard", "tlmk_sales", "dialer", "collections", "calendar", "chat", "clients", "reports", "team_management"]) ||
           (userRole() == "tlmk" && permissionKey in ["dashboard", "tlmk_sales", "dialer", "calendar", "chat", "clients"]) ||
-          (userRole() == "agente" && permissionKey in ["dashboard", "dialer", "calendar", "chat", "clients"]) ||
+          (userRole() in ["agente", "sales"] && permissionKey in ["dashboard", "tlmk_sales", "dialer", "calendar", "chat", "clients"]) ||
           (userRole() == "rrhh" && permissionKey in ["dashboard", "talent", "payroll", "calendar", "chat"]) ||
+          (userRole() == "collaborator" && permissionKey in ["dashboard", "operations", "calendar", "chat", "documents"]) ||
+          (userRole() == "cliente" && permissionKey in ["academy", "billing", "clients", "chat"]) ||
           (userRole() == "alumno" && permissionKey in ["academy", "chat"])
         ))
       ));
