@@ -56,6 +56,7 @@ export default function AccessControl() {
   const [credentials, setCredentials] = useState<SipCredential[]>([]);
   const [selectedUid, setSelectedUid] = useState('');
   const [selectedCredential, setSelectedCredential] = useState('');
+  const [roleDraft, setRoleDraft] = useState('none');
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -78,9 +79,20 @@ export default function AccessControl() {
   }, []);
 
   useEffect(() => { void load(); }, [load]);
-  useEffect(() => { setPermissions(permissionsForUser(selected)); setSelectedCredential(selected?.assignedSipCredentialId || ''); }, [selectedUid, selected?.uid, selected?.permissions, selected?.role, selected?.assignedSipCredentialId]);
+  useEffect(() => { setPermissions(permissionsForUser(selected)); setSelectedCredential(selected?.assignedSipCredentialId || ''); setRoleDraft(selected?.role || 'none'); }, [selectedUid, selected?.uid, selected?.permissions, selected?.role, selected?.assignedSipCredentialId]);
 
   const availableCredentials = useMemo(() => credentials.filter(c => !c.assignedTo || c.assignedTo === selectedUid), [credentials, selectedUid]);
+
+  const saveRole = async () => {
+    if (!selected) return;
+    setBusy(true); setError(''); setNotice('');
+    try {
+      await authorizedFetch('/api/admin/users', { action: 'role', uid: selected.uid, role: roleDraft });
+      setNotice('Rol actualizado y auditado.');
+      await load();
+    } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo cambiar el rol.'); }
+    finally { setBusy(false); }
+  };
 
   const changeStatus = async (status: 'approved' | 'blocked') => {
     if (!selected) return;
@@ -151,6 +163,13 @@ export default function AccessControl() {
           {selected ? <>
             <section className="rounded-2xl border bg-white p-5 shadow-sm">
               <h2 className="mb-1 text-lg font-black">{selected.name || selected.email}</h2><p className="mb-4 text-sm text-slate-500">{selected.email} · Rol: {selected.role}</p>
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <label htmlFor="base-role" className="text-sm font-bold">Rol base</label>
+                <select id="base-role" value={roleDraft} onChange={e => setRoleDraft(e.target.value)} disabled={busy || selected.role === 'superadmin'} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">
+                  {['none','user','agente','tlmk','sales','supervisor','gestor','rrhh','collaborator','admin','ceo','alumno'].map(role => <option key={role} value={role}>{role}</option>)}
+                </select>
+                <button onClick={() => void saveRole()} disabled={busy || selected.role === 'superadmin' || roleDraft === selected.role} className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold disabled:opacity-40">Guardar rol</button>
+              </div>
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => void changeStatus('approved')} disabled={busy || selected.status === 'approved' || selected.role === 'superadmin'} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"><ShieldCheck size={16}/> Aprobar</button>
                 <button onClick={() => void changeStatus('blocked')} disabled={busy || selected.status === 'blocked' || selected.role === 'superadmin'} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"><ShieldX size={16}/> Bloquear</button>
