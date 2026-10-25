@@ -25,7 +25,7 @@ interface SoftphoneSettingsProps {
   tokenExpiresAt?: string | null;
   credentialId?: string | null;
   callerId?: string | null;
-  onReconnect: () => Promise<void> | void;
+  onReconnect: () => Promise<boolean | void> | boolean | void;
   onToast: (message: string) => void;
 }
 
@@ -52,6 +52,7 @@ export default function SoftphoneSettings({
   const [showTokenDetails, setShowTokenDetails] = useState(false);
   const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [step, setStep] = useState<0 | 1 | 2 | 3 | -1>(0);
 
   const isPrivileged = ['admin', 'superadmin', 'owner', 'ceo', 'gestor', 'supervisor'].includes(String(role || '').toLowerCase());
   if (!isPrivileged) return null;
@@ -63,8 +64,20 @@ export default function SoftphoneSettings({
   const regenerate = async () => {
     if (regenerating) return;
     setRegenerating(true);
+    setStep(1);
     try {
-      await onReconnect();
+      await new Promise(resolve => window.setTimeout(resolve, 400));
+      setStep(2);
+      const result = await onReconnect();
+      if (result === false) {
+        setStep(-1);
+        return;
+      }
+      setStep(3);
+      window.setTimeout(() => setStep(current => current === 3 ? 0 : current), 1500);
+    } catch {
+      setStep(-1);
+      onToast('No se pudo conectar con Telnyx. Vuelve a intentar en unos segundos.');
     } finally {
       setRegenerating(false);
     }
@@ -146,6 +159,17 @@ export default function SoftphoneSettings({
           <button type="button" aria-label="Ver detalles de la sesión" onClick={() => setShowTokenDetails(v => !v)} className="rounded-full bg-white border border-black/10 px-4 py-2 text-sm font-semibold focus-visible:ring-2">{showTokenDetails ? 'Ocultar detalles' : 'Ver detalles'}</button>
           <button type="button" aria-label="Regenerar sesión de telefonía" onClick={() => void regenerate()} disabled={regenerating} className="rounded-full bg-[#007AFF] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50 focus-visible:ring-2">{regenerating ? 'Generando…' : 'Regenerar sesión'}</button>
         </div>
+        {(regenerating || step !== 0) && (
+          <div className="mt-3 rounded-xl bg-white/80 border border-black/5 p-3 space-y-2" aria-live="polite">
+            <p className="text-sm font-semibold">{step === 1 ? 'Verificando línea…' : step === 2 ? 'Solicitando sesión segura…' : step === 3 ? '✓ Conectado' : 'No se pudo conectar'}</p>
+            <div className="grid grid-cols-3 gap-2 text-[11px]">
+              <span className={step >= 1 ? 'font-semibold text-green-700' : 'softphone-muted'}>1. Verificar línea</span>
+              <span className={step >= 2 ? 'font-semibold text-green-700' : 'softphone-muted'}>2. Crear sesión</span>
+              <span className={step === 3 ? 'font-semibold text-green-700' : 'softphone-muted'}>3. Conectado</span>
+            </div>
+            {step === -1 && <p className="text-sm text-red-700">Revisa la línea asignada o ejecuta el diagnóstico. Puedes reintentar cuando quieras.</p>}
+          </div>
+        )}
         {showTokenDetails && (
           <div className="mt-3 rounded-xl bg-white/80 p-3 text-sm space-y-1">
             <p><strong>Identificador SIP:</strong> {credentialId || 'No disponible'}</p>
