@@ -1,5 +1,5 @@
 import { FieldValue } from 'firebase-admin/firestore';
-import { adminDb } from '../../server/_lib/firebaseAdmin.js';
+import { adminAuth, adminDb } from '../../server/_lib/firebaseAdmin.js';
 import { json, requireApprovedUser } from '../../server/_lib/authz.js';
 
 const ALLOWED_ROLES = new Set(['none', 'admin', 'supervisor', 'tlmk', 'agente', 'sales', 'rrhh', 'alumno', 'gestor', 'ceo', 'collaborator', 'user']);
@@ -110,6 +110,10 @@ export default async function handler(req: any, res: any) {
       });
       return { status: action === 'status' ? status : 'updated', role: action === 'role' ? role : undefined };
     });
+    if (action === 'role') {
+      // Keep Firebase's role claim synchronized with the authoritative Firestore profile.
+      await adminAuth.setCustomUserClaims(uid, { role: String(role) });
+    }
     json(res, 200, { ok: true, ...result });
   } catch (error: any) {
     const code = error?.code || '';
