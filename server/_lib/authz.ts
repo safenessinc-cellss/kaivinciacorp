@@ -61,6 +61,21 @@ export async function requireApprovedUser(req: any, res: any, superadminOnly = f
   };
 }
 
+const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
+  admin: ['dashboard','tlmk_sales','dialer','collections','talent','payroll','accounting','billing','marketing','projects','reports','academy','team_management','calendar','chat','clients','operations','call_center','integrations','documents','audits'],
+  ceo: ['dashboard','tlmk_sales','dialer','collections','talent','payroll','accounting','billing','marketing','projects','reports','academy','team_management','calendar','chat','clients','operations','call_center','integrations','documents','audits'],
+  gestor: ['dashboard','tlmk_sales','collections','reports','team_management','calendar','chat','clients','operations'],
+  supervisor: ['dashboard','tlmk_sales','dialer','collections','calendar','chat','clients','reports','team_management'],
+  tlmk: ['dashboard','tlmk_sales','dialer','calendar','chat','clients'],
+  agente: ['dashboard','dialer','calendar','chat','clients'],
+  sales: ['dashboard','tlmk_sales','dialer','calendar','chat','clients'],
+  rrhh: ['dashboard','talent','payroll','calendar','chat'],
+  alumno: ['academy','chat']
+};
+
 export function hasPermission(user: VerifiedAppUser, permission: string): boolean {
-  return user.role === 'superadmin' || user.permissions[permission] === true;
+  if (user.status !== 'approved') return false;
+  if (user.role === 'superadmin') return true;
+  if (typeof user.permissions[permission] === 'boolean') return user.permissions[permission] === true;
+  return (DEFAULT_ROLE_PERMISSIONS[user.role] || []).includes(permission);
 }
