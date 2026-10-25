@@ -17,7 +17,7 @@ import SoftphoneDisplay, { sanitizeDialNumber } from './SoftphoneDisplay';
 import SoftphoneKeypad from './SoftphoneKeypad';
 import SoftphoneConfig from './SoftphoneConfig';
 import SoftphoneSipConsole from './SoftphoneSipConsole';
-import { telnyxWebRTCService } from '../../services/telnyxWebRTCService';
+import { telnyxWebRTCService, normalizeTelnyxE164, validateTelnyxCallerId } from '../../services/telnyxWebRTCService';
 import { isPrivilegedRole } from '../../constants/roles';
 
 interface SoftphoneDialerProps {
@@ -685,10 +685,28 @@ export default function SoftphoneDialer({
       }
     }
 
-    // Validar que haya un Caller ID seleccionado (viene de telnyx_phone_numbers)
+    // Validar Caller ID y confirmar que pertenece a la lista autorizada para este agente.
     if (!selectedCallerId) {
       showToast('⚠️ No hay Caller ID seleccionado. Sincroniza números desde Telnyx en el admin.');
       return;
+    }
+
+    const isTelnyxCarrier = selectedCarrier === 'telnyx' || activeCarrierObj.name.includes('Telnyx');
+    let normalizedCallerId = selectedCallerId;
+    if (isTelnyxCarrier) {
+      try {
+        normalizedCallerId = validateTelnyxCallerId(selectedCallerId);
+        const authorizedNormalized = authorizedCallerIds.map((number) => {
+          try { return normalizeTelnyxE164(number, 'Caller ID autorizado'); } catch { return ''; }
+        });
+        if (!authorizedNormalized.includes(normalizedCallerId)) {
+          showToast('⛔ El Caller ID seleccionado no está autorizado para tu usuario. Elige un número asignado desde la configuración del softphone.');
+          return;
+        }
+      } catch (err: any) {
+        showToast(err?.message || 'El Caller ID no es válido. Selecciona un número real y autorizado de Telnyx.');
+        return;
+      }
     }
 
     currentCallStartedAtRef.current = new Date().toISOString();
@@ -698,7 +716,6 @@ export default function SoftphoneDialer({
     setIsOnHold(false);
     setIsRecording(false);
 
-    const isTelnyxCarrier = selectedCarrier === 'telnyx' || activeCarrierObj.name.includes('Telnyx');
     const telnyxJwt = telnyxWebRTCService.getLoginToken();
 
     setSipLogs(prev => [
@@ -712,10 +729,10 @@ export default function SoftphoneDialer({
     if (isTelnyxCarrier) {
       try {
         console.log(`[SoftphoneDialer] Llamando vía Telnyx SDK a ${dialNum} con Caller ID ${selectedCallerId}`);
-        const call = await telnyxWebRTCService.makeCall(dialNum, selectedCallerId);
+        const call = await telnyxWebRTCService.makeCall(dialNum, normalizedCallerId);
         setSipLogs(prev => [
           `[${new Date().toLocaleTimeString()}] ✅ Llamada Telnyx iniciada (ID: ${call?.id || 'unknown'})`,
-          `[${new Date().toLocaleTimeString()}] Caller ID: ${selectedCallerId}`,
+          `[${new Date().toLocaleTimeString()}] Caller ID: ${normalizedCallerId}`,
           ...prev.slice(0, 30)
         ]);
         onCallStart?.(dialNum);
