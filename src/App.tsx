@@ -90,7 +90,15 @@ export default function App() {
 
         // The backend may repair the SuperAdmin profile and custom claims during
         // bootstrap. Refresh the Firebase token before reading protected Firestore data.
-        await currentUser.getIdToken(true);
+        const refreshedTokenResult = await currentUser.getIdTokenResult(true);
+        // Safe diagnostic only: never log the JWT itself. Approval status lives in
+        // the verified Firestore profile, not in a Firebase custom claim.
+        console.info('[auth] refreshed authorization state', {
+          tokenRole: String(refreshedTokenResult.claims.role || ''),
+          tokenIsSuperAdmin: refreshedTokenResult.claims.isSuperAdmin === true,
+          profileRole: String(bootstrapResult?.user?.role || ''),
+          profileStatus: String(bootstrapResult?.user?.status || ''),
+        });
         if (bootstrapResult?.user) {
           setUserData({ ...bootstrapResult.user, uid: currentUser.uid });
         }
