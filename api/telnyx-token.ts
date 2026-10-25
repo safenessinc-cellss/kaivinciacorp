@@ -41,7 +41,7 @@ async function recordTokenError(input: {
 }
 
 function respondError(res: any, status: number, error: string, message: string) {
-  json(res, status, { error, message });
+  json(res, status, { error, code: error, message });
 }
 
 async function getFirebaseUser(req: any, res: any): Promise<VerifiedAppUser | null> {
