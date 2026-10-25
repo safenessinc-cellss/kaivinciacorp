@@ -155,6 +155,26 @@ export const APPEARANCE_PRESETS: Record<string, AppearancePreset> = {
   // ==========================================
   // --- PRESETS CLAROS (Light - 10 Nuevos + Light Corporate) ---
   // ==========================================
+  'ios-liquid-glass': {
+    id: 'ios-liquid-glass',
+    name: 'iOS Liquid Glass',
+    category: 'light',
+    description: 'Interfaz clara inspirada en el lenguaje visual de Apple: superficies blancas, gris sistema, azul iOS y bordes translúcidos',
+    colors: {
+      primary: '#007AFF',
+      secondary: '#D1D1D6',
+      background: '#F5F5F7',
+      surface: '#FFFFFF',
+      textPrimary: '#1D1D1F',
+      textSecondary: '#6E6E73',
+      sidebarBg: '#F0F0F5',
+      sidebarText: '#38383A',
+      sidebarActive: '#007AFF',
+      headerBg: '#FFFFFF',
+      text: '#1D1D1F',
+      border: '#D1D1D6'
+    }
+  },
   'pure-white': {
     id: 'pure-white',
     name: 'Pure White',
