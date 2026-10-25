@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, where, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, updateDoc, serverTimestamp, addDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
 import { Check, X, Clock, Mail, User as UserIcon, ShieldCheck } from 'lucide-react';
 
@@ -16,6 +16,7 @@ export default function PendingUsersPanel() {
   const [pending, setPending] = useState<PendingUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const q = query(collection(db, 'users'), where('status', '==', 'pending'));
@@ -30,12 +31,36 @@ export default function PendingUsersPanel() {
   }, []);
 
   const approve = async (uid: string) => {
+    const target = pending.find((item) => item.id === uid);
+    const role = selectedRoles[uid] || target?.role || 'none';
+    if (!role || role === 'none') {
+      alert('Selecciona un rol antes de aprobar la cuenta.');
+      return;
+    }
+    if (!auth.currentUser) {
+      alert('La sesión administrativa no está disponible. Inicia sesión de nuevo.');
+      return;
+    }
     setBusy(uid);
     try {
       await updateDoc(doc(db, 'users', uid), {
+        role,
         status: 'approved',
-        approvedBy: auth.currentUser?.uid || null,
+        approvedBy: auth.currentUser.uid,
         approvedAt: serverTimestamp(),
+        rejectionReason: '',
+        rejectedBy: '',
+        rejectedAt: null,
+      });
+      await addDoc(collection(db, 'notifications'), {
+        ownerId: uid,
+        title: 'Cuenta aprobada',
+        message: 'Tu acceso a Kaivincia Corp fue aprobado.',
+        type: 'account_approval',
+        priority: 'medium',
+        path: '/crm/dashboard',
+        read: false,
+        createdAt: serverTimestamp(),
       });
     } catch (err: any) {
       alert(`Error aprobando: ${err.message}`);
@@ -52,7 +77,17 @@ export default function PendingUsersPanel() {
         status: 'rejected',
         rejectedBy: auth.currentUser?.uid || null,
         rejectedAt: serverTimestamp(),
-        rejectionReason: reason,
+        rejectionReason: reason || 'La solicitud fue rechazada por un administrador.',
+      });
+      await addDoc(collection(db, 'notifications'), {
+        ownerId: uid,
+        title: 'Solicitud rechazada',
+        message: reason || 'La solicitud de acceso fue rechazada por un administrador.',
+        type: 'account_approval',
+        priority: 'high',
+        path: '/crm/dashboard',
+        read: false,
+        createdAt: serverTimestamp(),
       });
     } catch (err: any) {
       alert(`Error rechazando: ${err.message}`);
@@ -99,9 +134,27 @@ export default function PendingUsersPanel() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <label className="sr-only" htmlFor={`pending-role-${u.id}`}>Rol para {u.name || u.email}</label>
+              <select
+                id={`pending-role-${u.id}`}
+                value={selectedRoles[u.id] || u.role || 'none'}
+                onChange={(event) => setSelectedRoles(current => ({ ...current, [u.id]: event.target.value }))}
+                disabled={busy === u.id}
+                className="border border-gray-300 rounded-md px-2 py-1.5 text-xs bg-white text-gray-800"
+              >
+                <option value="none">Seleccionar rol…</option>
+                <option value="superadmin">SuperAdmin</option>
+                <option value="admin">Administrador</option>
+                <option value="gestor">Gestor</option>
+                <option value="sales">Ventas / TLMK</option>
+                <option value="collaborator">Colaborador</option>
+                <option value="tutor">Tutor</option>
+                <option value="alumno">Alumno</option>
+                <option value="cliente">Cliente</option>
+              </select>
               <button
-                onClick={() => approve(u.id)}
+                onClick={() => approve(u.id)
                 disabled={busy === u.id}
                 className="px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-50"
               >
