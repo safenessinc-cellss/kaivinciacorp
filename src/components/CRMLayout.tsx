@@ -506,7 +506,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
       <div className="mac-main flex-1 flex flex-col h-screen overflow-hidden relative z-10">
         <div className="mac-titlebar shrink-0" aria-label="Barra de menús de Kaivincia">
           <div className="mac-traffic-lights" aria-label="Controles de ventana">
-            <button type="button" className="mac-traffic-light close" aria-label="Cerrar vista actual" onClick={() => navigate('/crm/dashboard')} />
+            <button type="button" className="mac-traffic-light close" aria-label="Cerrar panel de comandos" onClick={() => setIsCommandBarOpen(false)} />
             <button type="button" className="mac-traffic-light minimize" aria-label="Contraer barra lateral" onClick={() => setIsSidebarCollapsed(true)} />
             <button type="button" className="mac-traffic-light zoom" aria-label="Expandir barra lateral" onClick={() => setIsSidebarCollapsed(false)} />
           </div>
