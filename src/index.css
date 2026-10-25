@@ -481,3 +481,27 @@ table, .tabular-nums, [data-numeric="true"] { font-variant-numeric: tabular-nums
   backdrop-filter: blur(var(--mac-material-blur)) saturate(180%);
 }
 .glow-primary { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--mac-accent) 38%, transparent)); }
+
+/* Keep the softphone's original dark palette isolated from the CRM-wide light theme. */
+.mac-app-shell .softphone-legacy {
+  background-color: rgba(2, 6, 23, .95) !important;
+  color: #fff !important;
+  border-color: #1e293b !important;
+  color-scheme: dark;
+}
+.mac-app-shell .softphone-legacy [class*="bg-slate-950"] { background-color: rgba(2, 6, 23, .85) !important; }
+.mac-app-shell .softphone-legacy [class*="bg-slate-900"] { background-color: rgba(15, 23, 42, .92) !important; }
+.mac-app-shell .softphone-legacy [class*="bg-slate-800"] { background-color: rgba(30, 41, 59, .88) !important; }
+.mac-app-shell .softphone-legacy [class*="bg-slate-700"] { background-color: rgba(51, 65, 85, .9) !important; }
+.mac-app-shell .softphone-legacy [class*="bg-white"] { background-color: rgba(255, 255, 255, .08) !important; }
+.mac-app-shell .softphone-legacy [class*="bg-black/"] { background-color: rgba(0, 0, 0, .72) !important; }
+.mac-app-shell .softphone-legacy [class*="text-white"]:not(button):not([role="button"]):not(a) { color: #fff !important; }
+.mac-app-shell .softphone-legacy [class*="text-slate-300"] { color: #cbd5e1 !important; }
+.mac-app-shell .softphone-legacy [class*="text-slate-400"] { color: #94a3b8 !important; }
+.mac-app-shell .softphone-legacy [class*="text-slate-500"] { color: #64748b !important; }
+.mac-app-shell .softphone-legacy [class*="border-slate-"] { border-color: #1e293b !important; }
+.mac-app-shell .softphone-legacy [class*="border-black/"] { border-color: rgba(148, 163, 184, .24) !important; }
+.mac-app-shell .softphone-legacy [class*="shadow-2xl"] { box-shadow: 0 20px 40px rgba(0, 0, 0, .7) !important; }
+.mac-app-shell .softphone-legacy input,
+.mac-app-shell .softphone-legacy select,
+.mac-app-shell .softphone-legacy textarea { color: #fff !important; background-color: rgba(2, 6, 23, .72) !important; border-color: #334155 !important; }
