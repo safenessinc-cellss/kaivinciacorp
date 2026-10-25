@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { Check, Monitor, Moon, Sun, Eye, EyeOff } from 'lucide-react';
 import { MAC_ACCENTS, useMacTheme, type MacAppearanceMode } from '../../contexts/MacThemeContext';
 
