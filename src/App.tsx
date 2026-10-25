@@ -240,7 +240,8 @@ export default function App() {
   // Fail closed: only approved profiles may enter the operational CRM.
   const accessStatus = String(userData?.status || '').trim().toLowerCase();
   const accessRole = String(userData?.role || '').trim().toLowerCase();
-  if (user && (!userData || !['approved', 'active'].includes(accessStatus) || !accessRole || accessRole === 'none')) {
+  const legacyPrivileged = ['superadmin', 'admin', 'owner'].includes(accessRole) && accessStatus === 'active';
+  if (user && (!userData || (accessStatus !== 'approved' && !legacyPrivileged) || !accessRole || accessRole === 'none')) {
     if (['blocked', 'suspended', 'rejected'].includes(accessStatus)) {
       return <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center p-6"><div className="max-w-md text-center"><h1 className="text-xl font-bold">Acceso denegado</h1><p className="mt-2">Tu cuenta está bloqueada o fue rechazada. Contacta a un administrador de Kaivincia Corp.</p></div></div>;
     }
