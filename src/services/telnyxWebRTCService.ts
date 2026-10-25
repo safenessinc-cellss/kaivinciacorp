@@ -194,7 +194,7 @@ class TelnyxWebRTCService {
   /**
    * Obtiene la asignación SIP y solicita el JWT. Si no hay SIP, no llama al backend.
    */
-  public async fetchFreshTokenFromBackend(): Promise<{ success: boolean; token?: string; message: string; status?: number }> {
+  public async fetchFreshTokenFromBackend(force = false): Promise<{ success: boolean; token?: string; message: string; status?: number }> {
     const currentUser = auth.currentUser;
     if (!currentUser) {
       const message = 'Inicia sesión para conectar el softphone.';
@@ -231,6 +231,12 @@ class TelnyxWebRTCService {
         this.state.lastTokenStatus = null;
         this.notify();
         return { success: false, message, status: 0 };
+      }
+
+      const tokenExpiry = this.state.tokenExpiresAt ? new Date(this.state.tokenExpiresAt).getTime() : 0;
+      if (!force && this.client && this.state.isConnected && this.currentCredentialId === credentialId &&
+          tokenExpiry > Date.now() + 60 * 60 * 1000 && this.state.loginToken) {
+        return { success: true, token: this.state.loginToken, message: 'La sesión de telefonía ya está activa.', status: this.state.lastTokenStatus || 200 };
       }
 
       const result = await this.requestToken(credentialId);
