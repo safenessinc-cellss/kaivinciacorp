@@ -887,6 +887,7 @@ export default function SoftphoneDialer({
 
   return (
     <motion.div
+      ref={softphoneRootRef}
       drag={isFloating && !isMobile}
       dragMomentum={false}
       dragElastic={0.06}
