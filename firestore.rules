@@ -26,10 +26,7 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() {
-      return isApproved() && (
-        request.auth.token.role == "superadmin" ||
-        userRole() == "superadmin"
-      );
+      return isApproved() && userRole() == "superadmin" && request.auth.token.role == "superadmin";
     }
 
     function isAdmin() {
