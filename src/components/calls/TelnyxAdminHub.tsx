@@ -83,7 +83,7 @@ export default function TelnyxAdminHub() {
     } catch (error: any) {
       console.warn('[TelnyxAdminHub] No se pudieron cargar errores de token:', error?.message || error);
     }
-  }, [loadTokenErrors]);
+  }, []);
   
   // Configuración global
   const [config, setConfig] = useState<TelnyxGlobalConfig>(DEFAULT_CONFIG);
@@ -211,7 +211,7 @@ export default function TelnyxAdminHub() {
       unsubNumbers();
       unsubAssignments();
     };
-  }, []);
+  }, [loadTokenErrors]);
 
   // Cargar lista de agentes para asignar credenciales (al nivel superior del componente)
   useEffect(() => {
