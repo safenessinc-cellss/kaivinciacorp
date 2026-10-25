@@ -126,32 +126,32 @@ export default async function handler(req: any, res: any) {
         return;
       }
       Object.assign(existing, verifiedProfile.data());
-    } else if (existing.status === 'active') {
-      const before = { status: existing.status || null, role: existing.role || null };
+    } else if (String(existing.status || '').toLowerCase() === 'active') {
+      // Legacy accounts marked "active" were previously authorized. Migrate the
+      // old state to the canonical approval state without stripping their role.
+      const migratedRole = String(existing.role || '').trim().toLowerCase();
+      const safeRole = migratedRole && migratedRole !== 'none' ? migratedRole : 'agent';
       await userRef.set({
-        status: 'pending',
-        role: 'none',
+        status: 'approved',
+        role: safeRole,
+        approvedBy: existing.approvedBy || 'system-bootstrap-migration',
+        approvedAt: existing.approvedAt || FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       }, { merge: true });
 
       await adminDb.collection('audit_logs').add({
-        action: 'user.legacy_access_locked',
+        action: 'user.legacy_access_migrated',
         actorUid: 'system-bootstrap',
         targetUid: decoded.uid,
         targetEmail: email || null,
-        before,
-        after: { status: 'pending', role: 'none' },
+        before: { status: existing.status || null, role: existing.role || null },
+        after: { status: 'approved', role: safeRole },
         createdAt: FieldValue.serverTimestamp(),
       });
 
-      existing.status = 'pending';
-      existing.role = 'none';
-      if (decoded.role === 'superadmin') {
-        const authRecord = await adminAuth.getUser(decoded.uid);
-        const { role: _removedRole, ...otherClaims } = authRecord.customClaims || {};
-        await adminAuth.setCustomUserClaims(decoded.uid, otherClaims);
-        await adminAuth.revokeRefreshTokens(decoded.uid);
-      }
+      existing.status = 'approved';
+      existing.role = safeRole;
+      existing.approvedBy = existing.approvedBy || 'system-bootstrap-migration';
     }
 
     res.statusCode = 200;
