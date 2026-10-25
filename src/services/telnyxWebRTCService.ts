@@ -7,6 +7,7 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { TelnyxRTC } from '@telnyx/webrtc';
+import { formatPhoneE164 } from '../utils/phone';
 
 // Token JWT por defecto para inicialización del SDK de Telnyx WebRTC
 export let TELNYX_WEBRTC_LOGIN_TOKEN = '';
@@ -16,24 +17,11 @@ export let TELNYX_WEBRTC_LOGIN_TOKEN = '';
  * 10 dígitos nacionales o 11 empezando por 1; otros países deben incluir +.
  */
 export function normalizeTelnyxE164(value: unknown, label = 'Número'): string {
-  const raw = String(value ?? '').trim();
-  const digits = raw.replace(/\D/g, '');
-  let normalized = '';
-
-  if (raw.startsWith('+')) {
-    normalized = `+${digits}`;
-  } else if (digits.length === 10) {
-    normalized = `+1${digits}`;
-  } else if (digits.length === 11 && digits.startsWith('1')) {
-    normalized = `+${digits}`;
-  } else {
-    throw new Error(`${label}: introduce un número válido en formato internacional (E.164), por ejemplo +12132288500.`);
+  try {
+    return formatPhoneE164(value, 'MX');
+  } catch {
+    throw new Error(`${label}: introduce un número válido en formato internacional E.164, por ejemplo +525512345678.`);
   }
-
-  if (!/^\+[1-9]\d{7,14}$/.test(normalized)) {
-    throw new Error(`${label}: formato no válido. Usa el formato internacional E.164, por ejemplo +12132288500.`);
-  }
-  return normalized;
 }
 
 /**
@@ -407,12 +395,33 @@ class TelnyxWebRTCService {
     if (!profile || String(profile.status || '').toLowerCase() !== 'approved') {
       throw new Error('Tu cuenta no está aprobada para realizar llamadas.');
     }
-    if (!profile.assignedCallerId || !profile.assignedSipCredentialId) {
-      throw new Error('Tu número de origen no está configurado. Contacta al administrador para asignarte un Caller ID real y una credencial SIP de Telnyx.');
+
+    // The assignment document is authoritative; the user profile is a legacy fallback.
+    let assignment: any = null;
+    try {
+      const assignmentSnap = await getDoc(doc(db, 'telnyx_agent_assignments', currentUser.uid));
+      if (assignmentSnap.exists()) assignment = assignmentSnap.data();
+    } catch {
+      // The token endpoint independently validates ownership before issuing a session.
     }
-    const assignedCallerId = validateTelnyxCallerId(profile.assignedCallerId);
-    if (requestedCallerId !== assignedCallerId) {
-      throw new Error('El Caller ID no coincide con el número SIP asignado a tu usuario. Solicita la asignación al SuperAdmin.');
+    const assignedCredentialId = String(assignment?.telnyxCredentialId || profile.assignedSipCredentialId || '').trim();
+    const assignedCallerIdValue = String(assignment?.defaultCallerId || profile.assignedCallerId || '').trim();
+    const allowedCallerIds = Array.isArray(assignment?.authorizedNumbers)
+      ? assignment.authorizedNumbers.map((value: unknown) => {
+          try { return validateTelnyxCallerId(value); } catch { return ''; }
+        }).filter(Boolean)
+      : [];
+
+    if (!assignedCallerIdValue || !assignedCredentialId) {
+      throw new Error('Tu línea telefónica no está configurada. Contacta al administrador para asignarte una línea SIP y un Caller ID.');
+    }
+
+    const assignedCallerId = validateTelnyxCallerId(assignedCallerIdValue);
+    if (requestedCallerId !== assignedCallerId && !allowedCallerIds.includes(requestedCallerId)) {
+      throw new Error('El Caller ID no está autorizado para tu usuario. Selecciona un número asignado por tu administrador.');
+    }
+    if (allowedCallerIds.length > 0 && !allowedCallerIds.includes(requestedCallerId)) {
+      throw new Error('El Caller ID seleccionado no está en tu lista de números autorizados.');
     }
 
     if (!this.client?.newCall) {
@@ -425,7 +434,7 @@ class TelnyxWebRTCService {
         destinationNumber: normalizedDestination,
         callerNumber: assignedCallerId,
         remoteElement: 'remote-audio',
-        clientState: btoa(JSON.stringify({ userId: currentUser.uid, sipCredentialId: profile.assignedSipCredentialId || null }))
+        clientState: btoa(JSON.stringify({ userId: currentUser.uid, sipCredentialId: assignedCredentialId || null }))
       });
     } catch (error) {
       const message = explainTelnyxError(error);
