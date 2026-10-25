@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  collection, onSnapshot, updateDoc, doc, addDoc, deleteDoc, 
+  collection, onSnapshot, updateDoc, doc, addDoc, 
   query, orderBy, limit, serverTimestamp, setDoc, getDoc 
 } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../firebase';
@@ -105,6 +105,7 @@ export default function SuperAdmin() {
   // Auth Timing State
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const isRootUser = user?.email?.toLowerCase() === 'safeness.c.a@gmail.com';
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -276,17 +277,26 @@ export default function SuperAdmin() {
   };
 
   const handleDeleteUserPermanently = async () => {
-    if (!userToDelete) return;
+    if (!userToDelete || !isRootUser) return;
+    const targetEmail = String(userToDelete.email || '').trim();
+    if (!targetEmail || deleteConfirmInput !== targetEmail || !auth.currentUser) return;
     setIsDeleting(true);
     try {
-      await deleteDoc(doc(db, 'users', userToDelete.id));
+      const token = await auth.currentUser.getIdToken();
+      const response = await fetch('/api/auth/delete-user', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userToDelete.id }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'La API rechazó la eliminación.');
 
       await addDoc(collection(db, 'audit_logs'), {
-        userId: 'system_superadmin',
+        userId: auth.currentUser.uid,
         action: 'DELETE_USER_PERMANENT',
         resourceType: 'User',
         resourceId: userToDelete.id,
-        details: `Usuario ${userToDelete.email || userToDelete.id} purgado definitivamente del sistema.`,
+        details: `Usuario ${targetEmail} purgado definitivamente por la cuenta root.`,
         timestamp: serverTimestamp(),
         ipAddress: '127.0.0.1'
       });
@@ -295,7 +305,8 @@ export default function SuperAdmin() {
       setDeleteConfirmInput('');
       triggerFeedback('Usuario eliminado definitivamente del sistema.');
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `users/${userToDelete.id}`);
+      console.error('[SuperAdmin] deletion rejected:', error);
+      triggerFeedback(error instanceof Error ? error.message : 'No se pudo eliminar el usuario.');
     } finally {
       setIsDeleting(false);
     }
@@ -605,14 +616,17 @@ export default function SuperAdmin() {
                               <Briefcase className="w-4 h-4" />
                             </button>
 
-                            {/* Delete User Permanently */}
-                            <button 
-                              onClick={() => setUserToDelete(user)}
-                              title="Eliminar Usuario Definitivamente" 
-                              className="p-2 bg-red-50 text-red-500 hover:text-white hover:bg-red-600 rounded-xl transition-all border border-red-200"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            {/* Solo la cuenta root puede solicitar la eliminación permanente. */}
+                            {isRootUser && (
+                              <button 
+                                onClick={() => { setDeleteConfirmInput(''); setUserToDelete(user); }}
+                                title="Eliminar Usuario Definitivamente (solo root)" 
+                                aria-label={`Eliminar usuario ${user.email || user.name}`}
+                                className="p-2 bg-red-50 text-red-500 hover:text-white hover:bg-red-600 rounded-xl transition-all border border-red-200"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1120,7 +1134,7 @@ export default function SuperAdmin() {
       )}
 
       {/* MODAL 3: PERMANENT USER DELETION CONFIRMATION */}
-      {userToDelete && (
+      {userToDelete && isRootUser && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden border border-red-200">
             <div className="p-6 bg-red-50 border-b border-red-100 flex items-center gap-3">
@@ -1140,13 +1154,13 @@ export default function SuperAdmin() {
 
               <div>
                 <label className="block text-[11px] font-bold text-gray-600 mb-1">
-                  Escribe <span className="text-red-600 font-mono">ELIMINAR</span> para confirmar:
+                  Escribe el email exacto <span className="text-red-600 font-mono">{userToDelete.email}</span> para confirmar:
                 </label>
                 <input 
                   type="text"
                   value={deleteConfirmInput}
                   onChange={e => setDeleteConfirmInput(e.target.value)}
-                  placeholder="ELIMINAR"
+                  placeholder={userToDelete.email || "email@dominio.com"}
                   className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl font-mono focus:ring-red-500 focus:border-red-500"
                 />
               </div>
@@ -1165,7 +1179,7 @@ export default function SuperAdmin() {
               </button>
               <button 
                 type="button"
-                disabled={deleteConfirmInput !== 'ELIMINAR' || isDeleting}
+                disabled={deleteConfirmInput !== String(userToDelete.email || '').trim() || isDeleting}
                 onClick={handleDeleteUserPermanently}
                 className="px-5 py-2 text-xs font-black uppercase tracking-wider text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 rounded-xl shadow-lg transition-all"
               >
