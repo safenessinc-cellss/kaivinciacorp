@@ -29,7 +29,7 @@ export default async function handler(req: any, res: any) {
     let assignedCallerId = String(profile.assignedCallerId || '');
     let usesAdminHubAssignment = false;
 
-    if (!credentialIdForAssignment || !/^\\+[1-9]\\d{7,14}$/.test(assignedCallerId)) {
+    if (!credentialIdForAssignment || !/^\+[1-9]\d{7,14}$/.test(assignedCallerId)) {
       const agentAssignmentSnap = await adminDb.collection('telnyx_agent_assignments').doc(user.uid).get();
       const agentAssignment = agentAssignmentSnap.exists ? agentAssignmentSnap.data() || {} : null;
       const authorizedNumbers = Array.isArray(agentAssignment?.authorizedNumbers)
@@ -43,7 +43,7 @@ export default async function handler(req: any, res: any) {
       usesAdminHubAssignment = Boolean(credentialIdForAssignment && assignedCallerId);
     }
 
-    if (!credentialIdForAssignment || !/^\\+[1-9]\\d{7,14}$/.test(assignedCallerId)) {
+    if (!credentialIdForAssignment || !/^\+[1-9]\d{7,14}$/.test(assignedCallerId)) {
       json(res, 403, { error: 'SIP_ASSIGNMENT_REQUIRED', message: 'Falta asignar al usuario una credencial SIP y un Caller ID autorizado. En Telnyx Admin Hub, asigna la credencial y guarda un número predeterminado autorizado.' });
       return;
     }
