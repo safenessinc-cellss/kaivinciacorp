@@ -67,8 +67,9 @@ async function getFirebaseUser(req: any, res: any): Promise<VerifiedAppUser | nu
   const profile = profileSnap.data() || {};
   const status = String(profile.status || 'pending').toLowerCase();
   if (status !== 'approved') {
-    respondError(res, 403, status === 'blocked' ? 'ACCOUNT_BLOCKED' : 'APPROVAL_REQUIRED',
-      status === 'blocked' ? 'Tu cuenta está bloqueada.' : 'Tu cuenta está pendiente de aprobación.');
+    const denied = ['blocked', 'rejected', 'suspended'].includes(status);
+    respondError(res, 403, denied ? 'ACCOUNT_BLOCKED' : 'APPROVAL_REQUIRED',
+      denied ? 'Tu cuenta está suspendida o rechazada. Contacta al SuperAdmin.' : 'Tu cuenta está pendiente de aprobación.');
     return null;
   }
 
