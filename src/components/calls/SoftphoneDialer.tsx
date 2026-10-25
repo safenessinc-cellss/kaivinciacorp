@@ -1043,7 +1043,7 @@ export default function SoftphoneDialer({
           {callStatus !== 'idle' && callStatus !== 'ended' && (
             <section className="ios-call-active flex items-center gap-4 px-4 py-5 my-3 rounded-2xl" aria-live="polite" aria-label="Estado de llamada activa">
               <div className="ios-call-avatar flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-xl font-semibold" aria-hidden="true">
-                {(selectedClientName || 'KC').trim().split(/\\s+/).slice(0, 2).map((part: string) => part[0]).join('').toUpperCase()}
+                {(selectedClientName || 'KC').trim().split(/\s+/).slice(0, 2).map((part: string) => part[0]).join('').toUpperCase()}
               </div>
               <div className="min-w-0 flex-1 text-center sm:text-left">
                 <div className="text-base font-semibold truncate">{selectedClientName || 'Contacto'}</div>
