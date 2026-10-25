@@ -1,4 +1,5 @@
 import { MetaBackendService } from '../server/metaBackend.js';
+import { hasPermission, json, requireApprovedUser } from '../server/_lib/authz.js';
 import type { MetaChannel, MetaSendPayload } from '../src/types/meta.js';
 
 export default async function handler(req: any, res: any) {
@@ -21,17 +22,10 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    // 1. Verificación de Autenticación de Firebase
-    const authHeader = req.headers['authorization'] || '';
-    const authUser = await MetaBackendService.verifyAuthToken(authHeader);
-
-    // En producción se exige token de sesión válido; en dev se permite X-Dev-UID para pruebas asistidas
-    if (!authUser && !req.headers['x-dev-uid'] && process.env.NODE_ENV === 'production') {
-      res.statusCode = 401;
-      res.end(JSON.stringify({
-        success: false,
-        error: 'No autorizado. Se requiere token de autenticación de Firebase válido.'
-      }));
+    const authUser = await requireApprovedUser(req, res);
+    if (!authUser) return;
+    if (!hasPermission(authUser, 'marketing')) {
+      json(res, 403, { success: false, error: 'PERMISSION_DENIED', message: 'No tienes permiso para utilizar Marketing/Meta.' });
       return;
     }
 
@@ -105,7 +99,7 @@ export default async function handler(req: any, res: any) {
     }
 
     // 5. Auditoría del envío
-    console.log(`[AUDIT] Action: META_MESSAGE_SENT | Channel: ${channel} | Recipient: ${recipient} | User: ${authUser?.email || 'system'} | MessageId: ${sendResult?.messageId}`);
+    console.log(`[AUDIT] Action: META_MESSAGE_SENT | Channel: ${channel} | Recipient: ${recipient} | User: ${authUser.email || 'system'} | MessageId: ${sendResult?.messageId}`);
 
     res.statusCode = 200;
     res.end(JSON.stringify({
