@@ -28,7 +28,11 @@ const PERMISSION_FOR_PATH: Record<string, string> = {
   '/crm/projects': 'projects', '/crm/reports': 'reports', '/crm/academy-internal': 'academy',
   '/crm/team': 'team_management', '/crm/calendar': 'calendar', '/crm/chat': 'chat',
   '/crm/clients': 'clients', '/crm/operations': 'operations', '/crm/call-center': 'call_center',
-  '/crm/integrations': 'integrations', '/crm/drive': 'documents', '/crm/audits': 'audits'
+  '/crm/integrations': 'integrations', '/crm/drive': 'documents', '/crm/audits': 'audits',
+  '/crm/tasks': 'operations', '/crm/manuales': 'documents', '/crm/nervous': 'dashboard',
+  '/crm/strategic-report': 'reports', '/crm/strategy-blog': 'reports', '/crm/form-templates': 'operations',
+  '/crm/digital-products': 'academy', '/crm/user-portal': 'academy', '/crm/helpdesk': 'chat',
+  '/crm/tactical': 'operations', '/crm/turs': 'operations', '/crm/client-portal': 'clients'
 };
 
 export default function CRMLayout({ userData }: { userData: any }) {
