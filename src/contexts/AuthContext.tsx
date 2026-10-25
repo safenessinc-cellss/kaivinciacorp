@@ -46,8 +46,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let unsubProfile: (() => void) | null = null;
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
+      // Firebase puede restaurar sesiones antiguas en navegadores donde persistía localmente.
+      // Sin confirmación explícita en esta pestaña, se cierra esa sesión.
+      const sessionConfirmed = typeof sessionStorage !== 'undefined'
+        && sessionStorage.getItem('kaivincia_session_confirmed') === 'true';
+      const loginInProgress = typeof sessionStorage !== 'undefined'
+        && sessionStorage.getItem('kaivincia_login_in_progress') === 'true';
+      if (currentUser && !sessionConfirmed && !loginInProgress) {
+        await fbSignOut(auth).catch(() => undefined);
+        setUser(null);
+        setUserData(null);
+        setLoading(false);
+        return;
+      }
 
+      setUser(currentUser);
       if (unsubProfile) { unsubProfile(); unsubProfile = null; }
 
       if (currentUser) {
@@ -86,6 +99,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('kaivincia_active_user');
     localStorage.removeItem('kaivincia_operator_session');
     localStorage.removeItem('kaivincia_guest');
+    sessionStorage.removeItem('kaivincia_session_confirmed');
+    sessionStorage.removeItem('kaivincia_login_in_progress');
     await fbSignOut(auth);
     setUser(null);
     setUserData(null);
