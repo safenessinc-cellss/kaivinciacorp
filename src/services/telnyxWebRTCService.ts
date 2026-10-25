@@ -125,6 +125,7 @@ class TelnyxWebRTCService {
     this.state.lastTokenAttemptAt = attemptAt;
     this.state.lastTokenCredentialId = credentialId || null;
     this.state.lastTokenStatus = null;
+    this.state.lastError = null;
     this.notify();
 
     if (!currentUser) {
