@@ -621,10 +621,35 @@ export default function TelnyxAdminHub() {
     };
 
     try {
+      const agentAssignmentRef = doc(db, 'telnyx_agent_assignments', docId);
+      const existingAssignmentSnap = await getDoc(agentAssignmentRef);
+      const credentialId = String(existingAssignmentSnap.data()?.telnyxCredentialId || '');
+      if (!credentialId) {
+        alert('Primero asigna una credencial SIP Telnyx al usuario; después guarda sus números autorizados.');
+        return;
+      }
+      if (!defaultCallerId) {
+        alert('Selecciona al menos un Caller ID autorizado y guárdalo como predeterminado.');
+        return;
+      }
+      const credentialSnap = await getDoc(doc(db, 'telnyx_sip_credentials', credentialId));
+      if (!credentialSnap.exists() || credentialSnap.data()?.assignedTo !== docId) {
+        alert('La credencial SIP no está vinculada a este usuario. Reasígnala desde la sección de credenciales.');
+        return;
+      }
+
       // Merge is essential: handleAssignCredential stores telnyxCredentialId in
       // this same document. Replacing the document here erased that field and
       // made /api/telnyx-token return SIP_ASSIGNMENT_REQUIRED.
-      await setDoc(doc(db, 'telnyx_agent_assignments', docId), assignmentDoc, { merge: true });
+      await setDoc(agentAssignmentRef, assignmentDoc, { merge: true });
+
+      // Keep the legacy profile fields synchronized for the token endpoint and
+      // other CRM modules, using the credential verified above.
+      await updateDoc(doc(db, 'users', docId), {
+        assignedSipCredentialId: credentialId,
+        assignedCallerId: defaultCallerId,
+        updatedAt: new Date().toISOString(),
+      });
 
       // Actualizar también en los números para reflejar a qué colaboradoras están asignados
       for (const num of phoneNumbers) {
