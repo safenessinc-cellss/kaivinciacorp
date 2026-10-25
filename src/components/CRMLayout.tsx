@@ -283,7 +283,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
   return (
     <div 
-      className={`min-h-screen flex relative ${isRightSidebar ? 'flex-row-reverse' : 'flex-row'}`}
+      className={`macos-app-shell min-h-screen flex relative ${isRightSidebar ? 'flex-row-reverse' : 'flex-row'}`}
       style={{ backgroundColor: 'var(--color-background)' }}
     >
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -291,7 +291,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
       </div>
       {/* Sidebar */}
       <div 
-        className={`text-gray-300 ${isRightSidebar ? 'border-l' : 'border-r'} border-gray-800 flex flex-col h-screen transition-all duration-300 relative z-10 ${sidebarWidthClass}`}
+        className={`macos-sidebar text-gray-300 ${isRightSidebar ? 'border-l' : 'border-r'} border-gray-800 flex flex-col h-screen transition-all duration-300 relative z-10 ${sidebarWidthClass}`}
         style={{ 
           backgroundColor: 'var(--color-sidebar-bg)', 
           color: 'var(--color-sidebar-text)' 
@@ -613,7 +613,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
           </div>
         </header>
         
-        <main className="flex-1 overflow-auto p-4 sm:p-8 bg-transparent relative z-10">
+        <main className="flex-1 overflow-auto p-3 sm:p-5 bg-transparent relative z-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -621,9 +621,14 @@ export default function CRMLayout({ userData }: { userData: any }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="h-full"
+              className="macos-window h-full"
             >
-              <Outlet context={{ userData, ceoMode }} />
+              <div className="macos-window-titlebar">
+                <span className="macos-traffic-lights" aria-hidden="true"><span /><span /><span /></span>
+                <span className="flex-1 text-center text-[12px] font-medium tracking-tight" style={{ color: "var(--mac-text-secondary)" }}>Kaivincia Corp · {location.pathname.split("/").filter(Boolean).slice(-1)[0] || "Dashboard"}</span>
+                <span className="w-[42px]" aria-hidden="true" />
+              </div>
+              <div className="min-h-0 p-3 sm:p-4"><Outlet context={{ userData, ceoMode }} /></div>
             </motion.div>
           </AnimatePresence>
         </main>
