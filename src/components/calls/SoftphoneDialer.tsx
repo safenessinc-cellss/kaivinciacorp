@@ -243,7 +243,7 @@ export default function SoftphoneDialer({
               console.log('[SoftphoneDialer] 🔄 Token por expirar, renovando...');
               const res = await telnyxWebRTCService.fetchFreshTokenFromBackend();
               if (res.success && res.token && isMounted) {
-                await telnyxWebRTCService.setLoginToken(res.token, true);
+                await telnyxWebRTCService.setLoginToken(res.token, false);
                 console.log('[SoftphoneDialer] ✅ Token renovado');
               }
             }
@@ -704,7 +704,7 @@ export default function SoftphoneDialer({
     setSipLogs(prev => [
       `[${new Date().toLocaleTimeString()}] 📞 Iniciando llamada a ${dialNum} vía ${activeCarrierObj.name}`,
       ...(isTelnyxCarrier ? [
-        `[${new Date().toLocaleTimeString()}] Telnyx WebRTC SDK -> ${telnyxJwt ? `Autenticando con login_token (${telnyxJwt.slice(0, 10)}...${telnyxJwt.slice(-6)})` : 'Aviso: login_token (JWT) no configurado aún en /crm/calls'}`
+        `[${new Date().toLocaleTimeString()}] ${telnyxWebRTCService.getLoginToken() ? 'Telnyx WebRTC JWT disponible en memoria' : 'Aviso: login_token (JWT) no configurado aún en /crm/calls'}`
       ] : []),
       ...prev.slice(0, 30)
     ]);
@@ -730,42 +730,19 @@ export default function SoftphoneDialer({
         return;
       }
     } else {
-      startRingback();
-      onCallStart?.(dialNum);
-      const ringTimeout = setTimeout(() => {
-        stopRingback();
-        playConnectBeep();
-        setCallStatus('connected');
-        setSipLogs(prev => [
-          `[${new Date().toLocaleTimeString()}] SIP 200 OK -> Llamada simulada`,
-          ...prev.slice(0, 30)
-        ]);
-        callDurationIntervalRef.current = setInterval(() => setDuration(prev => prev + 1), 1000);
-      }, 3500);
-      timeoutsRef.current.push(ringTimeout);
+      setCallStatus('idle');
+      showToast('Este proveedor no tiene una integración de llamada real configurada. No se simulará una llamada.');
+      setSipLogs(prev => [
+        `[${new Date().toLocaleTimeString()}] ❌ Proveedor sin integración real; no se generó una llamada simulada.`,
+        ...prev.slice(0, 30)
+      ]);
+
     }
   };
 
-  const handleForceConnectNow = () => {
-    if (callStatus !== 'calling') return;
-    clearAllTimeouts();
-    stopRingback();
-    playConnectBeep();
-    setCallStatus('connected');
-    setSipLogs(prev => [
-      `[${new Date().toLocaleTimeString()}] FORCED 200 OK -> Sesión de llamada conectada manualmente`,
-      ...prev.slice(0, 30)
-    ]);
-    if (!callDurationIntervalRef.current) {
-      callDurationIntervalRef.current = setInterval(() => setDuration(prev => prev + 1), 1000);
-    }
-  };
 
   const handleDemoTestCall = () => {
-    const demoNumbers = ['+13055550144', '+14158829901', '+34912345678'];
-    const randomNum = demoNumbers[Math.floor(Math.random() * demoNumbers.length)];
-    setPhoneNumber(randomNum);
-    handleStartCall(randomNum);
+    showToast('La prueba de llamada requiere un número real y un Caller ID autorizado por Telnyx.');
   };
 
   const toggleMute = () => {
