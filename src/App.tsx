@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { motion } from 'motion/react';
 import { Zap } from 'lucide-react';
 
@@ -21,6 +21,7 @@ import Chat from './pages/Chat';
 import StrategicReport from './pages/StrategicReport';
 import Cobranza from './pages/Cobranza';
 import SuperAdmin from './pages/SuperAdmin';
+import AccessControl from './pages/AccessControl';
 import AppearancePanel from './components/admin/AppearancePanel';
 import AcademyInternal from './pages/AcademyInternal';
 import AcademyExternal from './pages/AcademyExternal';
@@ -233,7 +234,9 @@ export default function App() {
           <Route path="call-center" element={userData?.role !== "superadmin" && userData?.role !== "admin" ? <Navigate to="/crm/dashboard" /> : <CallCenterAdmin />} />
           
           {/* New Modules */}
-          <Route path="superadmin" element={userData?.role !== 'superadmin' ? <Navigate to="/crm/dashboard" /> : <SuperAdmin />} />
+          <Route path="superadmin" element={userData?.role !== 'superadmin' ? <Navigate to="/crm/access-denied" replace /> : <SuperAdmin />} />
+          <Route path="access-control" element={userData?.role !== 'superadmin' ? <Navigate to="/crm/access-denied" replace /> : <AccessControl />} />
+          <Route path="access-denied" element={<div className="min-h-[60vh] flex items-center justify-center p-8"><div className="max-w-lg rounded-2xl border border-red-200 bg-white p-8 text-center shadow-sm"><h1 className="text-xl font-black text-slate-900">Acceso denegado</h1><p className="mt-2 text-sm text-slate-600">Tu cuenta no tiene permisos para abrir este módulo. Si necesitas acceso, solicita la autorización al SuperAdmin.</p><a href="/crm/dashboard" className="mt-5 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white">Volver al dashboard</a></div></div>} />
           <Route path="appearance" element={userData?.role !== 'superadmin' && userData?.role !== 'admin' ? <Navigate to="/crm/dashboard" /> : <AppearancePanel />} />
           <Route path="automations" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Automations />} />
           <Route path="form-templates" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <FormTemplates />} />
