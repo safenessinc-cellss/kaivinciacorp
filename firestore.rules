@@ -431,8 +431,8 @@ service cloud.firestore {
     }
 
     match /settings/telnyx_config {
-      allow read: if hasPermission('dialer');
-      allow write: if isSuperAdmin();
+      // Legacy shared JWT configuration is never readable by operators.
+      allow read, write: if isSuperAdmin();
     }
 
     // ===============================================================
