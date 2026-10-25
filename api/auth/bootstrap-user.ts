@@ -47,7 +47,7 @@ export default async function handler(req: any, res: any) {
     return sendJson(res, 200, { user: existing });
   }
 
-  if (configuredSuperAdmin) {
+  if (email === ROOT_USER) {
     const profile = {
       uid: decoded.uid,
       name: decoded.name || email.split('@')[0] || 'Administrador',
