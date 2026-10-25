@@ -105,7 +105,21 @@ export default function App() {
 
         unsubscribeProfile = onSnapshot(doc(db, 'users', currentUser.uid), (snap) => {
           if (cancelled) return;
-          setUserData(snap.exists() ? { ...snap.data(), uid: currentUser.uid } : (bootstrapResult?.user ? { ...bootstrapResult.user, uid: currentUser.uid } : null));
+          const snapshotProfile = snap.exists() ? { ...snap.data(), uid: currentUser.uid } : null;
+          const verifiedProfile = bootstrapResult?.user && bootstrapResult.user.uid === currentUser.uid
+            ? { ...bootstrapResult.user, uid: currentUser.uid }
+            : null;
+          // Never let a stale Firestore snapshot downgrade a profile that the trusted
+          // bootstrap endpoint has just repaired and verified as an approved SuperAdmin.
+          const verifiedOwner = String(verifiedProfile?.role || '').toLowerCase() === 'superadmin'
+            && String(verifiedProfile?.status || '').toLowerCase() === 'approved';
+          const snapshotNotApproved = !snapshotProfile
+            || String(snapshotProfile.status || '').toLowerCase() !== 'approved';
+          if (verifiedOwner && snapshotNotApproved) {
+            setUserData(verifiedProfile);
+          } else {
+            setUserData(snapshotProfile || verifiedProfile);
+          }
           setLoading(false);
         }, (error) => {
           console.error('No se pudo verificar el estado del usuario:', error);
