@@ -100,17 +100,15 @@ export default function App() {
           const userSnap = await getDoc(userRef);
 
           const existingData = userSnap.exists() ? userSnap.data() : null;
-          const currentUserRole = existingData?.role ?? null;
-          const isSuperAdmin = currentUserRole === "superadmin" || currentUserRole === "admin";
-
           let currentProfile: any = null;
           if (!userSnap.exists()) {
+            // Fail closed: a new Firebase identity is not an approved CRM user.
             const newUser = {
               uid: currentUser.uid,
-              name: currentUser.displayName || "Agente TLMK",
+              name: currentUser.displayName || currentUser.email?.split("@")[0] || "Usuario",
               email: currentUser.email,
-              role: isSuperAdmin ? "superadmin" : "tlmk",
-              status: "active",
+              role: "none",
+              status: "pending",
               avatarUrl: currentUser.photoURL || "",
               createdAt: new Date().toISOString(),
               lastLogin: new Date().toISOString()
@@ -119,16 +117,10 @@ export default function App() {
             currentProfile = newUser;
           } else {
             const data = existingData!;
-            const updatedRole = data.role && data.role !== "none" ? data.role : (isSuperAdmin ? "superadmin" : "tlmk");
-            const updatedStatus = "active";
-
-            await setDoc(userRef, {
-              lastLogin: new Date().toISOString(),
-              status: updatedStatus,
-              role: updatedRole
-            }, { merge: true });
-
-            currentProfile = { ...data, status: updatedStatus, role: updatedRole };
+            // Never rewrite role/status during login; only an authorized approval
+            // workflow may change access state.
+            await setDoc(userRef, { lastLogin: new Date().toISOString() }, { merge: true });
+            currentProfile = data;
           }
 
           setUserData(currentProfile);
@@ -138,7 +130,7 @@ export default function App() {
           unsubUserDoc = onSnapshot(userRef, (docSnap) => {
             if (docSnap.exists()) {
               const liveData = docSnap.data();
-              const stabilizedData = { ...liveData, status: liveData.status || "active" };
+              const stabilizedData = { ...liveData };
               setUserData(stabilizedData);
             }
           }, (error) => {
@@ -146,11 +138,12 @@ export default function App() {
           });
         } catch (authErr) {
           console.error("Error setting up user profile:", authErr);
+          // Firestore/profile failure must not grant an operational session.
           const fallback = {
-            name: currentUser.displayName || "Agente TLMK",
+            name: currentUser.displayName || currentUser.email || "Usuario",
             email: currentUser.email,
-            role: "tlmk",
-            status: "active"
+            role: "none",
+            status: "pending"
           };
           setUser(currentUser);
           setUserData(fallback);
@@ -244,17 +237,17 @@ export default function App() {
     );
   }
 
-  // Usuario logueado pero pendiente de aprobación → pantalla de espera (sin auto-activación)
-  if (user && userData && (userData.status === 'pending' || !userData.role || userData.role === 'none')) {
+  // Fail closed: only approved profiles may enter the operational CRM.
+  const accessStatus = String(userData?.status || '').trim().toLowerCase();
+  const accessRole = String(userData?.role || '').trim().toLowerCase();
+  if (user && (!userData || !['approved', 'active'].includes(accessStatus) || !accessRole || accessRole === 'none')) {
+    if (['blocked', 'suspended', 'rejected'].includes(accessStatus)) {
+      return <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center p-6"><div className="max-w-md text-center"><h1 className="text-xl font-bold">Acceso denegado</h1><p className="mt-2">Tu cuenta está bloqueada o fue rechazada. Contacta a un administrador de Kaivincia Corp.</p></div></div>;
+    }
     return <PendingApproval />;
   }
 
-  const effectiveUserData = userData || {
-    name: user?.displayName || 'Agente TLMK',
-    email: user?.email || 'operador@kaivincia.com',
-    role: 'tlmk',
-    status: 'active'
-  };
+  const effectiveUserData = userData;
 
   const hasAccess = Boolean(user || isGuest);
 
