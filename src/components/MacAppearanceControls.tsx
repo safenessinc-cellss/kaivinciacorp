@@ -12,7 +12,7 @@ const ACCENTS: { id: Accent; label: string; color: string }[] = [
   { id: 'pink', label: 'Rosa', color: '#FF2D55' },
   { id: 'red', label: 'Rojo', color: '#FF3B30' },
   { id: 'orange', label: 'Naranja', color: '#FF9500' },
-  { id: 'yellow', label: 'Amarillo', color: '#B88700' },
+  { id: 'yellow', label: 'Amarillo', color: '#FFCC00' },
   { id: 'green', label: 'Verde', color: '#34C759' },
   { id: 'mint', label: 'Menta', color: '#00C7BE' },
   { id: 'teal', label: 'Teal', color: '#30B0C7' },
