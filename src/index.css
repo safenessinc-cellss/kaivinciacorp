@@ -236,7 +236,18 @@
     color: #0f172a !important;
   }
 
-  [class~="text-white"] { color: #1e293b !important; }
+  /* Solo convertir texto blanco dentro de superficies que pasaron a ser claras. */
+  [class~="bg-slate-950/95"].text-white,
+  [class~="bg-slate-950"].text-white,
+  [class~="bg-slate-900"].text-white,
+  [class~="bg-slate-900/90"].text-white,
+  [class~="bg-slate-800"].text-white,
+  [class~="bg-gray-900"].text-white,
+  [class~="bg-gray-800"].text-white,
+  [class~="bg-black"].text-white,
+  :where([class~="bg-slate-950/95"], [class~="bg-slate-950"], [class~="bg-slate-900"], [class~="bg-slate-900/90"], [class~="bg-slate-800"], [class~="bg-gray-900"], [class~="bg-gray-800"], [class~="bg-black"]) [class~="text-white"]:not([class~="bg-emerald-500"]):not([class~="bg-emerald-400"]):not([class~="bg-rose-500"]):not([class~="bg-rose-400"]):not([class~="bg-cyan-500"]):not([class~="bg-blue-600"]) {
+    color: #1e293b !important;
+  }
   [class~="text-slate-100"] { color: #0f172a !important; }
   [class~="text-slate-200"] { color: #1e293b !important; }
   [class~="text-slate-300"] { color: #334155 !important; }
