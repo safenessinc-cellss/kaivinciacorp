@@ -4,7 +4,7 @@
  * Documentación oficial: https://developers.telnyx.com/docs/webrtc
  */
 
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { TelnyxRTC } from '@telnyx/webrtc';
 
@@ -48,6 +48,18 @@ export function validateTelnyxCallerId(value: unknown): string {
   return callerId;
 }
 
+function explainTelnyxError(error: any): string {
+  const raw = String(error?.message || error?.reason || error?.code || error || '');
+  const code = String(error?.code || error?.errorCode || '');
+  if (/D1|channel limit|concurrent|user channel limit/i.test(raw + ' ' + code)) {
+    return 'Telnyx alcanzó el límite de llamadas/canales simultáneos de la cuenta (403 D1). Finaliza otra llamada o solicita a Telnyx aumentar el límite.';
+  }
+  if (/D49|originator number is invalid|caller.?id.*invalid/i.test(raw + ' ' + code)) {
+    return 'Telnyx rechazó el Caller ID (403 D49). Verifica que el número E.164 esté activo y autorizado en la conexión Telnyx.';
+  }
+  return raw || 'Error de conexión Telnyx WebRTC.';
+}
+
 export interface TelnyxWebRTCState {
   isInitialized: boolean;
   isConnected: boolean;
@@ -68,31 +80,6 @@ class TelnyxWebRTCService {
   };
 
   private listeners: Array<(state: TelnyxWebRTCState) => void> = [];
-
-  constructor() {
-    this.initTokenSync();
-  }
-
-  /**
-   * Sincroniza el login_token (JWT) desde Firestore (settings/telnyx_config)
-   */
-  private initTokenSync() {
-    try {
-      onSnapshot(doc(db, 'settings', 'telnyx_config'), (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          const token = (data.login_token || data.webrtcJwt || '').trim();
-          if (token && token !== this.state.loginToken) {
-            this.setLoginToken(token, false);
-          }
-        }
-      }, (err) => {
-        console.warn('[TelnyxWebRTC] No se pudo sincronizar login_token desde Firestore:', err);
-      });
-    } catch (err) {
-      console.warn('[TelnyxWebRTC] Error al inicializar listener de Firestore:', err);
-    }
-  }
 
   /**
    * Actualiza el login_token (JWT) en memoria y opcionalmente en Firestore
@@ -141,7 +128,7 @@ class TelnyxWebRTCService {
       }
 
       if (data.token) {
-        await this.setLoginToken(data.token, true);
+        await this.setLoginToken(data.token, false);
         await this.initClient(data.token);
         return {
           success: true,
@@ -191,7 +178,7 @@ class TelnyxWebRTCService {
     }
 
     try {
-      console.log('[TelnyxWebRTC] Inicializando TelnyxRTC con login_token:', `${token.slice(0, 15)}...${token.slice(-10)}`);
+      console.log('[TelnyxWebRTC] Inicializando cliente TelnyxRTC con token de sesión temporal.');
 
       // Desconectar cliente existente antes de crear uno nuevo
       if (this.client) {
@@ -246,7 +233,7 @@ class TelnyxWebRTCService {
 
       this.client.on('telnyx.error', (error: any) => {
         console.error('[TelnyxWebRTC] ❌ Error en cliente:', error);
-        this.state.lastError = error?.message || 'Error en conexión Telnyx WebRTC';
+        this.state.lastError = explainTelnyxError(error);
         this.notify();
       });
 
@@ -281,22 +268,38 @@ class TelnyxWebRTCService {
       throw new Error('Falta el login_token de Telnyx WebRTC.');
     }
 
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error('Inicia sesión para realizar llamadas.');
     const normalizedDestination = normalizeTelnyxE164(destinationNumber, 'Destino');
-    const normalizedCallerId = validateTelnyxCallerId(callerIdNumber);
+    const requestedCallerId = validateTelnyxCallerId(callerIdNumber);
+    const profileSnap = await getDoc(doc(db, 'users', currentUser.uid));
+    const profile = profileSnap.exists() ? profileSnap.data() : null;
+    if (!profile || String(profile.status || '').toLowerCase() !== 'approved') {
+      throw new Error('Tu cuenta no está aprobada para realizar llamadas.');
+    }
+    const assignedCallerId = validateTelnyxCallerId(profile.assignedCallerId || '');
+    if (requestedCallerId !== assignedCallerId) {
+      throw new Error('El Caller ID no coincide con el número SIP asignado a tu usuario. Solicita la asignación al SuperAdmin.');
+    }
 
     if (!this.client?.newCall) {
       throw new Error('El cliente TelnyxRTC no está inicializado. Ve a la pestaña de configuración del softphone y pulsa "Configurar JWT" para autenticarte con Telnyx.');
     }
 
-    console.log(`[TelnyxWebRTC] Iniciando llamada a ${normalizedDestination} con Caller ID ${normalizedCallerId}`);
-
-    // No se envían llamadas con Caller ID vacío, mal formado o ficticio.
-    // Telnyx sigue siendo la autoridad final sobre propiedad/verificación del número.
-    this.currentCall = this.client.newCall({
-      destinationNumber: normalizedDestination,
-      callerNumber: normalizedCallerId,
-      remoteElement: 'remote-audio'
-    });
+    console.log(`[TelnyxWebRTC] Iniciando llamada a ${normalizedDestination}; Caller ID asignado verificado.`);
+    try {
+      this.currentCall = this.client.newCall({
+        destinationNumber: normalizedDestination,
+        callerNumber: assignedCallerId,
+        remoteElement: 'remote-audio',
+        clientState: btoa(JSON.stringify({ userId: currentUser.uid, sipCredentialId: profile.assignedSipCredentialId || null }))
+      });
+    } catch (error) {
+      const message = explainTelnyxError(error);
+      this.state.lastError = message;
+      this.notify();
+      throw new Error(message);
+    }
 
     console.log('[TelnyxWebRTC] Llamada creada:', this.currentCall);
 
@@ -336,6 +339,6 @@ class TelnyxWebRTCService {
 
 export const telnyxWebRTCService = new TelnyxWebRTCService();
 
-export const updateTelnyxLoginToken = (jwt: string, persistToFirestore = true) => {
+export const updateTelnyxLoginToken = (jwt: string, persistToFirestore = false) => {
   return telnyxWebRTCService.setLoginToken(jwt, persistToFirestore);
 };

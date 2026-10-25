@@ -11,17 +11,34 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth } from '../firebase';
+import { usePermissions } from '../hooks/usePermissions';
 import { signOut } from 'firebase/auth';
 import { LOGO_FULL, LOGO_ICON } from '../constants/images';
 import CommandBar from './CommandBar';
+import MacAppearancePopover from './MacAppearancePopover';
 import HelpDrawer from './help/HelpDrawer';
 import NotificationCenter from './NotificationCenter';
 import LanguageSelector from './LanguageSelector';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAppearance } from '../contexts/AppearanceContext';
 
+const PERMISSION_FOR_PATH: Record<string, string> = {
+  '/crm/dashboard': 'dashboard', '/crm/pipeline': 'tlmk_sales', '/crm/calls': 'dialer',
+  '/crm/cobranza': 'collections', '/crm/recruitment': 'talent', '/crm/payroll': 'payroll',
+  '/crm/accounting': 'accounting', '/crm/billing': 'billing', '/crm/marketing': 'marketing',
+  '/crm/projects': 'projects', '/crm/reports': 'reports', '/crm/academy-internal': 'academy',
+  '/crm/team': 'team_management', '/crm/calendar': 'calendar', '/crm/chat': 'chat',
+  '/crm/clients': 'clients', '/crm/operations': 'operations', '/crm/call-center': 'call_center',
+  '/crm/integrations': 'integrations', '/crm/drive': 'documents', '/crm/audits': 'audits',
+  '/crm/tasks': 'operations', '/crm/manuales': 'documents', '/crm/nervous': 'dashboard',
+  '/crm/strategic-report': 'reports', '/crm/strategy-blog': 'reports', '/crm/form-templates': 'operations',
+  '/crm/digital-products': 'academy', '/crm/user-portal': 'academy', '/crm/helpdesk': 'chat',
+  '/crm/tactical': 'operations', '/crm/turs': 'operations', '/crm/client-portal': 'clients'
+};
+
 export default function CRMLayout({ userData }: { userData: any }) {
   const { t } = useLanguage();
+  const { hasPermission } = usePermissions();
   const { appearance } = useAppearance();
   const location = useLocation();
   const navigate = useNavigate();
@@ -212,6 +229,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
           title: t('nav.groups.config', 'CONFIGURACIÓN'),
           items: [
             { name: t('nav.superadmin', 'SuperAdmin'), href: '/crm/superadmin', icon: ShieldAlert },
+            { name: 'Control de acceso', href: '/crm/access-control', icon: ShieldCheck, color: 'text-cyan-600' },
             { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[#EC4899]' },
             { name: t('nav.security_center', 'Security Center'), href: '/crm/security', icon: ShieldCheck, color: 'text-[#FACC15]' },
             { name: t('nav.automations', 'Automatizaciones'), href: '/crm/automations', icon: Zap },
@@ -236,14 +254,24 @@ export default function CRMLayout({ userData }: { userData: any }) {
     ];
   }, [userRole, isAdminOrFin, isSuperAdmin, t]);
 
+  const authorizedMenuGroups = useMemo(() => menuGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => {
+      const path = item.href.split('?')[0];
+      const permission = PERMISSION_FOR_PATH[path];
+      if (path === '/crm/superadmin' || path === '/crm/access-control') return isSuperAdmin;
+      return !permission || hasPermission(permission);
+    })
+  })).filter(group => group.items.length > 0), [menuGroups, hasPermission, isSuperAdmin]);
+
   const filteredMenuGroups = useMemo(() => {
-    if (!menuSearch) return menuGroups;
+    if (!menuSearch) return authorizedMenuGroups;
     const lowerSearch = menuSearch.toLowerCase();
-    return menuGroups.map(group => ({
+    return authorizedMenuGroups.map(group => ({
       ...group,
       items: group.items.filter(item => item.name.toLowerCase().includes(lowerSearch))
     })).filter(group => group.items.length > 0);
-  }, [menuGroups, menuSearch]);
+  }, [authorizedMenuGroups, menuSearch]);
 
   // Generate Breadcrumbs based on current path
   const generateBreadcrumbs = () => {
@@ -283,7 +311,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
   return (
     <div 
-      className={`min-h-screen flex relative ${isRightSidebar ? 'flex-row-reverse' : 'flex-row'}`}
+      className={`mac-app-shell min-h-screen flex relative ${isRightSidebar ? 'flex-row-reverse' : 'flex-row'}`}
       style={{ backgroundColor: 'var(--color-background)' }}
     >
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -291,13 +319,13 @@ export default function CRMLayout({ userData }: { userData: any }) {
       </div>
       {/* Sidebar */}
       <div 
-        className={`text-gray-300 ${isRightSidebar ? 'border-l' : 'border-r'} border-gray-800 flex flex-col h-screen transition-all duration-300 relative z-10 ${sidebarWidthClass}`}
+        className={`mac-sidebar text-gray-300 ${isRightSidebar ? 'border-l' : 'border-r'} flex flex-col h-screen transition-all duration-300 relative z-10 ${sidebarWidthClass}`}
         style={{ 
           backgroundColor: 'var(--color-sidebar-bg)', 
           color: 'var(--color-sidebar-text)' 
         }}
       >
-        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800 shrink-0">
+        <div className="mac-sidebar-brand h-16 flex items-center justify-between px-4 border-b shrink-0">
           {!isSidebarCollapsed ? (
             <img 
               src={LOGO_FULL}
@@ -317,7 +345,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
         {/* Quick Access Icons */}
         {!isSidebarCollapsed && (
-          <div className="flex items-center justify-around p-3 border-b border-gray-800 shrink-0 bg-[#111]">
+          <div className="mac-sidebar-quick flex items-center justify-around p-3 border-b shrink-0">
             <Link to="/crm/chat" className="p-2 rounded-lg hover:bg-gray-800 hover:text-[#00F0FF] transition-colors relative group" title={t('nav.neural_chat', 'Chat Interno')}>
               <MessageSquare className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -333,7 +361,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
         {/* Menu Search */}
         {!isSidebarCollapsed && (
-          <div className="p-3 shrink-0">
+          <div className="mac-sidebar-search p-3 shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <input 
@@ -415,7 +443,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
         </div>
 
         {/* User Profile Footer */}
-        <div className="p-4 border-t border-gray-800 shrink-0 bg-[#111]">
+        <div className="mac-sidebar-footer p-4 border-t shrink-0">
           {!isSidebarCollapsed ? (
             <>
               <div className="flex items-center gap-3 mb-4 px-2">
@@ -475,8 +503,27 @@ export default function CRMLayout({ userData }: { userData: any }) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
+      <div className="mac-main flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+        <div className="mac-titlebar shrink-0" aria-label="Barra de menús de Kaivincia">
+          <div className="mac-traffic-lights" aria-label="Controles de ventana">
+            <button type="button" className="mac-traffic-light close" aria-label="Cerrar panel de comandos" onClick={() => setIsCommandBarOpen(false)} />
+            <button type="button" className="mac-traffic-light minimize" aria-label="Contraer barra lateral" onClick={() => setIsSidebarCollapsed(true)} />
+            <button type="button" className="mac-traffic-light zoom" aria-label="Expandir barra lateral" onClick={() => setIsSidebarCollapsed(false)} />
+          </div>
+          <span className="mac-titlebar-app">Kaivincia</span>
+          <nav className="mac-menubar-items" aria-label="Menú principal">
+            <button type="button" onClick={() => navigate('/crm/dashboard')}>Archivo</button>
+            <button type="button" onClick={() => setIsCommandBarOpen(true)}>Editar</button>
+            <button type="button" onClick={() => setIsSidebarCollapsed(value => !value)}>Ver</button>
+            <button type="button" onClick={() => setIsCommandBarOpen(true)}>Ventana</button>
+            <button type="button" onClick={() => setIsCommandBarOpen(true)}>Ayuda</button>
+          </nav>
+          <div className="mac-menubar-right">
+            <span className="mac-status-indicator"><i /> En línea</span>
+            <MacAppearancePopover />
+          </div>
+        </div>
+        <header className="mac-toolbar h-14 flex items-center justify-between px-5 shrink-0 z-10">
           <div className="flex flex-1 items-center gap-4">
             <button 
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
@@ -491,7 +538,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
               <button 
                 id="btn-historical-back"
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200/80 active:bg-gray-200 border border-gray-200 rounded-xl transition-all font-bold text-xs shadow-xs active:scale-95 cursor-pointer"
+                className="mac-control flex items-center gap-1.5 px-3 py-1.5 transition-all font-bold text-xs active:scale-95 cursor-pointer"
                 title={t('header.back', 'Volver a la página anterior')}
                 aria-label="Volver"
               >
@@ -561,7 +608,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
             {/* QUICK OPERATIONAL SHORTCUTS FOR TLMK */}
             <button 
               onClick={() => navigate('/crm/calls?dialer=open')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500 hover:text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+              className="mac-control mac-control-success flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer"
               title={t('voip.title', 'Abrir Discador Telefónico VoIP')}
             >
               <PhoneCall className="w-3.5 h-3.5 animate-pulse" />
@@ -570,7 +617,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
             <button 
               onClick={() => navigate('/crm/pipeline')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#00F0FF]/10 border border-[#00F0FF]/30 text-cyan-700 hover:bg-[#00F0FF] hover:text-black text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+              className="mac-control mac-control-accent flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer"
               title={t('pipeline.title', 'Abrir Módulo de Marketing & Oportunidades')}
             >
               <Navigation className="w-3.5 h-3.5" />
@@ -579,7 +626,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
             <button 
               onClick={() => setIsCommandBarOpen(true)}
-              className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm text-gray-500 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all hover:border-[#00F0FF] group sm:min-w-[180px] cursor-pointer"
+              className="mac-search-control flex items-center gap-2 px-3 sm:px-4 py-2 text-sm transition-all group sm:min-w-[180px] cursor-pointer"
             >
               <Search className="w-4 h-4 group-hover:text-[#00F0FF]" />
               <span className="flex-1 text-left hidden sm:inline">{t('header.search_placeholder', 'Buscar o comando...')}</span>
@@ -621,7 +668,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="h-full"
+              className="mac-route-view h-full"
             >
               <Outlet context={{ userData, ceoMode }} />
             </motion.div>

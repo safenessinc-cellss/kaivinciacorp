@@ -42,54 +42,15 @@ const DEFAULT_CONFIG: TelnyxGlobalConfig = {
   connectionId: '3046958032463333200',
   connectionName: 'Kaivincia-Voice-Test',
   connectionType: 'sip_credential',
-  apiKeyMasked: 'KEY01A0••••••••••••••••••••••••',
-  webhookUrl: 'https://ais-dev-je7y4j4rkf2urn7d5cqnsz-316420818896.us-east1.run.app/api/telnyx/webhook',
+  apiKeyMasked: '',
+  webhookUrl: '',
   maxConcurrentCalls: 10,
   recordCallsByDefault: true,
   alertOnLimitReached: true,
-  lastVerificationStatus: 'active',
-  lastVerificationMessage: 'Conexión verificada en Telnyx Backbone',
+  lastVerificationStatus: 'unknown',
+  lastVerificationMessage: 'Conexión pendiente de verificación en Telnyx.',
   updatedAt: new Date().toISOString()
 };
-
-const INITIAL_DEMO_NUMBERS: TelnyxPhoneNumber[] = [
-  {
-    id: 'num_1',
-    phoneNumber: '+13055550199',
-    friendlyName: 'Línea Central Miami (Principal)',
-    status: 'assigned',
-    assignedAgentIds: [],
-    assignedAgentNames: ['Marta García', 'Carlos Ruiz'],
-    isSharedPool: true,
-    connectionId: '3046958032463333200',
-    monthlyCost: '$1.00',
-    tags: ['Ventas', 'Miami']
-  },
-  {
-    id: 'num_2',
-    phoneNumber: '+14155550142',
-    friendlyName: 'Línea Soporte San Francisco',
-    status: 'assigned',
-    assignedAgentIds: [],
-    assignedAgentNames: ['Ana Silva'],
-    isSharedPool: false,
-    connectionId: '3046958032463333200',
-    monthlyCost: '$1.00',
-    tags: ['Soporte', 'California']
-  },
-  {
-    id: 'num_3',
-    phoneNumber: '+13235550188',
-    friendlyName: 'Línea Los Ángeles Operaciones',
-    status: 'available',
-    assignedAgentIds: [],
-    assignedAgentNames: [],
-    isSharedPool: true,
-    connectionId: '3046958032463333200',
-    monthlyCost: '$1.00',
-    tags: ['Operaciones']
-  }
-];
 
 export default function TelnyxAdminHub() {
   const { t } = useLanguage();
@@ -131,7 +92,7 @@ export default function TelnyxAdminHub() {
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
 
   // Inventario de Números
-  const [phoneNumbers, setPhoneNumbers] = useState<TelnyxPhoneNumber[]>(INITIAL_DEMO_NUMBERS);
+  const [phoneNumbers, setPhoneNumbers] = useState<TelnyxPhoneNumber[]>([]);
   const [isSyncingNumbers, setIsSyncingNumbers] = useState(false);
   const [isImportingCredentials, setIsImportingCredentials] = useState(false);
   const [importedCredentials, setImportedCredentials] = useState<Array<{id:string;name:string;sipUsername:string;connectionId:string}>>([]);
@@ -190,9 +151,8 @@ export default function TelnyxAdminHub() {
         const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as TelnyxPhoneNumber));
         setPhoneNumbers(list);
       } else {
-        INITIAL_DEMO_NUMBERS.forEach(n => {
-          setDoc(doc(db, 'telnyx_phone_numbers', n.id), n).catch(console.error);
-        });
+        // An empty Telnyx inventory is a real empty state; never seed demo Caller IDs.
+        setPhoneNumbers([]);
       }
     }, (err) => console.warn('Could not load telnyx_phone_numbers:', err));
 
@@ -220,7 +180,7 @@ export default function TelnyxAdminHub() {
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
       const agents = snap.docs
         .map(d => ({ uid: d.id, ...(d.data() as any) }))
-        .filter((u: any) => u.status === 'active' || u.role === 'tlmk' || u.role === 'agente' || u.role === 'admin' || u.role === 'supervisor')
+        .filter((u: any) => u.status === 'approved' && ['tlmk', 'agente', 'admin', 'supervisor', 'sales', 'superadmin'].includes(String(u.role || '').toLowerCase()))
         .map((u: any) => ({
           uid: u.uid,
           email: u.email || u.uid,
@@ -242,12 +202,7 @@ export default function TelnyxAdminHub() {
         avatar: u.photoURL || u.name?.[0] || 'C'
       }));
     }
-    return [
-      { id: 'usr_1', name: 'Marta García', email: 'marta.garcia@kaivincia.com', role: 'Closer B2B', avatar: 'M' },
-      { id: 'usr_2', name: 'Carlos Ruiz', email: 'carlos.ruiz@kaivincia.com', role: 'Ventas Senior', avatar: 'C' },
-      { id: 'usr_3', name: 'Ana Silva', email: 'ana.silva@kaivincia.com', role: 'Soporte & Éxito', avatar: 'A' },
-      { id: 'usr_4', name: 'Miguel Rojas', email: 'miguel.rojas@kaivincia.com', role: 'Operaciones', avatar: 'M' }
-    ];
+    return [];
   }, [contextUsers]);
 
   // Probar Conexión con Telnyx

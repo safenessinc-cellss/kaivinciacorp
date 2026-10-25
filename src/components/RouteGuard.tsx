@@ -1,62 +1,48 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { AppPermission, usePermissions } from '../hooks/usePermissions';
 import PendingApproval from '../pages/PendingApproval';
 
-interface RouteGuardProps {
-  children: React.ReactNode;
-}
+const ROUTE_PERMISSIONS: Record<string, AppPermission> = {
+  dashboard: 'dashboard', 'strategic-report': 'reports', clients: 'clients',
+  pipeline: 'tlmk_sales', tasks: 'operations', calendar: 'calendar', chat: 'chat',
+  cobranza: 'collections', 'call-center': 'call_center', automations: 'operations',
+  'form-templates': 'operations', integrations: 'integrations',
+  'academy-internal': 'academy', 'academy-external': 'academy',
+  'digital-products': 'academy', calls: 'dialer', recruitment: 'talent',
+  team: 'team_management', payroll: 'payroll', accounting: 'accounting',
+  'client-management': 'clients', billing: 'billing', operations: 'operations',
+  marketing: 'marketing', projects: 'projects', reports: 'reports',
+  commissions: 'billing', tactical: 'operations', manuales: 'documents',
+  turs: 'operations', helpdesk: 'chat', drive: 'documents', audits: 'audits',
+  nervous: 'dashboard', 'strategy-blog': 'reports', 'client-portal': 'clients',
+  'user-portal': 'academy'
+};
 
-const PRIVILEGED_ROLES = ['admin', 'superadmin', 'ceo', 'gestor', 'owner', 'supervisor'];
-
-export default function RouteGuard({ children }: RouteGuardProps) {
-  const { user, userData, loading: authLoading } = useAuth();
+export default function RouteGuard({ children }: { children: React.ReactNode }) {
+  const { user, userData, loading } = useAuth();
+  const { hasPermission } = usePermissions();
   const location = useLocation();
 
-  // 1. Auth resolviendo
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
-        <div className="w-12 h-12 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
-        <p className="mt-4 text-xs font-mono text-gray-700 tracking-widest uppercase">
-          Verificando credenciales de acceso...
-        </p>
-      </div>
-    );
+  if (loading) return <div className="min-h-screen flex items-center justify-center" role="status">Verificando credenciales...</div>;
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!userData || String(userData.status || '').toLowerCase() !== 'approved') return <PendingApproval />;
+
+  const path = location.pathname.replace(/^\/crm\//, '');
+  if (path === '' || path === 'access-denied') return <>{children}</>;
+
+  const role = String(userData.role || '').toLowerCase();
+  if (path === 'superadmin' || path === 'access-control' || path === 'security') {
+    if (role !== 'superadmin') return <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
+  }
+  if (path === 'appearance' && !['superadmin', 'admin'].includes(role)) {
+    return <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
   }
 
-  // 2. Sin autenticar
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  const permission = ROUTE_PERMISSIONS[path.split('/')[0]];
+  if (!permission || !hasPermission(permission)) {
+    return <Navigate to="/crm/access-denied" state={{ from: location }} replace />;
   }
-
-  // 3. Auth OK pero aún sin doc de perfil (bootstrap en curso)
-  if (userData === null) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
-        <div className="w-12 h-12 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
-        <p className="mt-4 text-xs font-mono text-gray-700 tracking-widest uppercase">
-          Cargando perfil...
-        </p>
-      </div>
-    );
-  }
-
-  // 4. Verificar aprobación.
-  //    Regla: si status está explícitamente en pending/rejected/suspended → bloquear.
-  //    Si status es undefined pero el rol es privilegiado → tratar como aprobado
-  //    (compatibilidad con admins existentes que no tienen el campo).
-  const status = String((userData as any)?.status || '').toLowerCase();
-  const role = String((userData as any)?.role || '').toLowerCase();
-  const isPrivileged = PRIVILEGED_ROLES.includes(role);
-
-  if (status === 'pending' || status === 'rejected' || status === 'suspended') {
-    return <PendingApproval />;
-  }
-
-  if (status !== 'approved' && !isPrivileged) {
-    return <PendingApproval />;
-  }
-
   return <>{children}</>;
 }

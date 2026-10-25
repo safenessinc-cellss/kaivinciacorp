@@ -4,7 +4,7 @@ import { Clock, LogOut, ShieldAlert, Mail } from 'lucide-react';
 
 export default function PendingApproval() {
   const { userData, signOut, user } = useAuth();
-  const status = (userData as any)?.status || 'pendiente';
+  const status = String((userData as any)?.status || 'pending').toLowerCase();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -16,17 +16,18 @@ export default function PendingApproval() {
         </div>
 
         <h1 className="text-xl font-bold text-gray-900 text-center mb-2">
-          Cuenta pendiente de aprobación
+          {status === 'blocked' || status === 'rejected' ? 'Acceso denegado' : 'Cuenta pendiente de aprobación'}
         </h1>
         <p className="text-sm text-gray-600 text-center mb-6">
-          Tu cuenta <span className="text-blue-700 font-mono">{user?.email}</span> ha sido creada correctamente,
-          pero aún no ha sido autorizada por un administrador.
+          {status === 'blocked' || status === 'rejected'
+            ? <>El acceso de <span className="text-blue-700 font-mono">{user?.email}</span> está bloqueado. Contacta al SuperAdmin si crees que se trata de un error.</>
+            : <>Tu cuenta <span className="text-blue-700 font-mono">{user?.email}</span> ha sido creada, pero aún requiere aprobación explícita del SuperAdmin.</>}
         </p>
 
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6 space-y-3">
           <div className="flex items-start gap-2 text-sm text-gray-700">
             <ShieldAlert className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-            <span><strong>Acceso restringido:</strong> nadie entra al dashboard sin aprobación previa del administrador.</span>
+            <span><strong>Acceso restringido:</strong> ninguna cuenta entra al dashboard sin estado `approved` asignado por el SuperAdmin.</span>
           </div>
           <div className="flex items-start gap-2 text-sm text-gray-700">
             <Mail className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
