@@ -59,8 +59,15 @@ export default async function handler(req: any, res: any) {
         before, after: { status: 'pending', role: (existing.status === 'active' || existing.role === 'superadmin') ? 'none' : existing.role || 'none' },
         createdAt: FieldValue.serverTimestamp()
       });
+      const wasSuperAdmin = existing.role === 'superadmin';
       existing.status = 'pending';
-      if (existing.status === 'active' || existing.role === 'superadmin') existing.role = 'none';
+      if (before.status === 'active' || wasSuperAdmin) existing.role = 'none';
+      if (wasSuperAdmin || decoded.role === 'superadmin') {
+        const authRecord = await adminAuth.getUser(decoded.uid);
+        const { role: _removedRole, ...otherClaims } = authRecord.customClaims || {};
+        await adminAuth.setCustomUserClaims(decoded.uid, otherClaims);
+        await adminAuth.revokeRefreshTokens(decoded.uid);
+      }
     }
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
