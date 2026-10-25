@@ -220,7 +220,7 @@ export default function SoftphoneDialer({
         setConnectionStatus('connecting');
         setConnectionError(null);
         // El servicio comprueba la asignación antes de llamar al backend.
-        const result = await telnyxWebRTCService.fetchFreshTokenFromBackend(true);
+        const result = await telnyxWebRTCService.fetchFreshTokenFromBackend();
         if (cancelled) return;
         if (result.success) {
           setHasSipAssigned(true);
@@ -925,7 +925,7 @@ export default function SoftphoneDialer({
                   setConnectionStatus('connected');
                   setConnectionError(null);
                 } else {
-                  const noSip = /no tienes línea sip asignada/i.test(result.message);
+                  const noSip = /no tienes (?:línea sip|una línea telefónica) asignada/i.test(result.message);
                   setHasSipAssigned(!noSip);
                   setConnectionStatus('error');
                   setConnectionError(result.message);
@@ -1117,7 +1117,7 @@ export default function SoftphoneDialer({
                 }
                 setConnectionStatus('connecting');
                 setConnectionError(null);
-                const result = await telnyxWebRTCService.fetchFreshTokenFromBackend();
+                const result = await telnyxWebRTCService.fetchFreshTokenFromBackend(true);
                 if (result.success) {
                   setHasSipAssigned(true);
                   setConnectionStatus('connected');
