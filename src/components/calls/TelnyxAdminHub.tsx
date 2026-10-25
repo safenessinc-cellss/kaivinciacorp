@@ -74,7 +74,7 @@ export default function TelnyxAdminHub() {
       const currentUser = getAuth().currentUser;
       if (!currentUser) return;
       const idToken = await currentUser.getIdToken();
-      const response = await fetch('/api/telnyx-token-errors', {
+      const response = await fetch('/api/telnyx-token?diagnostics=errors', {
         headers: { Authorization: `Bearer ${idToken}` }
       });
       const data = await response.json().catch(() => ({}));
