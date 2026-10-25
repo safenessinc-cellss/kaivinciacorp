@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { GlobalProvider } from './contexts/GlobalContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AppearanceProvider } from './contexts/AppearanceContext';
+import { MacThemeProvider } from './contexts/MacThemeContext';
 import { applyAppearanceToDOM, DEFAULT_APPEARANCE } from './constants/appearance';
 
 createRoot(document.getElementById('root')!).render(
@@ -14,7 +15,9 @@ createRoot(document.getElementById('root')!).render(
       <LanguageProvider>
         <GlobalProvider>
           <AppearanceProvider>
-            <App />
+            <MacThemeProvider>
+              <App />
+            </MacThemeProvider>
           </AppearanceProvider>
         </GlobalProvider>
       </LanguageProvider>

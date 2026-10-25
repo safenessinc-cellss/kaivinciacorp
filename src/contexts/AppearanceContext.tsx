@@ -76,7 +76,7 @@ function applyCssVariablesToRoot(config: AppearanceConfig) {
   root.style.setProperty('--font-weight-base', fontWeights[config.fonts.weight] || '400');
 
   // 2. Colores principales
-  root.style.setProperty('--color-primary', config.colors.primary);
+  root.style.setProperty('--color-primary', 'var(--mac-accent, ' + config.colors.primary + ')');
   root.style.setProperty('--color-secondary', config.colors.secondary);
   root.style.setProperty('--color-background', config.colors.background);
   root.style.setProperty('--color-surface', config.colors.surface);
