@@ -21,6 +21,7 @@ import '../../styles/softphone.css';
 import SoftphoneSipConsole from './SoftphoneSipConsole';
 import { telnyxWebRTCService, normalizeTelnyxE164, validateTelnyxCallerId } from '../../services/telnyxWebRTCService';
 import { isPrivilegedRole } from '../../constants/roles';
+import { formatPhoneE164 } from '../../utils/phone';
 
 interface SoftphoneDialerProps {
   mode?: 'embedded' | 'floating';
@@ -626,10 +627,14 @@ export default function SoftphoneDialer({
   }, [duration, phoneNumber, selectedClientName, selectedCallerId, activeCarrierObj, selectedProject, isRecording, agentAssignment, onCallEnd, stopRingback, clearAllTimeouts, playHangupBeep, user]);
 
   const handleStartCall = async (targetPhone?: string) => {
-    const dialNum = targetPhone || phoneNumber;
+    let dialNum = targetPhone || phoneNumber;
     if (!dialNum || dialNum.trim().length === 0) return;
 
     const isTelnyxCarrier = selectedCarrier === 'telnyx' || activeCarrierObj.name.includes('Telnyx');
+    if (isTelnyxCarrier) {
+      try { dialNum = formatPhoneE164(dialNum, 'MX'); }
+      catch (error: any) { showToast(error?.message || 'Escribe un número válido.'); return; }
+    }
     if (isTelnyxCarrier && connectionStatus !== 'connected') {
       const message = hasSipAssigned === false
         ? 'No tienes línea SIP asignada. Contacta al administrador.'
@@ -686,12 +691,10 @@ export default function SoftphoneDialer({
     setIsOnHold(false);
     setIsRecording(false);
 
-    const telnyxJwt = telnyxWebRTCService.getLoginToken();
-
     setSipLogs(prev => [
       `[${new Date().toLocaleTimeString()}] 📞 Iniciando llamada a ${dialNum} vía ${activeCarrierObj.name}`,
       ...(isTelnyxCarrier ? [
-        `[${new Date().toLocaleTimeString()}] Telnyx WebRTC SDK -> ${telnyxJwt ? `Autenticando con login_token (${telnyxJwt.slice(0, 10)}...${telnyxJwt.slice(-6)})` : 'Aviso: login_token (JWT) no configurado aún en /crm/calls'}`
+        `[${new Date().toLocaleTimeString()}] Telnyx WebRTC SDK -> ${telnyxWebRTCService.getLoginToken() ? 'Sesión de telefonía disponible' : 'Sesión de telefonía no disponible'}`
       ] : []),
       ...prev.slice(0, 30)
     ]);
@@ -707,15 +710,32 @@ export default function SoftphoneDialer({
         ]);
         onCallStart?.(dialNum);
       } catch (err: any) {
-        console.error('[SoftphoneDialer] Error en llamada Telnyx:', err);
-        showToast(`Error: ${err.message || 'No se pudo iniciar la llamada'}`);
+        const reason = String(err?.message || 'No se pudo iniciar la llamada.');
+        const sipCode = String(err?.code || err?.sipCode || err?.status || '');
+        console.error('[SoftphoneDialer] Error en llamada Telnyx:', { sipCode, reason });
+        showToast(`No se pudo iniciar la llamada: ${reason}`);
         setSipLogs(prev => [
-          `[${new Date().toLocaleTimeString()}] ❌ Error: ${err.message}`,
+          `[${new Date().toLocaleTimeString()}] ❌ Error de llamada ${sipCode ? `(${sipCode}) ` : ''}${reason}`,
           ...prev.slice(0, 30)
         ]);
+        addDoc(collection(db, 'voip_call_history'), {
+          userId: auth.currentUser?.uid || user?.uid || '',
+          agentId: auth.currentUser?.uid || user?.uid || '',
+          destination: dialNum,
+          contactPhone: dialNum,
+          callerId: normalizedCallerId,
+          direction: 'outbound',
+          status: 'failed',
+          sipCode: sipCode || null,
+          sipReason: reason.slice(0, 500),
+          duration: 0,
+          timestamp: new Date().toISOString(),
+          startedAt: currentCallStartedAtRef.current || new Date().toISOString(),
+          endedAt: new Date().toISOString(),
+          provider: 'Telnyx'
+        }).catch((writeError) => console.warn('[SoftphoneDialer] No se pudo registrar la llamada fallida:', writeError));
         setCallStatus('idle');
         return;
-      }
     } else {
       startRingback();
       onCallStart?.(dialNum);
