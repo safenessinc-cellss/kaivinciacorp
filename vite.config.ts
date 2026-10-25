@@ -32,17 +32,17 @@ function telnyxDevApiPlugin(env: Record<string, string>): Plugin {
         res.setHeader('Content-Type', 'application/json');
 
         if (pathname === '/api/meta-config') {
-          const { default: metaConfigHandler } = await import('./api/meta-config.js');
+          const { default: metaConfigHandler } = await import('./api/meta-config.ts');
           return metaConfigHandler(req, res);
         }
 
         if (pathname === '/api/meta-send') {
-          const { default: metaSendHandler } = await import('./api/meta-send.js');
+          const { default: metaSendHandler } = await import('./api/meta-send.ts');
           return metaSendHandler(req, res);
         }
 
         if (pathname === '/api/meta-webhook') {
-          const { default: metaWebhookHandler } = await import('./api/meta-webhook.js');
+          const { default: metaWebhookHandler } = await import('./api/meta-webhook.ts');
           return metaWebhookHandler(req, res);
         }
 
