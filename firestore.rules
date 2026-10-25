@@ -36,6 +36,18 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("status", "approved") == "approved";
     }
 
+    // ROOT_USER: cuenta única autorizada para eliminar usuarios.
+    function isRoot() {
+      return isAuthenticated() && request.auth.token.email == "safeness.c.a@gmail.com";
+    }
+
+    function canApprove() {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("status", "") == "approved"
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("role", "") in ["superadmin", "admin"];
+    }
+
     function isUser(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
@@ -76,14 +88,32 @@ service cloud.firestore {
     // Users
     // ===============================================================
     match /users/{userId} {
-      allow read:   if isAuthenticated() && (isUser(userId) || isAdmin());
-      allow create: if isAdmin();
-      allow update: if isAdmin() || (
-        isUser(userId) &&
-        !request.resource.data.diff(resource.data).affectedKeys()
-          .hasAny(['role', 'status', 'permissions', 'uid'])
+      allow read: if isAuthenticated() && (isUser(userId) || isAdmin());
+
+      // Bootstrap de perfiles propios limitados a un estado no privilegiado.
+      allow create: if isAdmin() || (
+        isUser(userId)
+        && request.resource.data.get("uid", "") == request.auth.uid
+        && request.resource.data.get("role", "none") == "none"
+        && request.resource.data.get("status", "pending") == "pending"
       );
-      allow delete: if isAdmin();
+
+      // Los cambios de aprobación/rol quedan separados de las actualizaciones ordinarias.
+      allow update: if (
+        canApprove()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason', 'role'])
+      ) || (
+        isAdmin()
+        && !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['status', 'role', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason'])
+      ) || (
+        isUser(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['role', 'status', 'permissions', 'uid', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason'])
+      );
+
+      allow delete: if isRoot();
     }
 
     match /user_sessions/{sessionId} {
