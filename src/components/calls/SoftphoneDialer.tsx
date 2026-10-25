@@ -736,6 +736,7 @@ export default function SoftphoneDialer({
         }).catch((writeError) => console.warn('[SoftphoneDialer] No se pudo registrar la llamada fallida:', writeError));
         setCallStatus('idle');
         return;
+      }
     } else {
       startRingback();
       onCallStart?.(dialNum);
