@@ -4,6 +4,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/telnyx/diagnose",
+      "destination": "/api/telnyx-token?diagnostics=run"
+    },
+    {
       "source": "/((?!api/.*).*)",
       "destination": "/index.html"
     }
