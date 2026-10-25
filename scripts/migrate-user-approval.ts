@@ -31,7 +31,7 @@ async function main() {
       await userDoc.ref.set({ status: nextStatus, role: nextRole, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
       const authRecord = await adminAuth.getUser(userDoc.id);
       await adminAuth.setCustomUserClaims(userDoc.id, { ...(authRecord.customClaims || {}), role: nextRole });
-      if (!SUPERADMINS.has(email) && user.role === 'superadmin') await adminAuth.revokeRefreshTokens(userDoc.id);
+      if (!SUPERADMINS.has(email) && (user.role === 'superadmin' || authRecord.customClaims?.role === 'superadmin')) await adminAuth.revokeRefreshTokens(userDoc.id);
       await adminDb.collection('audit_logs').add({
         action: 'migration.user_status', actorUid: 'migration-script', targetUid: userDoc.id,
         targetEmail: email || null, before: { status: user.status || null, role: user.role || null },
