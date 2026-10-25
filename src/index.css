@@ -404,3 +404,49 @@ table, .tabular-nums, [data-numeric="true"] { font-variant-numeric: tabular-nums
 .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 .high-contrast { --mac-border: currentColor; }
 .high-contrast button, .high-contrast input, .high-contrast select, .high-contrast textarea { border-width: 1.5px !important; }
+
+/* Full appearance preferences sheet */
+.mac-preferences-panel {
+  padding: 18px;
+  border: 1px solid var(--mac-border);
+  border-radius: 13px;
+  background: var(--mac-material-window);
+  color: var(--mac-text-primary);
+  box-shadow: 0 2px 8px rgba(0,0,0,.025);
+  -webkit-backdrop-filter: blur(var(--mac-material-blur)) saturate(180%);
+  backdrop-filter: blur(var(--mac-material-blur)) saturate(180%);
+}
+.mac-preferences-header { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--mac-border); }
+.mac-preferences-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; color: var(--mac-accent); background: var(--mac-accent-soft); }
+.mac-preferences-header h2 { margin: 0; font-size: 18px; font-weight: 650; color: var(--mac-text-primary); }
+.mac-preferences-header p { margin: 4px 0 0; color: var(--mac-text-secondary); font-size: 12px; }
+.mac-preferences-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 15px 0; border-bottom: 1px solid var(--mac-border); }
+.mac-preferences-row:last-of-type { border-bottom: 0; }
+.mac-preferences-row > div:first-child { min-width: 175px; }
+.mac-preferences-row strong { display: block; font-size: 12px; font-weight: 600; }
+.mac-preferences-row small { display: block; max-width: 390px; margin-top: 4px; color: var(--mac-text-secondary); font-size: 11px; line-height: 1.45; }
+.mac-preferences-row .mac-segmented-control { flex: 0 0 auto; }
+.mac-accent-settings-grid { display: grid; grid-template-columns: repeat(6, minmax(66px, 1fr)); gap: 7px; flex: 1; max-width: 470px; }
+.mac-accent-settings-grid button { display: flex; align-items: center; gap: 6px; min-width: 0; padding: 6px 8px; border: 1px solid var(--mac-border); border-radius: 7px; background: color-mix(in srgb, var(--mac-bg-window) 82%, transparent); color: var(--mac-text-secondary); font-size: 10px; text-align: left; }
+.mac-accent-settings-grid button::before { content: ""; display: inline-block; flex: 0 0 12px; width: 12px; height: 12px; border-radius: 50%; background: var(--swatch); box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); }
+.mac-accent-settings-grid button.is-selected { border-color: color-mix(in srgb, var(--mac-accent) 55%, var(--mac-border)); background: var(--mac-accent-soft); color: var(--mac-text-primary); }
+.mac-accent-settings-grid button svg { color: var(--mac-accent); }
+.mac-accent-settings-grid button.is-selected::before { display: none; }
+.mac-preferences-note { display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; padding: 10px 12px; border-radius: 8px; background: var(--mac-row-hover); color: var(--mac-text-secondary); font-size: 11px; line-height: 1.45; }
+.mac-preferences-note svg { flex: 0 0 auto; margin-top: 1px; }
+.mac-theme-module { background: transparent !important; border-color: var(--mac-border) !important; box-shadow: none !important; }
+.mac-theme-module > :not(.mac-preferences-panel) { color: var(--mac-text-primary); }
+.mac-theme-module > .border { border-color: var(--mac-border) !important; background: var(--mac-row-hover) !important; }
+.mac-theme-module .text-gray-600, .mac-theme-module .text-gray-500 { color: var(--mac-text-secondary) !important; }
+.mac-theme-module button { border-radius: 8px; }
+@media (max-width: 720px) {
+  .mac-preferences-row { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .mac-accent-settings-grid { width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; }
+  .mac-segmented-control { max-width: 100%; }
+}
+@media (min-width: 901px) {
+  .mac-sidebar, .mac-main { height: calc(100dvh - 24px) !important; }
+}
+@media (max-width: 900px) {
+  .mac-sidebar, .mac-main { height: 100dvh !important; }
+}
