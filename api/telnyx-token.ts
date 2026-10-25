@@ -443,7 +443,7 @@ export default async function handler(req: any, res: any) {
       activo: true
     }, { merge: true });
 
-    console.log(`[telnyx-token] uid=${uid} credId=${assignedCredentialId} status=200 telnyxStatus=${generated.status} jwtPrefix=${generated.token.slice(0, 20)} jwtLength=${generated.token.length}`);
+    console.log(`[telnyx-token] uid=${uid} credId=${assignedCredentialId} status=200 telnyxStatus=${generated.status} tokenPresent=true tokenLength=${generated.token.length}`);
     json(res, 200, {
       token: generated.token,
       expiresAt,
