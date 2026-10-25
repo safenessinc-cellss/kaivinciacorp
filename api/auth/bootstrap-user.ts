@@ -39,6 +39,10 @@ export default async function handler(req: any, res: any) {
 
   const email = String(decoded.email || '').trim().toLowerCase();
   const allowlistedSuperAdmin = SUPERADMINS.has(email);
+  // Preserve existing Firebase Auth superadmins even if their Firestore profile is stale.
+  const authRecord = await adminAuth.getUser(decoded.uid);
+  const authRole = String(authRecord.customClaims?.role || '').toLowerCase();
+  const authAlreadySuperAdmin = authRole === 'superadmin' || authRole === 'superuser' || authRecord.customClaims?.isSuperAdmin === true;
   const userRef = adminDb.collection('users').doc(decoded.uid);
   const snap = await userRef.get();
 
@@ -46,8 +50,9 @@ export default async function handler(req: any, res: any) {
     const existing = snap.data() || {};
     // Existing SuperAdmin roles are server-managed records, not user-editable
     // profile fields. Preserve and repair these accounts instead of demoting them.
-    const registeredSuperAdmin = String(existing.role || '').toLowerCase() === 'superadmin';
-    const shouldBeSuperAdmin = allowlistedSuperAdmin || registeredSuperAdmin;
+    const firestoreRole = String(existing.role || '').toLowerCase();
+    const registeredSuperAdmin = firestoreRole === 'superadmin' || firestoreRole === 'superuser';
+    const shouldBeSuperAdmin = allowlistedSuperAdmin || registeredSuperAdmin || authAlreadySuperAdmin;
 
     if (shouldBeSuperAdmin && (existing.status !== 'approved' || existing.role !== 'superadmin' || decoded.role !== 'superadmin')) {
       await userRef.set({
@@ -57,7 +62,6 @@ export default async function handler(req: any, res: any) {
         updatedAt: FieldValue.serverTimestamp(),
       }, { merge: true });
 
-      const authRecord = await adminAuth.getUser(decoded.uid);
       await adminAuth.setCustomUserClaims(decoded.uid, {
         ...(authRecord.customClaims || {}),
         role: 'superadmin',
@@ -110,7 +114,7 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const isSuperAdmin = allowlistedSuperAdmin;
+  const isSuperAdmin = allowlistedSuperAdmin || authAlreadySuperAdmin;
   const profile = {
     uid: decoded.uid,
     name: decoded.name || email.split('@')[0] || 'Usuario',
@@ -125,7 +129,6 @@ export default async function handler(req: any, res: any) {
 
   await userRef.set(profile, { merge: false });
   if (isSuperAdmin) {
-    const authRecord = await adminAuth.getUser(decoded.uid);
     await adminAuth.setCustomUserClaims(decoded.uid, {
       ...(authRecord.customClaims || {}),
       role: 'superadmin',
