@@ -133,8 +133,8 @@ export default async function handler(req: any, res: any) {
       }
     }
 
-    // Only use credentials provisioned by an administrator; never mint one for
-    // an arbitrary authenticated user.
+    // Credentials may be provisioned on demand, but only after an administrator
+    // has assigned this user an authorized Caller ID in Telnyx Admin Hub.
     const telnyxCredentialId = String(credential.telnyxCredentialId || credential.credentialId || credential.id || credentialSnap.id || '');
     if (!telnyxCredentialId) {
       json(res, 409, { error: 'TELNYX_CREDENTIAL_MISSING', message: 'La credencial asignada no está vinculada a una credencial Telnyx válida.' });
