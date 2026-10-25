@@ -54,33 +54,44 @@ export default async function handler(req: any, res: any) {
     const registeredSuperAdmin = firestoreRole === 'superadmin' || firestoreRole === 'superuser';
     const shouldBeSuperAdmin = allowlistedSuperAdmin || registeredSuperAdmin || authAlreadySuperAdmin;
 
-    if (shouldBeSuperAdmin && (existing.status !== 'approved' || existing.role !== 'superadmin' || decoded.role !== 'superadmin')) {
-      await userRef.set({
-        role: 'superadmin',
-        status: 'approved',
-        permissions: existing.permissions || {},
-        updatedAt: FieldValue.serverTimestamp(),
-      }, { merge: true });
+    if (shouldBeSuperAdmin) {
+      const profileNeedsRepair = existing.status !== 'approved' || existing.role !== 'superadmin';
+      const claimsNeedRepair = authRole !== 'superadmin' || authRecord.customClaims?.isSuperAdmin === true;
 
-      await adminAuth.setCustomUserClaims(decoded.uid, {
-        ...(authRecord.customClaims || {}),
-        role: 'superadmin',
-      });
+      // Always reconcile both authoritative stores for the allowlisted owner. Do not
+      // rely on the browser's possibly stale token claim to decide whether to repair.
+      if (profileNeedsRepair) {
+        await userRef.set({
+          role: 'superadmin',
+          status: 'approved',
+          permissions: existing.permissions || {},
+          updatedAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
 
-      await adminDb.collection('audit_logs').add({
-        action: 'user.superadmin.bootstrap_repaired',
-        actorUid: 'system-bootstrap',
-        targetUid: decoded.uid,
-        targetEmail: email || null,
-        before: { role: existing.role || null, status: existing.status || null },
-        after: { role: 'superadmin', status: 'approved' },
-        createdAt: FieldValue.serverTimestamp(),
-      });
+      if (claimsNeedRepair) {
+        await adminAuth.setCustomUserClaims(decoded.uid, {
+          ...(authRecord.customClaims || {}),
+          role: 'superadmin',
+        });
+      }
+
+      if (profileNeedsRepair || claimsNeedRepair) {
+        await adminDb.collection('audit_logs').add({
+          action: 'user.superadmin.bootstrap_repaired',
+          actorUid: 'system-bootstrap',
+          targetUid: decoded.uid,
+          targetEmail: email || null,
+          before: { role: existing.role || null, status: existing.status || null, authRole: authRole || null },
+          after: { role: 'superadmin', status: 'approved', authRole: 'superadmin' },
+          createdAt: FieldValue.serverTimestamp(),
+        });
+      }
 
       existing.role = 'superadmin';
       existing.status = 'approved';
       existing.permissions = existing.permissions || {};
-    } else if (!shouldBeSuperAdmin && existing.status === 'active') {
+    } else if (existing.status === 'active') {
       const before = { status: existing.status || null, role: existing.role || null };
       await userRef.set({
         status: 'pending',
