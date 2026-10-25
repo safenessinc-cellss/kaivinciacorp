@@ -47,8 +47,8 @@ export default function SoftphoneTabs({
           onClick={() => onTabChange('config')}
           className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer relative ${
             activeTab === 'config'
-              ? 'bg-white text-black shadow-sm'
-              : 'text-[#3C3C43]/70 hover:bg-black/5'
+              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-black shadow-[0_0_12px_rgba(0,240,255,0.3)]'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
           }`}
         >
           <Sliders className="w-3.5 h-3.5" />
@@ -68,7 +68,7 @@ export default function SoftphoneTabs({
             aria-label="Abrir ajustes de telefonía"
             aria-pressed={activeTab === 'settings'}
             onClick={() => onTabChange('settings')}
-            className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${activeTab === 'settings' ? 'bg-white text-black shadow-sm' : 'text-[#3C3C43]/70 hover:bg-black/5'}`}
+            className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${activeTab === 'settings' ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-black shadow-[0_0_12px_rgba(0,240,255,0.3)]' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'}`}
           >
             <Settings2 className="w-3.5 h-3.5" />
             <span>Ajustes</span>
