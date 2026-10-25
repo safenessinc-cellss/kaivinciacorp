@@ -77,6 +77,9 @@ class TelnyxWebRTCService {
 
   private currentCredentialId: string | null = null;
   private refreshInProgress = false;
+  private pendingTokenRefresh = false;
+  private tokenRequestPromise: Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> | null = null;
+  private tokenRequestAbortController: AbortController | null = null;
 
   private listeners: Array<(state: TelnyxWebRTCState) => void> = [];
 
@@ -107,7 +110,22 @@ class TelnyxWebRTCService {
    * Solicita un token al backend usando la asignación SIP del usuario autenticado.
    * No llama al endpoint si no existe una asignación SIP.
    */
-  public async requestToken(credentialId: string): Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> {
+  public requestToken(credentialId: string): Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> {
+    // Single-flight: multiple UI events reuse the same request and cannot mint
+    // parallel sessions for one user.
+    if (this.tokenRequestPromise) return this.tokenRequestPromise;
+    this.tokenRequestAbortController?.abort();
+    const controller = new AbortController();
+    this.tokenRequestAbortController = controller;
+    const pending = this.performTokenRequest(credentialId, controller.signal).finally(() => {
+      if (this.tokenRequestAbortController === controller) this.tokenRequestAbortController = null;
+      if (this.tokenRequestPromise === pending) this.tokenRequestPromise = null;
+    });
+    this.tokenRequestPromise = pending;
+    return pending;
+  }
+
+  private async performTokenRequest(credentialId: string, signal: AbortSignal): Promise<{ success: boolean; token?: string; expiresAt?: string; message: string; status?: number }> {
     const currentUser = auth.currentUser;
     const attemptAt = new Date().toISOString();
     this.state.lastTokenAttemptAt = attemptAt;
@@ -131,7 +149,8 @@ class TelnyxWebRTCService {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${idToken}`
         },
-        body: JSON.stringify({ credentialId })
+        body: JSON.stringify({ credentialId }),
+        signal
       });
       const data = await res.json().catch(() => ({}));
       this.state.lastTokenStatus = res.status;
@@ -229,6 +248,7 @@ class TelnyxWebRTCService {
 
   private async refreshCurrentToken(): Promise<void> {
     if (this.refreshInProgress || !this.currentCredentialId || !this.client) return;
+    if (this.currentCall) { this.pendingTokenRefresh = true; return; }
     this.refreshInProgress = true;
     try {
       const result = await this.requestToken(this.currentCredentialId);
@@ -464,6 +484,10 @@ class TelnyxWebRTCService {
     this.currentCall = null;
     this.state.activeCallId = null;
     this.notify();
+    if (this.pendingTokenRefresh) {
+      this.pendingTokenRefresh = false;
+      void this.refreshCurrentToken();
+    }
   }
 
   public subscribe(listener: (state: TelnyxWebRTCState) => void): () => void {
