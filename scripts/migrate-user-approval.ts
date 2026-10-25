@@ -29,7 +29,9 @@ async function main() {
     console.log(`user ${userDoc.id}: ${user.status || '(missing)'} -> ${nextStatus}`);
     if (APPLY) {
       await userDoc.ref.set({ status: nextStatus, role: nextRole, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-      if (SUPERADMINS.has(email)) await adminAuth.setCustomUserClaims(userDoc.id, { role: 'superadmin' });
+      const authRecord = await adminAuth.getUser(userDoc.id);
+      await adminAuth.setCustomUserClaims(userDoc.id, { ...(authRecord.customClaims || {}), role: nextRole });
+      if (!SUPERADMINS.has(email) && user.role === 'superadmin') await adminAuth.revokeRefreshTokens(userDoc.id);
       await adminDb.collection('audit_logs').add({
         action: 'migration.user_status', actorUid: 'migration-script', targetUid: userDoc.id,
         targetEmail: email || null, before: { status: user.status || null, role: user.role || null },
