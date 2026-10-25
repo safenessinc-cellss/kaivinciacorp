@@ -162,7 +162,13 @@ export default async function handler(req: any, res: any) {
     });
     if (action === 'delete') {
       try { await adminAuth.deleteUser(uid); }
-      catch (error: any) { if (error?.code !== 'auth/user-not-found') console.error('[admin/users] Auth user deletion failed after profile removal', error); }
+      catch (error: any) {
+        if (error?.code !== 'auth/user-not-found') {
+          console.error('[admin/users] Auth user deletion failed after profile removal', error);
+          json(res, 502, { error: 'AUTH_USER_DELETE_FAILED', message: 'El perfil y la asignación SIP se eliminaron, pero Firebase Auth no confirmó la eliminación. Revisa la cuenta de autenticación antes de volver a aprobarla.' });
+          return;
+        }
+      }
     }
     if (action === 'role') {
       // Keep Firebase's role claim synchronized with the authoritative Firestore profile.
