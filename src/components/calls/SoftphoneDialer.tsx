@@ -273,7 +273,7 @@ export default function SoftphoneDialer({
     }
     setIsSavingTelnyxToken(true);
     try {
-      await telnyxWebRTCService.setLoginToken(token, true);
+      await telnyxWebRTCService.setLoginToken(token, false);
       const testRes = await telnyxWebRTCService.initClient(token);
       showToast(testRes.message || 'login_token de Telnyx actualizado');
       setSipLogs(prev => [
