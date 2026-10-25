@@ -21,26 +21,58 @@ export default async function handler(req: any, res: any) {
     const userRef = adminDb.collection('users').doc(user.uid);
     const userSnap = await userRef.get();
     const profile = userSnap.data() || {};
-    const credentialIdForAssignment = String(profile.assignedSipCredentialId || '');
-    const assignedCallerId = String(profile.assignedCallerId || '');
-    if (!credentialIdForAssignment || !/^\+[1-9]\d{7,14}$/.test(assignedCallerId)) {
-      json(res, 403, { error: 'SIP_ASSIGNMENT_REQUIRED', message: 'No tienes un número SIP E.164 asignado. Solicita la asignación al SuperAdmin.' });
+
+    // Support both the legacy assignment schema and the schema written by the
+    // Telnyx Admin Hub. The Admin Hub writes telnyx_agent_assignments, not
+    // sip_assignments, so reading only the legacy collection caused this 403.
+    let credentialIdForAssignment = String(profile.assignedSipCredentialId || '');
+    let assignedCallerId = String(profile.assignedCallerId || '');
+    let usesAdminHubAssignment = false;
+
+    if (!credentialIdForAssignment || !/^\\+[1-9]\\d{7,14}$/.test(assignedCallerId)) {
+      const agentAssignmentSnap = await adminDb.collection('telnyx_agent_assignments').doc(user.uid).get();
+      const agentAssignment = agentAssignmentSnap.exists ? agentAssignmentSnap.data() || {} : null;
+      const authorizedNumbers = Array.isArray(agentAssignment?.authorizedNumbers)
+        ? agentAssignment.authorizedNumbers.map((value: unknown) => String(value || '').trim())
+        : [];
+      const defaultCallerId = String(agentAssignment?.defaultCallerId || '');
+      credentialIdForAssignment = String(agentAssignment?.telnyxCredentialId || '');
+      assignedCallerId = defaultCallerId && authorizedNumbers.includes(defaultCallerId)
+        ? defaultCallerId
+        : '';
+      usesAdminHubAssignment = Boolean(credentialIdForAssignment && assignedCallerId);
+    }
+
+    if (!credentialIdForAssignment || !/^\\+[1-9]\\d{7,14}$/.test(assignedCallerId)) {
+      json(res, 403, { error: 'SIP_ASSIGNMENT_REQUIRED', message: 'Falta asignar al usuario una credencial SIP y un Caller ID autorizado. En Telnyx Admin Hub, asigna la credencial y guarda un número predeterminado autorizado.' });
       return;
     }
 
-    const [assignmentSnap, credentialSnap] = await Promise.all([
-      adminDb.collection('sip_assignments').doc(credentialIdForAssignment).get(),
-      adminDb.collection('telnyx_sip_credentials').doc(credentialIdForAssignment).get()
-    ]);
-    const assignment = assignmentSnap.exists ? assignmentSnap.data() || {} : {};
+    const credentialSnap = await adminDb.collection('telnyx_sip_credentials').doc(credentialIdForAssignment).get();
     const credential = credentialSnap.exists ? credentialSnap.data() || {} : {};
-    if (!assignmentSnap.exists || assignment.assignedTo !== user.uid || assignment.phoneNumber !== assignedCallerId) {
-      json(res, 403, { error: 'SIP_ASSIGNMENT_INVALID', message: 'La asignación SIP no coincide con tu perfil. Contacta al SuperAdmin.' });
+    if (!credentialSnap.exists) {
+      json(res, 403, { error: 'SIP_ASSIGNMENT_INVALID', message: 'La credencial SIP asignada no existe en telnyx_sip_credentials. Revisa la asignación del SuperAdmin.' });
       return;
     }
 
-    // The assignment's credential is provisioned by an administrator; never create
-    // an independent Telnyx credential on demand for an arbitrary authenticated user.
+    if (usesAdminHubAssignment) {
+      // The Admin Hub schema requires both a per-user allow-list and a credential
+      // explicitly assigned to the same authenticated user.
+      if (credential.assignedTo !== user.uid) {
+        json(res, 403, { error: 'SIP_ASSIGNMENT_INVALID', message: 'La credencial SIP no está asignada a este usuario. Corrige la asignación en Telnyx Admin Hub.' });
+        return;
+      }
+    } else {
+      const assignmentSnap = await adminDb.collection('sip_assignments').doc(credentialIdForAssignment).get();
+      const assignment = assignmentSnap.exists ? assignmentSnap.data() || {} : {};
+      if (!assignmentSnap.exists || assignment.assignedTo !== user.uid || assignment.phoneNumber !== assignedCallerId) {
+        json(res, 403, { error: 'SIP_ASSIGNMENT_INVALID', message: 'La asignación SIP no coincide con tu perfil. Contacta al SuperAdmin.' });
+        return;
+      }
+    }
+
+    // Only use credentials provisioned by an administrator; never mint one for
+    // an arbitrary authenticated user.
     const telnyxCredentialId = String(credential.telnyxCredentialId || credential.credentialId || credential.id || credentialSnap.id || '');
     if (!telnyxCredentialId) {
       json(res, 409, { error: 'TELNYX_CREDENTIAL_MISSING', message: 'La credencial asignada no está vinculada a una credencial Telnyx válida.' });
