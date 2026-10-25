@@ -22,7 +22,7 @@ async function main() {
     if (SUPERADMINS.has(email)) { nextStatus = 'approved'; nextRole = 'superadmin'; }
     else {
       if (nextStatus !== 'approved' || user.role === 'superadmin') nextStatus = 'pending';
-      if (nextRole === 'superadmin') nextRole = 'none';
+      if (user.status === 'active' || nextRole === 'superadmin') nextRole = 'none';
     }
     const changed = user.status !== nextStatus || user.role !== nextRole;
     if (!changed) continue;
