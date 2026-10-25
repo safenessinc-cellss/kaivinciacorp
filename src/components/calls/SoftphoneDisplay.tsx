@@ -173,7 +173,7 @@ export default function SoftphoneDisplay({
   const formattedPreview = formatDialNumberPreview(phoneNumber);
 
   return (
-    <div className={`softphone-glass-card bg-slate-900/90 border border-slate-800 rounded-2xl relative overflow-hidden transition-all shadow-inner ${
+    <div className={`bg-slate-900/90 border border-slate-800 rounded-2xl relative overflow-hidden transition-all shadow-inner ${
       compact ? 'p-2.5 mb-2' : 'p-3 mb-2.5'
     }`}>
       {/* Barra superior: Estado, Cronómetro y Acciones de Copiar/Pegar */}
@@ -272,7 +272,7 @@ export default function SoftphoneDisplay({
           onKeyDown={handleKeyDown}
           placeholder="+52 55 1234 5678"
           disabled={callStatus !== 'idle'}
-          className={`w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500/60 rounded-xl py-1.5 px-8 font-mono font-medium tracking-tight text-center text-white placeholder:text-slate-500 softphone-number focus:outline-none focus:ring-1 focus:ring-cyan-500/40 selection:bg-cyan-500/30 selection:text-cyan-200 transition-all ${
+          className={`w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500/60 rounded-xl py-1.5 px-8 font-mono font-medium tracking-tight text-center text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 selection:bg-cyan-500/30 selection:text-cyan-200 transition-all ${
             compact ? 'text-2xl' : 'text-2xl sm:text-[34px]'
           } ${callStatus !== 'idle' ? 'opacity-85 cursor-not-allowed' : ''}`}
           aria-label="Número de teléfono a marcar"
