@@ -1,4 +1,5 @@
 import { MetaBackendService } from '../server/metaBackend.js';
+import { json, requireApprovedUser } from '../server/_lib/authz.js';
 import type { MetaChannel } from '../src/types/meta.js';
 
 export default async function handler(req: any, res: any) {
@@ -21,18 +22,8 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    // 1. Verificación de Autenticación de Firebase (Permite modo diagnóstico si hay X-Dev-UID)
-    const authHeader = req.headers['authorization'] || '';
-    const authUser = await MetaBackendService.verifyAuthToken(authHeader);
-
-    if (!authUser && !req.headers['x-dev-uid'] && process.env.NODE_ENV === 'production') {
-      res.statusCode = 401;
-      res.end(JSON.stringify({
-        success: false,
-        error: 'No autorizado. Se requiere token de sesión administrativo.'
-      }));
-      return;
-    }
+    const authUser = await requireApprovedUser(req, res, true);
+    if (!authUser) return;
 
     // 2. Parseo del cuerpo de la petición
     let body = req.body;
@@ -65,7 +56,7 @@ export default async function handler(req: any, res: any) {
     // 3. Ejecutar diagnóstico contra Meta Graph API
     const result = await MetaBackendService.testConnection(channel);
 
-    console.log(`[AUDIT] Action: META_CONNECTION_TEST | Channel: ${channel || 'all'} | Success: ${result.success} | User: ${authUser?.email || 'diagnostic'}`);
+    console.log(`[AUDIT] Action: META_CONNECTION_TEST | Channel: ${channel || 'all'} | Success: ${result.success} | User: ${authUser.email || 'diagnostic'}`);
 
     res.statusCode = 200;
     res.end(JSON.stringify({
