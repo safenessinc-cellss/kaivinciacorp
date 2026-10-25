@@ -22,12 +22,30 @@ export default async function handler(req: any, res: any) {
     const userSnap = await userRef.get();
     const profile = userSnap.data() || {};
 
-    // Support both the legacy assignment schema and the schema written by the
-    // Telnyx Admin Hub. The Admin Hub writes telnyx_agent_assignments, not
-    // sip_assignments, so reading only the legacy collection caused this 403.
-    let credentialIdForAssignment = String(profile.assignedSipCredentialId || '');
-    let assignedCallerId = String(profile.assignedCallerId || '');
+    // Prefer the authoritative Admin Hub assignment whenever it is complete.
+    // Profile fields can be stale after an administrator changes an assignment;
+    // choosing them first may validate against the wrong collection.
+    let credentialIdForAssignment = '';
+    let assignedCallerId = '';
     let usesAdminHubAssignment = false;
+
+    const agentAssignmentSnap = await adminDb.collection('telnyx_agent_assignments').doc(user.uid).get();
+    const agentAssignment = agentAssignmentSnap.exists ? agentAssignmentSnap.data() || {} : null;
+    const authorizedNumbers = Array.isArray(agentAssignment?.authorizedNumbers)
+      ? agentAssignment.authorizedNumbers.map((value: unknown) => String(value || '').trim())
+      : [];
+    const defaultCallerId = String(agentAssignment?.defaultCallerId || '').trim();
+    const adminCredentialId = String(agentAssignment?.telnyxCredentialId || '').trim();
+
+    if (adminCredentialId && /^\+[1-9]\d{7,14}$/.test(defaultCallerId) && authorizedNumbers.includes(defaultCallerId)) {
+      credentialIdForAssignment = adminCredentialId;
+      assignedCallerId = defaultCallerId;
+      usesAdminHubAssignment = true;
+    } else {
+      // Backward compatibility for accounts still managed by the legacy schema.
+      credentialIdForAssignment = String(profile.assignedSipCredentialId || '').trim();
+      assignedCallerId = String(profile.assignedCallerId || '').trim();
+    }
 
     if (!credentialIdForAssignment || !/^\+[1-9]\d{7,14}$/.test(assignedCallerId)) {
       const agentAssignmentSnap = await adminDb.collection('telnyx_agent_assignments').doc(user.uid).get();
