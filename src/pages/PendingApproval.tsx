@@ -4,7 +4,9 @@ import { Clock, LogOut, ShieldAlert, Mail } from 'lucide-react';
 
 export default function PendingApproval() {
   const { userData, signOut, user } = useAuth();
-  const status = (userData as any)?.status || 'pendiente';
+  const status = String((userData as any)?.status || 'pending').toLowerCase();
+  const rejectionReason = String((userData as any)?.rejectionReason || '').trim();
+  const rejected = status === 'rejected';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -16,12 +18,19 @@ export default function PendingApproval() {
         </div>
 
         <h1 className="text-xl font-bold text-gray-900 text-center mb-2">
-          Cuenta pendiente de aprobación
+          {rejected ? "Solicitud de acceso rechazada" : "Cuenta pendiente de aprobación"}
         </h1>
         <p className="text-sm text-gray-600 text-center mb-6">
-          Tu cuenta <span className="text-blue-700 font-mono">{user?.email}</span> ha sido creada correctamente,
-          pero aún no ha sido autorizada por un administrador.
+          Tu cuenta <span className="text-blue-700 font-mono">{user?.email}</span> ha sido identificada correctamente.
+          {rejected ? " Un administrador ha rechazado la solicitud de acceso." : " El acceso al CRM requiere aprobación explícita de un administrador autorizado."}
         </p>
+
+        {rejected && rejectionReason && (
+          <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4 mb-5">
+            <p className="text-xs font-bold text-red-800 mb-1">Motivo del rechazo</p>
+            <p className="text-sm text-red-700">{rejectionReason}</p>
+          </div>
+        )}
 
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6 space-y-3">
           <div className="flex items-start gap-2 text-sm text-gray-700">
