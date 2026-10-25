@@ -155,6 +155,11 @@ export default function SoftphoneDialer({
   const [activeTab, setActiveTab] = useState<'dialer' | 'config' | 'settings'>('dialer');
   const [isFloatingExpanded, setIsFloatingExpanded] = useState(false);
 
+  useEffect(() => {
+    const canSeeSettings = ['admin', 'superadmin', 'owner', 'ceo', 'gestor', 'supervisor'].includes(String(userData?.role || '').toLowerCase());
+    if (!canSeeSettings && activeTab === 'settings') setActiveTab('dialer');
+  }, [userData?.role, activeTab]);
+
   // Estados del discador
   const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber);
   const [callStatus, setCallStatus] = useState<SoftphoneState['status']>('idle');
