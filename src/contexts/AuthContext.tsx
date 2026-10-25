@@ -60,10 +60,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Si el doc no existe, pedimos al backend que lo cree (role='none', status='pending')
         try {
           const token = await currentUser.getIdToken();
-          await fetch('/api/auth/bootstrap-user', {
+          const bootstrapResponse = await fetch('/api/auth/bootstrap-user', {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` },
           });
+          if (bootstrapResponse.ok) {
+            // Bootstrap may set/revoke custom role claims. Refresh this session before
+            // any protected route attempts to use Firebase Rules with the old token.
+            await currentUser.getIdToken(true);
+          }
         } catch (e) {
           console.warn('bootstrap-user failed:', e);
         }
