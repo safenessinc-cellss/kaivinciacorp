@@ -1065,7 +1065,7 @@ export default function SoftphoneDialer({
           </div>
 
           {showTabs && (
-            <SoftphoneTabs activeTab={activeTab} onTabChange={setActiveTab} role={userData?.role} selectedCarrierName={activeCarrierObj?.name} hasValidSip={hasValidSipAssigned !== false && hasValidSipCredentials} authorizedCallerId={selectedCallerId} isFloating={isFloating} />
+            <SoftphoneTabs activeTab={activeTab} onTabChange={setActiveTab} role={userData?.role} selectedCarrierName={activeCarrierObj?.name} hasValidSip={hasSipAssigned !== false && hasValidSipCredentials} authorizedCallerId={selectedCallerId} isFloating={isFloating} />
           )}
 
           <SoftphoneDisplay phoneNumber={phoneNumber} callerId={selectedCallerId} onPhoneNumberChange={setPhoneNumber} onBackspace={handleBackspace} onClear={handleClear} callStatus={callStatus} duration={duration} onForceConnect={handleForceConnectNow} compact={isFloating} onCopySuccess={showToast} onPasteSuccess={showToast} onDigitType={playDtmfTone} />
