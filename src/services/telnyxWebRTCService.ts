@@ -220,7 +220,7 @@ class TelnyxWebRTCService {
       this.notify();
       return { success: false, message: err?.message || 'Error al inicializar cliente' };
     } finally {
-      this.initializingToken = null;
+      if (this.initializingToken === token) this.initializingToken = null;
     }
   }
 
