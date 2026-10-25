@@ -1152,7 +1152,7 @@ export default function SoftphoneDialer({
                 if (callStatus !== 'idle' && callStatus !== 'ended') {
                   telnyxWebRTCService.deferTokenRefreshUntilCallEnds();
                   showToast('La sesión se renovará automáticamente al terminar la llamada.');
-                  return false;
+                  return true;
                 }
                 setConnectionStatus('connecting');
                 setConnectionError(null);
