@@ -63,8 +63,7 @@ export default function LoginPage() {
             Continuar con Google
           </button>
 
-          <div className="relative flex py-1 items-center">
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs leading-relaxed text-amber-100">
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs leading-relaxed text-amber-100">
             <strong>Acceso protegido.</strong> El acceso directo por nombre y el botón que simulaba el rol SuperAdmin se han retirado. Inicia sesión con tu cuenta de Firebase; las cuentas nuevas quedan pendientes hasta que el SuperAdmin las apruebe.
           </div>
         </div>
