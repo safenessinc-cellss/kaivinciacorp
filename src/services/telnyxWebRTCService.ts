@@ -109,26 +109,14 @@ class TelnyxWebRTCService {
   private listeners: Array<(state: TelnyxWebRTCState) => void> = [];
 
   /**
-   * Actualiza el login_token (JWT) en memoria y opcionalmente en Firestore
+   * Retiene el token solo en memoria. Los JWT individuales nunca se escriben en Firestore.
+   * El parámetro legacy se mantiene para compatibilidad y se ignora.
    */
-  public async setLoginToken(newJwt: string, persistToFirestore = false): Promise<void> {
+  public async setLoginToken(newJwt: string, _persistToFirestore = false): Promise<void> {
     const cleanToken = (newJwt || '').trim();
     TELNYX_WEBRTC_LOGIN_TOKEN = cleanToken;
     this.state.loginToken = cleanToken;
     this.notify();
-
-    if (persistToFirestore && cleanToken) {
-      try {
-        await setDoc(doc(db, 'settings', 'telnyx_config'), {
-          login_token: cleanToken,
-          webrtcJwt: cleanToken,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-        console.log('[TelnyxWebRTC] login_token actualizado y persistido en Firestore (settings/telnyx_config).');
-      } catch (err) {
-        console.error('[TelnyxWebRTC] Error guardando login_token en Firestore:', err);
-      }
-    }
   }
 
   /**
