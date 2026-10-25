@@ -2,6 +2,8 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { adminDb } from '../../server/_lib/firebaseAdmin.js';
 import { json, requireApprovedUser } from '../../server/_lib/authz.js';
 
+const ALLOWED_ROLES = new Set(['none', 'admin', 'supervisor', 'tlmk', 'agente', 'sales', 'rrhh', 'alumno', 'gestor', 'ceo', 'collaborator', 'user']);
+
 const ALLOWED_PERMISSIONS = new Set([
   'dashboard', 'tlmk_sales', 'dialer', 'collections', 'talent', 'payroll',
   'accounting', 'billing', 'marketing', 'projects', 'reports', 'academy',
@@ -40,7 +42,7 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const { action, uid, status, permissions } = req.body || {};
+  const { action, uid, status, permissions, role } = req.body || {};
   if (typeof uid !== 'string' || !uid.trim()) {
     json(res, 400, { error: 'INVALID_USER', message: 'Falta el identificador del usuario.' });
     return;
@@ -76,6 +78,10 @@ export default async function handler(req: any, res: any) {
           updatedAt: FieldValue.serverTimestamp()
         };
         auditAction = status === 'approved' ? 'user.approved' : 'user.blocked';
+      } else if (action === 'role') {
+        if (typeof role !== 'string' || !ALLOWED_ROLES.has(role)) throw Object.assign(new Error('INVALID_ROLE'), { code: 'INVALID_ROLE' });
+        patch = { role, roleUpdatedAt: FieldValue.serverTimestamp(), roleUpdatedBy: actor.uid };
+        auditAction = 'user.role.updated';
       } else if (action === 'permissions') {
         if (!permissions || typeof permissions !== 'object' || Array.isArray(permissions)) {
           throw Object.assign(new Error('INVALID_PERMISSIONS'), { code: 'INVALID_PERMISSIONS' });
@@ -98,11 +104,11 @@ export default async function handler(req: any, res: any) {
       tx.set(auditRef, {
         action: auditAction, actorUid: actor.uid, actorEmail: actor.email,
         targetUid: uid, targetEmail: target.email || null,
-        before: action === 'status' ? { status: target.status || 'pending' } : { permissions: target.permissions || {} },
-        after: action === 'status' ? { status } : { permissions: patch.permissions },
+        before: action === 'status' ? { status: target.status || 'pending' } : action === 'role' ? { role: target.role || 'none' } : { permissions: target.permissions || {} },
+        after: action === 'status' ? { status } : action === 'role' ? { role } : { permissions: patch.permissions },
         createdAt: FieldValue.serverTimestamp()
       });
-      return { status: action === 'status' ? status : 'updated' };
+      return { status: action === 'status' ? status : 'updated', role: action === 'role' ? role : undefined };
     });
     json(res, 200, { ok: true, ...result });
   } catch (error: any) {
@@ -111,6 +117,7 @@ export default async function handler(req: any, res: any) {
       USER_NOT_FOUND: [404, 'No se encontró el usuario.'],
       PROTECTED_SUPERADMIN: [403, 'La cuenta SuperAdmin está protegida.'],
       INVALID_STATUS: [400, 'Estado no permitido.'],
+      INVALID_ROLE: [400, 'Rol no permitido.'],
       INVALID_PERMISSIONS: [400, 'El mapa de permisos no es válido.'],
       INVALID_PERMISSION_KEY: [400, 'Uno de los permisos no está permitido.'],
       INVALID_ACTION: [400, 'Acción no válida.']
