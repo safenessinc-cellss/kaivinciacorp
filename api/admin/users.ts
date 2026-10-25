@@ -67,7 +67,7 @@ export default async function handler(req: any, res: any) {
         const assignment = assignmentSnap.exists ? assignmentSnap.data() || {} : {};
         const credential = credentialSnap.exists ? credentialSnap.data() || {} : {};
         const phone = String(target.assignedCallerId || assignment.phoneNumber || credential.phoneNumber || '');
-        const indexRef = /^\\+[1-9]\\d{7,14}$/.test(phone) ? adminDb.collection('sip_number_index').doc(phone) : null;
+        const indexRef = /^\+[1-9]\d{7,14}$/.test(phone) ? adminDb.collection('sip_number_index').doc(phone) : null;
         const indexSnap = indexRef ? await tx.get(indexRef) : null;
         return { credentialId, assignmentRef, credentialRef, credentialSnap, assignmentSnap, indexRef, indexSnap, phone };
       };
