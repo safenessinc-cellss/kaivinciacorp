@@ -51,15 +51,15 @@ export default async function handler(req: any, res: any) {
       existing.role = 'superadmin'; existing.status = 'approved';
     } else if (!allowlistedSuperAdmin && (existing.status === 'active' || existing.role === 'superadmin')) {
       const before = { status: existing.status || null, role: existing.role || null };
-      await userRef.set({ status: 'pending', ...(existing.role === 'superadmin' ? { role: 'none' } : {}), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+      await userRef.set({ status: 'pending', ...((existing.status === 'active' || existing.role === 'superadmin') ? { role: 'none' } : {}), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
       await adminDb.collection('audit_logs').add({
         action: 'user.legacy_access_locked', actorUid: 'system-bootstrap',
         targetUid: decoded.uid, targetEmail: decoded.email || null,
-        before, after: { status: 'pending', role: existing.role === 'superadmin' ? 'none' : existing.role || 'none' },
+        before, after: { status: 'pending', role: (existing.status === 'active' || existing.role === 'superadmin') ? 'none' : existing.role || 'none' },
         createdAt: FieldValue.serverTimestamp()
       });
       existing.status = 'pending';
-      if (existing.role === 'superadmin') existing.role = 'none';
+      if (existing.status === 'active' || existing.role === 'superadmin') existing.role = 'none';
     }
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
