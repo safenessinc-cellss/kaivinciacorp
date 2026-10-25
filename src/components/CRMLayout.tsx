@@ -21,6 +21,16 @@ import LanguageSelector from './LanguageSelector';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAppearance } from '../contexts/AppearanceContext';
 
+const PERMISSION_FOR_PATH: Record<string, string> = {
+  '/crm/dashboard': 'dashboard', '/crm/pipeline': 'tlmk_sales', '/crm/calls': 'dialer',
+  '/crm/cobranza': 'collections', '/crm/recruitment': 'talent', '/crm/payroll': 'payroll',
+  '/crm/accounting': 'accounting', '/crm/billing': 'billing', '/crm/marketing': 'marketing',
+  '/crm/projects': 'projects', '/crm/reports': 'reports', '/crm/academy-internal': 'academy',
+  '/crm/team': 'team_management', '/crm/calendar': 'calendar', '/crm/chat': 'chat',
+  '/crm/clients': 'clients', '/crm/operations': 'operations', '/crm/call-center': 'call_center',
+  '/crm/integrations': 'integrations', '/crm/drive': 'documents', '/crm/audits': 'audits'
+};
+
 export default function CRMLayout({ userData }: { userData: any }) {
   const { t } = useLanguage();
   const { hasPermission } = usePermissions();
@@ -239,20 +249,11 @@ export default function CRMLayout({ userData }: { userData: any }) {
     ];
   }, [userRole, isAdminOrFin, isSuperAdmin, t]);
 
-  const permissionForPath: Record<string, any> = {
-    '/crm/dashboard': 'dashboard', '/crm/pipeline': 'tlmk_sales', '/crm/calls': 'dialer',
-    '/crm/cobranza': 'collections', '/crm/recruitment': 'talent', '/crm/payroll': 'payroll',
-    '/crm/accounting': 'accounting', '/crm/billing': 'billing', '/crm/marketing': 'marketing',
-    '/crm/projects': 'projects', '/crm/reports': 'reports', '/crm/academy-internal': 'academy',
-    '/crm/team': 'team_management', '/crm/calendar': 'calendar', '/crm/chat': 'chat',
-    '/crm/clients': 'clients', '/crm/operations': 'operations', '/crm/call-center': 'call_center',
-    '/crm/integrations': 'integrations', '/crm/drive': 'documents', '/crm/audits': 'audits'
-  };
   const authorizedMenuGroups = useMemo(() => menuGroups.map(group => ({
     ...group,
     items: group.items.filter(item => {
       const path = item.href.split('?')[0];
-      const permission = permissionForPath[path];
+      const permission = PERMISSION_FOR_PATH[path];
       if (path === '/crm/superadmin' || path === '/crm/access-control') return isSuperAdmin;
       return !permission || hasPermission(permission);
     })
