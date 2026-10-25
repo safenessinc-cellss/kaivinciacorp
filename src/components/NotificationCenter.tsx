@@ -111,7 +111,6 @@ export default function NotificationCenter() {
     const qAccountNotifications = query(
       collection(db, 'notifications'),
       where('ownerId', '==', uid),
-      orderBy('createdAt', 'desc'),
       limit(20)
     );
     const unsubAccountNotifications = onSnapshot(qAccountNotifications, (snapshot) => {
