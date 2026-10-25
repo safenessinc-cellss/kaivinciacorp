@@ -201,17 +201,14 @@ export default function SoftphoneDialer({
       try {
         await new Promise(resolve => setTimeout(resolve, 1500));
         if (cancelled) return;
-        const token = telnyxWebRTCService.getLoginToken();
-        if (!token) {
-          console.log('[SoftphoneDialer] No hay JWT configurado aún. Usa "Configurar JWT" para inicializar Telnyx.');
-          return;
-        }
-        console.log('[SoftphoneDialer] Inicializando cliente Telnyx automáticamente...');
-        const result = await telnyxWebRTCService.initClient(token);
+        // Cada sesión obtiene un JWT efímero para la credencial SIP asignada a este usuario.
+        // No reutilizar tokens de otro usuario ni leer JWT compartidos desde Firestore.
+        const result = await telnyxWebRTCService.fetchFreshTokenFromBackend();
+        if (cancelled) return;
         if (result.success) {
-          console.log('[SoftphoneDialer] ✅ Cliente Telnyx inicializado:', result.message);
+          console.log('[SoftphoneDialer] Cliente Telnyx inicializado con credencial asignada.');
         } else {
-          console.warn('[SoftphoneDialer] ⚠️ No se pudo inicializar Telnyx:', result.message);
+          console.warn('[SoftphoneDialer] No se pudo inicializar Telnyx:', result.message);
         }
       } catch (err: any) {
         console.error('[SoftphoneDialer] Error inicializando Telnyx:', err);
@@ -219,7 +216,7 @@ export default function SoftphoneDialer({
     };
     initTelnyx();
     return () => { cancelled = true; };
-  }, [user, authLoading, userData?.role]);
+  }, [user, authLoading, userData?.role, userData?.assignedCallerId]);
 
   // ============================================================
   // Renovación automática del JWT cada 24 horas
@@ -243,7 +240,7 @@ export default function SoftphoneDialer({
               console.log('[SoftphoneDialer] 🔄 Token por expirar, renovando...');
               const res = await telnyxWebRTCService.fetchFreshTokenFromBackend();
               if (res.success && res.token && isMounted) {
-                await telnyxWebRTCService.setLoginToken(res.token, true);
+                await telnyxWebRTCService.setLoginToken(res.token, false);
                 console.log('[SoftphoneDialer] ✅ Token renovado');
               }
             }
@@ -273,11 +270,11 @@ export default function SoftphoneDialer({
     }
     setIsSavingTelnyxToken(true);
     try {
-      await telnyxWebRTCService.setLoginToken(token, true);
+      await telnyxWebRTCService.setLoginToken(token, false);
       const testRes = await telnyxWebRTCService.initClient(token);
       showToast(testRes.message || 'login_token de Telnyx actualizado');
       setSipLogs(prev => [
-        `[${new Date().toLocaleTimeString()}] Telnyx WebRTC -> login_token actualizado (${token.slice(0, 10)}...${token.slice(-6)})`,
+        `[${new Date().toLocaleTimeString()}] Telnyx WebRTC -> login_token actualizado en memoria.`,
         ...prev.slice(0, 30)
       ]);
       setIsTelnyxTokenModalOpen(false);
@@ -296,7 +293,7 @@ export default function SoftphoneDialer({
       if (res.success && res.token) {
         showToast('Nuevo login_token generado vía API de Telnyx');
         setSipLogs(prev => [
-          `[${new Date().toLocaleTimeString()}] Telnyx WebRTC -> Nuevo login_token generado vía API (${res.token.slice(0, 10)}...${res.token.slice(-6)})`,
+          `[${new Date().toLocaleTimeString()}] Telnyx WebRTC -> JWT temporal generado vía API.`,
           ...prev.slice(0, 30)
         ]);
         setIsTelnyxTokenModalOpen(false);
