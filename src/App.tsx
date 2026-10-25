@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { motion } from 'motion/react';
 import { Zap } from 'lucide-react';
 
@@ -60,7 +60,6 @@ export default function App() {
   const [user, setUser] = useState<any>(null);
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
     // Guest mode is deliberately in-memory only; stored operator sessions are never restored.
@@ -78,7 +77,7 @@ export default function App() {
       const sessionConfirmed = sessionStorage.getItem('kaivincia_session_confirmed') === 'true';
       const loginInProgress = sessionStorage.getItem('kaivincia_login_in_progress') === 'true';
       if (currentUser && !sessionConfirmed && !loginInProgress) {
-        await (await import('firebase/auth')).signOut(auth).catch(() => undefined);
+        await signOut(auth).catch(() => undefined);
         setUser(null);
         setUserData(null);
         setLoading(false);
@@ -202,18 +201,15 @@ export default function App() {
   const effectiveUserData = userData || {
     name: user?.displayName || 'Agente TLMK',
     email: user?.email || 'operador@kaivincia.com',
-    role: 'tlmk',
-    status: 'active'
+    role: 'none',
+    status: 'pending'
   };
-
-  const hasAccess = Boolean(user || isGuest);
 
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage onGuestMode={() => {
-          localStorage.setItem('kaivincia_guest', 'true');
-          setIsGuest(true);
+          // La vista de invitado no otorga acceso al CRM ni crea una sesión autenticada.
         }} />} />
         <Route path="/apply" element={<Apply />} />
         <Route path="/guest-academy" element={<AcademyExternal />} />
