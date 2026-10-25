@@ -47,7 +47,7 @@ const DEFAULT_CONFIG: TelnyxGlobalConfig = {
   maxConcurrentCalls: 10,
   recordCallsByDefault: true,
   alertOnLimitReached: true,
-  lastVerificationStatus: 'unknown',
+  lastVerificationStatus: 'pending',
   lastVerificationMessage: 'Conexión pendiente de verificación en Telnyx.',
   updatedAt: new Date().toISOString()
 };
