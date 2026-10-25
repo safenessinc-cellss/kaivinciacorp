@@ -27,7 +27,7 @@ export default function SoftphoneKeypad({
   compact = false
 }: SoftphoneKeypadProps) {
   return (
-    <div className={`grid grid-cols-3 justify-items-center ${compact ? 'gap-2' : 'gap-3'} py-2`} aria-label="Teclado numérico">
+    <div className={`grid grid-cols-3 ${compact ? 'gap-1.5' : 'gap-2'}`} aria-label="Teclado numérico">
       {KEYPAD_BUTTONS.map((btn) => (
         <button
           key={btn.key}
@@ -38,10 +38,10 @@ export default function SoftphoneKeypad({
             onDigitPress(btn.key);
             if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate?.(10);
           }}
-          className={`softphone-key group flex flex-col items-center justify-center select-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-40 disabled:pointer-events-none ${compact ? 'h-14 w-14' : ''}`}
+          className={`group bg-slate-900/80 hover:bg-cyan-500/10 active:bg-cyan-500/20 border border-slate-800 hover:border-cyan-500/40 rounded-xl flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 disabled:opacity-40 disabled:pointer-events-none select-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${compact ? 'py-1.5 px-1' : 'py-2 px-1.5'}`}
         >
-          <span className="text-2xl font-normal leading-none">{btn.key}</span>
-          {btn.sub && <span className="softphone-muted text-[9px] font-semibold tracking-[.12em] leading-none mt-1">{btn.sub}</span>}
+          <span className="text-base sm:text-lg font-mono font-bold text-white group-hover:text-cyan-400 transition-colors leading-tight">{btn.key}</span>
+          {btn.sub && <span className="text-[8px] font-mono text-slate-500 group-hover:text-cyan-300/70 tracking-wider uppercase leading-none mt-0.5">{btn.sub}</span>}
         </button>
       ))}
     </div>
