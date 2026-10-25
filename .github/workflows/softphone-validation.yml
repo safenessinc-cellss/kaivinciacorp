@@ -15,6 +15,7 @@ on:
       - 'vercel.json'
       - 'package.json'
       - 'package-lock.json'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 jobs:
