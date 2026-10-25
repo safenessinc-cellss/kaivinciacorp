@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Check, ChevronDown, Eye, EyeOff, Monitor, Moon, Palette, Sun } from 'lucide-react';
 import { MAC_ACCENTS, useMacTheme, type MacAppearanceMode } from '../contexts/MacThemeContext';
 
@@ -38,7 +38,7 @@ export default function MacAppearancePopover() {
           <div className="mac-setting-block">
             <div className="mac-setting-label">Color de acento</div>
             <div className="mac-accent-grid">
-              {MAC_ACCENTS.map(item => <button key={item.id} type="button" className={accent === item.id ? 'is-selected' : ''} style={{ '--swatch': item[document.documentElement.dataset.macosTheme === 'dark' ? 'dark' : 'light'] } as React.CSSProperties} onClick={() => setAccent(item.id)} aria-label={item.label} title={item.label}>
+              {MAC_ACCENTS.map(item => <button key={item.id} type="button" className={accent === item.id ? 'is-selected' : ''} style={{ '--swatch': item[document.documentElement.dataset.macosTheme === 'dark' ? 'dark' : 'light'] } as CSSProperties} onClick={() => setAccent(item.id)} aria-label={item.label} title={item.label}>
                 {accent === item.id && <Check size={13} strokeWidth={2.5} />}
               </button>)}
             </div>
