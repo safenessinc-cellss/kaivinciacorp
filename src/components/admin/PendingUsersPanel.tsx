@@ -158,7 +158,7 @@ export default function PendingUsersPanel() {
                 <option value="user">Usuario básico</option>
               </select>
               <button
-                onClick={() => approve(u.id)
+                onClick={() => approve(u.id)}
                 disabled={busy === u.id}
                 className="px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-50"
               >
