@@ -194,6 +194,20 @@ export default function SuperAdmin() {
         changes.rejectedAt = serverTimestamp();
       }
       await updateDoc(doc(db, 'users', userId), changes);
+      await addDoc(collection(db, 'notifications'), {
+        ownerId: userId,
+        title: status === 'approved' ? 'Cuenta aprobada' : status === 'rejected' ? 'Solicitud rechazada' : 'Estado de cuenta actualizado',
+        message: status === 'approved'
+          ? 'Tu acceso a Kaivincia Corp fue aprobado. Cierra sesión e inicia sesión si el acceso no se actualiza automáticamente.'
+          : status === 'rejected'
+            ? String(changes.rejectionReason || 'Tu solicitud de acceso fue rechazada.')
+            : `El estado de tu cuenta cambió a ${status}.`,
+        type: 'account_approval',
+        priority: status === 'rejected' ? 'high' : 'medium',
+        path: '/crm/dashboard',
+        read: false,
+        createdAt: serverTimestamp(),
+      });
       await addDoc(collection(db, 'audit_logs'), {
         userId: auth.currentUser?.uid || 'system_superadmin',
         action: status === 'approved' ? 'APPROVE_USER' : status === 'rejected' ? 'REJECT_USER' : 'UPDATE_USER_STATUS',
