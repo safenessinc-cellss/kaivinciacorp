@@ -7,8 +7,6 @@ interface RouteGuardProps {
   children: React.ReactNode;
 }
 
-const PRIVILEGED_ROLES = ['admin', 'superadmin', 'ceo', 'gestor', 'owner', 'supervisor'];
-
 export default function RouteGuard({ children }: RouteGuardProps) {
   const { user, userData, loading: authLoading } = useAuth();
   const location = useLocation();
@@ -30,7 +28,12 @@ export default function RouteGuard({ children }: RouteGuardProps) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // 3. Auth OK pero aún sin doc de perfil (bootstrap en curso)
+  // 3. La identidad debe haberse confirmado explícitamente en esta pestaña.
+  if (typeof sessionStorage === 'undefined' || sessionStorage.getItem('kaivincia_session_confirmed') !== 'true') {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // 4. Auth OK pero aún sin doc de perfil (bootstrap en curso)
   if (userData === null) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
@@ -42,19 +45,9 @@ export default function RouteGuard({ children }: RouteGuardProps) {
     );
   }
 
-  // 4. Verificar aprobación.
-  //    Regla: si status está explícitamente en pending/rejected/suspended → bloquear.
-  //    Si status es undefined pero el rol es privilegiado → tratar como aprobado
-  //    (compatibilidad con admins existentes que no tienen el campo).
+  // 5. No inferir aprobación a partir del rol: el estado debe ser explícito.
   const status = String((userData as any)?.status || '').toLowerCase();
-  const role = String((userData as any)?.role || '').toLowerCase();
-  const isPrivileged = PRIVILEGED_ROLES.includes(role);
-
-  if (status === 'pending' || status === 'rejected' || status === 'suspended') {
-    return <PendingApproval />;
-  }
-
-  if (status !== 'approved' && !isPrivileged) {
+  if (status !== 'approved') {
     return <PendingApproval />;
   }
 
