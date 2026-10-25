@@ -17,6 +17,7 @@ import CommandBar from './CommandBar';
 import HelpDrawer from './help/HelpDrawer';
 import NotificationCenter from './NotificationCenter';
 import LanguageSelector from './LanguageSelector';
+import MacAppearanceControls from './MacAppearanceControls';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAppearance } from '../contexts/AppearanceContext';
 
@@ -612,6 +613,9 @@ export default function CRMLayout({ userData }: { userData: any }) {
             </button>
           </div>
         </header>
+        <div className="flex justify-end px-4 py-2 relative z-20">
+          <MacAppearanceControls />
+        </div>
         
         <main className="flex-1 overflow-auto p-3 sm:p-5 bg-transparent relative z-10">
           <AnimatePresence mode="wait">
