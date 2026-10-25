@@ -149,6 +149,16 @@ export default async function handler(req: any, res: any) {
         createdAt: FieldValue.serverTimestamp(),
       });
 
+      const authUser = await adminAuth.getUser(decoded.uid);
+      const currentClaims = authUser.customClaims || {};
+      if (String(currentClaims.role || '').toLowerCase() !== safeRole || currentClaims.status !== 'approved') {
+        await adminAuth.setCustomUserClaims(decoded.uid, {
+          ...currentClaims,
+          role: safeRole,
+          status: 'approved'
+        });
+      }
+
       existing.status = 'approved';
       existing.role = safeRole;
       existing.approvedBy = existing.approvedBy || 'system-bootstrap-migration';
