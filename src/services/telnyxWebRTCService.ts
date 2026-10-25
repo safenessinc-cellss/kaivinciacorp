@@ -36,6 +36,26 @@ export function validateTelnyxCallerId(value: unknown): string {
   return callerId;
 }
 
+function explainTokenError(codeValue: unknown, status = 0): string {
+  const code = String(codeValue || '').toUpperCase();
+  if (['NO_SIP', 'SIP_ASSIGNMENT_REQUIRED', 'SIP_ASSIGNMENT_INVALID'].includes(code)) {
+    return 'No tienes una línea telefónica asignada. Pide a tu administrador que te asigne una.';
+  }
+  if (['NO_AUTH', 'UNAUTHENTICATED', 'INVALID_TOKEN', 'AUTHENTICATION_REQUIRED'].includes(code) || status === 401) {
+    return 'Tu sesión ha caducado. Vuelve a iniciar sesión.';
+  }
+  if (['API_KEY_INVALID', 'TELNYX_TOKEN_FAILED', 'TELNYX_CREDENTIAL_MISSING'].includes(code) || status === 403 || status === 404) {
+    return 'La conexión con Telnyx no está configurada correctamente. Contacta al administrador.';
+  }
+  if (['TELNYX_DOWN', 'TOKEN_DIAGNOSTICS_FAILED'].includes(code) || status >= 500) {
+    return 'El servicio de telefonía está tardando. Vuelve a intentar en unos segundos.';
+  }
+  if (status === 0 || code === 'NETWORK') {
+    return 'Parece que no tienes internet. Verifica tu conexión y vuelve a intentar.';
+  }
+  return 'El servicio de telefonía está tardando. Vuelve a intentar en unos segundos.';
+}
+
 function explainTelnyxError(error: any): string {
   const raw = String(error?.message || error?.reason || error?.code || error || '');
   const code = String(error?.code || error?.errorCode || '');
@@ -158,7 +178,7 @@ class TelnyxWebRTCService {
       this.state.lastTokenStatus = res.status;
 
       if (!res.ok || data.error || !data.token) {
-        const message = data.message || data.error || `HTTP ${res.status}: no se pudo generar el token.`;
+        const message = explainTokenError(data.code || data.error, res.status);
         this.state.lastError = message;
         this.state.isConnected = false;
         this.notify();
@@ -172,7 +192,7 @@ class TelnyxWebRTCService {
       this.notify();
       return { success: true, token: data.token, expiresAt: this.state.tokenExpiresAt || undefined, message: 'Token Telnyx generado correctamente.', status: res.status };
     } catch (err: any) {
-      const message = String(err?.message || 'No se pudo conectar con el servicio de telefonía.');
+      const message = explainTokenError('NETWORK', 0);
       this.state.lastError = message;
       this.state.isConnected = false;
       this.notify();
@@ -231,7 +251,7 @@ class TelnyxWebRTCService {
       }
       return { success: true, token: result.token, message: 'Token generado y softphone conectado.', status: result.status };
     } catch (err: any) {
-      const message = String(err?.message || 'No se pudo obtener la asignación SIP del usuario.');
+      const message = explainTokenError('NETWORK', 0);
       this.state.lastError = message;
       this.state.isConnected = false;
       this.notify();
