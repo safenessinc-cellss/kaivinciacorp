@@ -2,7 +2,7 @@ import { adminAuth, adminDb } from '../server/_lib/firebaseAdmin.js';
 import { hasPermission, json, type VerifiedAppUser } from '../server/_lib/authz.js';
 import { TelnyxBackendService } from '../server/telnyxBackend.js';
 
-const CALLER_ID_RE = /^\\+[1-9]\\d{7,14}$/;
+const CALLER_ID_RE = /^\+[1-9]\d{7,14}$/;
 const RETRY_DELAYS_MS = [200, 500, 1000];
 
 type TokenRequest = { credentialId?: string };
