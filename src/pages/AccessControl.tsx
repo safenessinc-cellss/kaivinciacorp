@@ -19,6 +19,24 @@ const MODULES = [
   ['integrations','Integraciones'], ['documents','Documentos'], ['audits','Auditorías']
 ] as const;
 
+const DEFAULTS_BY_ROLE: Record<string, string[]> = {
+  admin: MODULES.map(([key]) => key), ceo: MODULES.map(([key]) => key),
+  gestor: ['dashboard','tlmk_sales','collections','reports','team_management','calendar','chat','clients','operations'],
+  supervisor: ['dashboard','tlmk_sales','dialer','collections','calendar','chat','clients','reports','team_management'],
+  tlmk: ['dashboard','tlmk_sales','dialer','calendar','chat','clients'],
+  agente: ['dashboard','dialer','calendar','chat','clients'],
+  sales: ['dashboard','tlmk_sales','dialer','calendar','chat','clients'],
+  rrhh: ['dashboard','talent','payroll','calendar','chat'],
+  alumno: ['academy','chat']
+};
+
+function permissionsForUser(user: AdminUser | null): Record<string, boolean> {
+  if (!user) return {};
+  const stored = user.permissions || {};
+  if (Object.keys(stored).length) return { ...stored };
+  return Object.fromEntries((DEFAULTS_BY_ROLE[user.role] || []).map(key => [key, true]));
+}
+
 async function authorizedFetch(url: string, body?: unknown) {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error('Tu sesión expiró. Inicia sesión de nuevo.');
@@ -60,7 +78,7 @@ export default function AccessControl() {
   }, []);
 
   useEffect(() => { void load(); }, [load]);
-  useEffect(() => { setPermissions(selected?.permissions || {}); setSelectedCredential(selected?.assignedSipCredentialId || ''); }, [selectedUid, selected?.uid]);
+  useEffect(() => { setPermissions(permissionsForUser(selected)); setSelectedCredential(selected?.assignedSipCredentialId || ''); }, [selectedUid, selected?.uid, selected?.permissions, selected?.role, selected?.assignedSipCredentialId]);
 
   const availableCredentials = useMemo(() => credentials.filter(c => !c.assignedTo || c.assignedTo === selectedUid), [credentials, selectedUid]);
 
