@@ -1,0 +1,32 @@
+name: Softphone and RBAC validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'api/telnyx-token.ts'
+      - 'api/auth/bootstrap-user.ts'
+      - 'src/components/calls/**'
+      - 'src/services/telnyxWebRTCService.ts'
+      - 'src/utils/phone*'
+      - 'src/pages/SuperAdmin.tsx'
+      - 'src/pages/PendingApproval.tsx'
+      - 'firestore.rules'
+      - 'vercel.json'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
