@@ -23,6 +23,9 @@ export interface AuthContextType {
   user: User | null;
   loading: boolean;
   userData: UserProfile | null;
+  isApproved: boolean;
+  isPending: boolean;
+  isBlocked: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -31,6 +34,9 @@ export const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   userData: null,
+  isApproved: false,
+  isPending: false,
+  isBlocked: false,
   signOut: async () => {},
   refreshProfile: async () => {},
 });
@@ -94,7 +100,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshProfile = async () => { /* no-op: onSnapshot ya es tiempo real */ };
 
   return (
-    <AuthContext.Provider value={{ user, loading, userData, signOut: handleSignOut, refreshProfile }}>
+    <AuthContext.Provider value={{
+      user, loading, userData,
+      isApproved: String(userData?.status || '').toLowerCase() === 'approved',
+      isPending: !userData || ['pending', 'active', ''].includes(String(userData?.status || '').toLowerCase()),
+      isBlocked: ['blocked', 'rejected'].includes(String(userData?.status || '').toLowerCase()),
+      signOut: handleSignOut, refreshProfile
+    }}>
       {children}
     </AuthContext.Provider>
   );
