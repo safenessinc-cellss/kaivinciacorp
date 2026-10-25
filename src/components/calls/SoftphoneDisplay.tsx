@@ -173,7 +173,7 @@ export default function SoftphoneDisplay({
   const formattedPreview = formatDialNumberPreview(phoneNumber);
 
   return (
-    <div className={`bg-slate-900/90 border border-slate-800 rounded-2xl relative overflow-hidden transition-all shadow-inner ${
+    <div className={`softphone-glass-card bg-slate-900/90 border border-slate-800 rounded-2xl relative overflow-hidden transition-all shadow-inner ${
       compact ? 'p-2.5 mb-2' : 'p-3 mb-2.5'
     }`}>
       {/* Barra superior: Estado, Cronómetro y Acciones de Copiar/Pegar */}
@@ -234,6 +234,7 @@ export default function SoftphoneDisplay({
           {callStatus === 'idle' && (
             <button
               type="button"
+              aria-label="Pegar número telefónico"
               onClick={handleClipboardPasteBtn}
               className="px-2 py-0.5 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700 text-[10px] font-sans font-bold flex items-center gap-1 transition-all cursor-pointer active:scale-95"
               title="Pegar número desde el portapapeles (Cmd+V / Ctrl+V)"
@@ -247,6 +248,7 @@ export default function SoftphoneDisplay({
           {phoneNumber && (
             <button
               type="button"
+              aria-label="Copiar número telefónico"
               onClick={handleClipboardCopyBtn}
               className="px-2 py-0.5 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700 text-[10px] font-sans font-bold flex items-center gap-1 transition-all cursor-pointer active:scale-95"
               title="Copiar número actual (Cmd+C / Ctrl+C)"
@@ -268,10 +270,10 @@ export default function SoftphoneDisplay({
           onChange={handleInputChange}
           onPaste={handlePasteEvent}
           onKeyDown={handleKeyDown}
-          placeholder="+1 (555) 000-0000"
+          placeholder="+52 55 1234 5678"
           disabled={callStatus !== 'idle'}
-          className={`w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500/60 rounded-xl py-1.5 px-8 font-mono font-bold tracking-wider text-center text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 selection:bg-cyan-500/30 selection:text-cyan-200 transition-all ${
-            compact ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'
+          className={`w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500/60 rounded-xl py-1.5 px-8 font-mono font-medium tracking-tight text-center text-white placeholder:text-slate-500 softphone-number focus:outline-none focus:ring-1 focus:ring-cyan-500/40 selection:bg-cyan-500/30 selection:text-cyan-200 transition-all ${
+            compact ? 'text-2xl' : 'text-2xl sm:text-[34px]'
           } ${callStatus !== 'idle' ? 'opacity-85 cursor-not-allowed' : ''}`}
           aria-label="Número de teléfono a marcar"
         />
