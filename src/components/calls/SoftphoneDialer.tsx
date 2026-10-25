@@ -262,11 +262,15 @@ export default function SoftphoneDialer({
             const hoursUntilExpiry = (expiresAt - now) / (1000 * 60 * 60);
 
             if (hoursUntilExpiry < 2) {
-              console.log('[SoftphoneDialer] 🔄 Token por expirar, renovando...');
+              if (callStatus !== 'idle' && callStatus !== 'ended') {
+                telnyxWebRTCService.deferTokenRefreshUntilCallEnds();
+                console.log('[SoftphoneDialer] Renovación aplazada hasta terminar la llamada.');
+                return;
+              }
+              console.log('[SoftphoneDialer] Renovando sesión próxima a vencer.');
               const res = await telnyxWebRTCService.fetchFreshTokenFromBackend();
-              if (res.success && res.token && isMounted) {
-                await telnyxWebRTCService.setLoginToken(res.token, false);
-                console.log('[SoftphoneDialer] ✅ Token renovado');
+              if (res.success && isMounted) {
+                console.log('[SoftphoneDialer] Sesión renovada.');
               }
             }
           } catch (e) {
@@ -285,7 +289,7 @@ export default function SoftphoneDialer({
       isMounted = false;
       clearInterval(interval);
     };
-  }, [user, userData?.role, userData?.assignedCallerId, authLoading]);
+  }, [user, userData?.role, userData?.assignedCallerId, authLoading, callStatus]);
 
   const handleGenerateBackendTelnyxToken = async () => {
     setIsGeneratingBackendToken(true);
