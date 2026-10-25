@@ -1147,8 +1147,9 @@ export default function SoftphoneDialer({
               callerId={selectedCallerId || agentAssignment?.defaultCallerId}
               onReconnect={async () => {
                 if (callStatus !== 'idle' && callStatus !== 'ended') {
-                  showToast('La renovación se realizará al terminar la llamada.');
-                  return;
+                  telnyxWebRTCService.deferTokenRefreshUntilCallEnds();
+                  showToast('La sesión se renovará automáticamente al terminar la llamada.');
+                  return false;
                 }
                 setConnectionStatus('connecting');
                 setConnectionError(null);
@@ -1158,12 +1159,14 @@ export default function SoftphoneDialer({
                   setConnectionStatus('connected');
                   setConnectionError(null);
                   showToast('Sesión de telefonía renovada.');
+                  return true;
                 } else {
                   const noSip = /no tienes línea sip asignada/i.test(result.message);
                   setHasSipAssigned(!noSip);
                   setConnectionStatus('error');
                   setConnectionError(result.message);
                   showToast(noSip ? 'No tienes línea SIP asignada. Contacta al administrador.' : 'No se pudo conectar con Telnyx. Vuelve a intentar en unos segundos.');
+                  return false;
                 }
               }}
               onToast={showToast}
