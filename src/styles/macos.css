@@ -206,3 +206,30 @@
   background-color: rgba(209, 209, 214, .72) !important;
   color: #1d1d1f !important;
 }
+
+.ios-call-active {
+  background: rgba(242, 242, 247, .9);
+  border: 1px solid rgba(60, 60, 67, .12);
+}
+.ios-call-avatar {
+  background: linear-gradient(145deg, #e5e5ea, #f7f7fa);
+  color: #3c3c43;
+  border: 1px solid rgba(60,60,67,.12);
+  box-shadow: inset 0 1px rgba(255,255,255,.9), 0 4px 14px rgba(0,0,0,.06);
+}
+.ios-call-status-dot.is-connected { background: #34C759; }
+.ios-call-status-dot.is-calling { background: #FF9500; animation: ios-call-pulse 1.2s ease-in-out infinite; }
+.ios-call-status-dot.is-hold { background: #FF9500; }
+.ios-softphone-pill {
+  min-height: 44px;
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: rgba(248, 248, 250, .92);
+  border: 1px solid rgba(60,60,67,.16);
+  box-shadow: 0 8px 28px rgba(0,0,0,.16), inset 0 1px rgba(255,255,255,.9);
+  backdrop-filter: blur(24px) saturate(180%);
+}
+@keyframes ios-call-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .55; transform: scale(.88); }
+}
