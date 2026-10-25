@@ -408,31 +408,31 @@ service cloud.firestore {
     // Asistencia & permisos
     // ===============================================================
     match /attendance_logs/{logId} {
-      allow read:   if isAdmin() ||
-                       (isAuthenticated() && (existing().get('userId', '') == request.auth.uid || existing().get('userUid', '') == request.auth.uid));
-      allow create: if isAuthenticated() && (incoming().get('userId', '') == request.auth.uid || incoming().get('userUid', '') == request.auth.uid);
+      allow read: if isAdmin() ||
+        (isApproved() && (existing().get('userId', '') == request.auth.uid || existing().get('userUid', '') == request.auth.uid));
+      allow create: if isApproved() && (incoming().get('userId', '') == request.auth.uid || incoming().get('userUid', '') == request.auth.uid);
       allow update, delete: if isAdmin();
     }
 
     match /absence_requests/{requestId} {
-      allow read:   if isAdmin() ||
-                       (isAuthenticated() && (existing().get('userId', '') == request.auth.uid || existing().get('userUid', '') == request.auth.uid));
-      allow create: if isAuthenticated() && (incoming().get('userId', '') == request.auth.uid || incoming().get('userUid', '') == request.auth.uid);
+      allow read: if isAdmin() ||
+        (isApproved() && (existing().get('userId', '') == request.auth.uid || existing().get('userUid', '') == request.auth.uid));
+      allow create: if isApproved() && (incoming().get('userId', '') == request.auth.uid || incoming().get('userUid', '') == request.auth.uid);
       allow update, delete: if isAdmin();
     }
 
     match /notifications/{notificationId} {
-      allow read:   if isAdmin() || existing().get('ownerId', '') == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.get('ownerId', '') == request.auth.uid;
-      allow update: if isAdmin() || existing().get('ownerId', '') == request.auth.uid;
-      allow delete: if isAdmin() || existing().get('ownerId', '') == request.auth.uid;
+      allow read: isApproved() && (isAdmin() || existing().get('ownerId', '') == request.auth.uid);
+      allow create: if isApproved() && request.resource.data.get('ownerId', '') == request.auth.uid;
+      allow update: if isApproved() && (isAdmin() || existing().get('ownerId', '') == request.auth.uid);
+      allow delete: if isApproved() && (isAdmin() || existing().get('ownerId', '') == request.auth.uid);
     }
 
     match /documents/{documentId} {
-      allow read:   if isAdmin() || existing().get('ownerId', '') == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.get('ownerId', '') == request.auth.uid;
-      allow update: if isAdmin() || existing().get('ownerId', '') == request.auth.uid;
-      allow delete: if isAdmin() || existing().get('ownerId', '') == request.auth.uid;
+      allow read: isApproved() && (isAdmin() || (hasPermission('documents') && existing().get('ownerId', '') == request.auth.uid));
+      allow create: if isApproved() && hasPermission('documents') && request.resource.data.get('ownerId', '') == request.auth.uid;
+      allow update: if isApproved() && (isAdmin() || (hasPermission('documents') && existing().get('ownerId', '') == request.auth.uid));
+      allow delete: if isSuperAdmin() || (isApproved() && hasPermission('documents') && existing().get('ownerId', '') == request.auth.uid);
     }
 
     match /settings/telnyx_config {
