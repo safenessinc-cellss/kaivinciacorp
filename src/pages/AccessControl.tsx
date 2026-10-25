@@ -33,8 +33,8 @@ const DEFAULTS_BY_ROLE: Record<string, string[]> = {
 function permissionsForUser(user: AdminUser | null): Record<string, boolean> {
   if (!user) return {};
   const stored = user.permissions || {};
-  if (Object.keys(stored).length) return { ...stored };
-  return Object.fromEntries((DEFAULTS_BY_ROLE[user.role] || []).map(key => [key, true]));
+  const defaults = Object.fromEntries((DEFAULTS_BY_ROLE[user.role] || []).map(key => [key, true]));
+  return { ...defaults, ...stored };
 }
 
 async function authorizedFetch(url: string, body?: unknown) {
