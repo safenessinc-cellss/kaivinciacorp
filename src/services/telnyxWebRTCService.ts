@@ -4,7 +4,7 @@
  * Documentación oficial: https://developers.telnyx.com/docs/webrtc
  */
 
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { TelnyxRTC } from '@telnyx/webrtc';
 import { formatPhoneE164 } from '../utils/phone';
