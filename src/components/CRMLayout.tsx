@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth } from '../firebase';
+import { usePermissions } from '../hooks/usePermissions';
 import { signOut } from 'firebase/auth';
 import { LOGO_FULL, LOGO_ICON } from '../constants/images';
 import CommandBar from './CommandBar';
@@ -22,6 +23,7 @@ import { useAppearance } from '../contexts/AppearanceContext';
 
 export default function CRMLayout({ userData }: { userData: any }) {
   const { t } = useLanguage();
+  const { hasPermission } = usePermissions();
   const { appearance } = useAppearance();
   const location = useLocation();
   const navigate = useNavigate();
@@ -236,14 +238,33 @@ export default function CRMLayout({ userData }: { userData: any }) {
     ];
   }, [userRole, isAdminOrFin, isSuperAdmin, t]);
 
+  const permissionForPath: Record<string, any> = {
+    '/crm/dashboard': 'dashboard', '/crm/pipeline': 'tlmk_sales', '/crm/calls': 'dialer',
+    '/crm/cobranza': 'collections', '/crm/recruitment': 'talent', '/crm/payroll': 'payroll',
+    '/crm/accounting': 'accounting', '/crm/billing': 'billing', '/crm/marketing': 'marketing',
+    '/crm/projects': 'projects', '/crm/reports': 'reports', '/crm/academy-internal': 'academy',
+    '/crm/team': 'team_management', '/crm/calendar': 'calendar', '/crm/chat': 'chat',
+    '/crm/clients': 'clients', '/crm/operations': 'operations', '/crm/call-center': 'call_center',
+    '/crm/integrations': 'integrations', '/crm/drive': 'documents', '/crm/audits': 'audits'
+  };
+  const authorizedMenuGroups = useMemo(() => menuGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => {
+      const path = item.href.split('?')[0];
+      const permission = permissionForPath[path];
+      if (path === '/crm/superadmin' || path === '/crm/access-control') return isSuperAdmin;
+      return !permission || hasPermission(permission);
+    })
+  })).filter(group => group.items.length > 0), [menuGroups, hasPermission, isSuperAdmin]);
+
   const filteredMenuGroups = useMemo(() => {
-    if (!menuSearch) return menuGroups;
+    if (!menuSearch) return authorizedMenuGroups;
     const lowerSearch = menuSearch.toLowerCase();
-    return menuGroups.map(group => ({
+    return authorizedMenuGroups.map(group => ({
       ...group,
       items: group.items.filter(item => item.name.toLowerCase().includes(lowerSearch))
     })).filter(group => group.items.length > 0);
-  }, [menuGroups, menuSearch]);
+  }, [authorizedMenuGroups, menuSearch]);
 
   // Generate Breadcrumbs based on current path
   const generateBreadcrumbs = () => {
