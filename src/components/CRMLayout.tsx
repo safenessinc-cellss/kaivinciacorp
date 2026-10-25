@@ -214,6 +214,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
           title: t('nav.groups.config', 'CONFIGURACIÓN'),
           items: [
             { name: t('nav.superadmin', 'SuperAdmin'), href: '/crm/superadmin', icon: ShieldAlert },
+            { name: 'Control de acceso', href: '/crm/access-control', icon: ShieldCheck, color: 'text-cyan-600' },
             { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[#EC4899]' },
             { name: t('nav.security_center', 'Security Center'), href: '/crm/security', icon: ShieldCheck, color: 'text-[#FACC15]' },
             { name: t('nav.automations', 'Automatizaciones'), href: '/crm/automations', icon: Zap },
