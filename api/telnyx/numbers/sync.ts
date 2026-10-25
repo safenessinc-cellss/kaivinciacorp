@@ -1,33 +1,20 @@
-import { adminAuth } from '../../../server/_lib/firebaseAdmin.js';
+import { adminDb } from '../../../server/_lib/firebaseAdmin.js';
+import { json, requireApprovedUser } from '../../../server/_lib/authz.js';
 
 export default async function handler(req: any, res: any) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
-
-  if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    json(res, 405, { error: 'METHOD_NOT_ALLOWED' });
+    return;
+  }
 
   try {
-    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
-    if (!authHeader) {
-      res.statusCode = 401;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'Falta header Authorization' }));
-      return;
-    }
-    const authUser = await adminAuth.verifyIdToken(authHeader.replace('Bearer ', ''), true);
-    if (!authUser?.uid) {
-      res.statusCode = 401;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'Token inválido' }));
-      return;
-    }
+    const authUser = await requireApprovedUser(req, res, true);
+    if (!authUser) return;
 
     const apiKey = process.env.TELNYX_API_KEY;
     if (!apiKey) {
-      res.statusCode = 500;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ success: false, error: 'TELNYX_API_KEY no configurada' }));
+      json(res, 500, { success: false, error: 'TELNYX_API_KEY no configurada' });
       return;
     }
 
@@ -37,9 +24,7 @@ export default async function handler(req: any, res: any) {
 
     if (!telnyxRes.ok) {
       const errText = await telnyxRes.text();
-      res.statusCode = 400;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ success: false, error: `Telnyx ${telnyxRes.status}: ${errText}` }));
+      json(res, 502, { success: false, error: `Telnyx rechazó la sincronización (${telnyxRes.status}). Verifica la conexión y la API key.` });
       return;
     }
 
@@ -51,8 +36,7 @@ export default async function handler(req: any, res: any) {
       connectionId: n.connection_id,
     }));
 
-    const { getFirestore } = await import('firebase-admin/firestore');
-    const db = getFirestore();
+    const db = adminDb;
 
     for (const num of numbers) {
       const docId = `num_${num.phoneNumber.replace(/\D/g, '')}`;
@@ -65,14 +49,10 @@ export default async function handler(req: any, res: any) {
       }, { merge: true });
     }
 
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ success: true, total: numbers.length, numbers: numbers.map((n: any) => n.phoneNumber) }));
+    json(res, 200, { success: true, total: numbers.length, numbers: numbers.map((n: any) => n.phoneNumber) });
     return;
   } catch (err: any) {
     console.error('[telnyx] Error:', err);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: err.message }));
+    json(res, 500, { error: 'TELNYX_SYNC_FAILED', message: 'No se pudo sincronizar los números de Telnyx.' });
   }
 }
