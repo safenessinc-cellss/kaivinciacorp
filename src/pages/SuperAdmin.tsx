@@ -887,7 +887,7 @@ export default function SuperAdmin() {
                       <h5 className="text-xs font-black text-red-900 uppercase">Protocolo de Baja & Eliminación Permanente</h5>
                     </div>
                     <p className="text-xs text-red-800 leading-relaxed">
-                      Para suspender temporalmente el acceso, cambie el estado a <b>suspended</b> en el menú desplegable. Si se requiere la revocación total y purga de la cuenta de usuario, presione el ícono de papelera roja, que exigirá tipear textualmente la palabra <code className="bg-red-200 text-red-900 px-1.5 py-0.5 rounded font-bold font-mono">ELIMINAR</code> antes de ejecutar <code className="text-[11px] bg-red-100 px-1 rounded font-mono">deleteDoc</code> en Firestore.
+                      Para suspender temporalmente el acceso, cambie el estado a <b>suspended</b>. La eliminación permanente solo está disponible para <b>safeness.c.a@gmail.com</b> y exige escribir el email exacto de la cuenta; la operación se valida en el backend.
                     </p>
                   </div>
                 </div>
