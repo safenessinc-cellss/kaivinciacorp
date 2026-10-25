@@ -62,12 +62,12 @@ export default async function handler(req: any, res: any) {
       usesAdminHubAssignment = Boolean(credentialIdForAssignment && assignedCallerId);
       canAutoProvisionCredential = Boolean(
         agentAssignmentSnap.exists &&
-        /^\\+[1-9]\\d{7,14}$/.test(defaultCallerId) &&
+        /^\+[1-9]\d{7,14}$/.test(defaultCallerId) &&
         authorizedNumbers.includes(defaultCallerId)
       );
     }
 
-    if (!/^\\+[1-9]\\d{7,14}$/.test(assignedCallerId)) {
+    if (!/^\+[1-9]\d{7,14}$/.test(assignedCallerId)) {
       json(res, 403, { error: 'SIP_ASSIGNMENT_REQUIRED', message: 'Falta un Caller ID autorizado. En Telnyx Admin Hub, asigna un número al usuario y guárdalo como predeterminado.' });
       return;
     }
