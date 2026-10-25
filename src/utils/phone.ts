@@ -12,10 +12,10 @@ export function formatPhoneE164(value: unknown, defaultCountry: PhoneDefaultCoun
   const digits = raw.replace(/\D/g, '');
   let normalized = '';
 
-  if (raw.startsWith('+')) {
-    normalized = `+${digits}`;
-  } else if (digits.length === 13 && digits.startsWith('521')) {
+  if (digits.length === 13 && digits.startsWith('521')) {
     normalized = `+52${digits.slice(3)}`;
+  } else if (raw.startsWith('+')) {
+    normalized = `+${digits}`;
   } else if (digits.length === 12 && digits.startsWith('52')) {
     normalized = `+${digits}`;
   } else if (digits.length === 11 && digits.startsWith('1')) {
