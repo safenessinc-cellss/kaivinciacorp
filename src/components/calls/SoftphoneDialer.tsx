@@ -156,6 +156,9 @@ export default function SoftphoneDialer({
   // Estados del discador
   const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber);
   const [callStatus, setCallStatus] = useState<SoftphoneState['status']>('idle');
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'connected' | 'error'>('idle');
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [hasSipAssigned, setHasSipAssigned] = useState<boolean | null>(null);
   const [duration, setDuration] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isOnHold, setIsOnHold] = useState(false);
@@ -189,6 +192,13 @@ export default function SoftphoneDialer({
   useEffect(() => {
     const unsub = telnyxWebRTCService.subscribe((rtcState) => {
       setCurrentWebRtcJwt(rtcState.loginToken);
+      if (rtcState.isConnected) {
+        setConnectionStatus('connected');
+        setConnectionError(null);
+      } else if (rtcState.lastError) {
+        setConnectionStatus('error');
+        setConnectionError(rtcState.lastError);
+      }
     });
     return unsub;
   }, []);
@@ -199,19 +209,23 @@ export default function SoftphoneDialer({
     const initTelnyx = async () => {
       if (authLoading || !user) return;
       try {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        if (cancelled) return;
-        // Cada sesión obtiene un JWT efímero para la credencial SIP asignada a este usuario.
-        // No reutilizar tokens de otro usuario ni leer JWT compartidos desde Firestore.
+        setConnectionStatus('connecting');
+        setConnectionError(null);
+        // El servicio comprueba la asignación antes de llamar al backend.
         const result = await telnyxWebRTCService.fetchFreshTokenFromBackend();
         if (cancelled) return;
         if (result.success) {
-          console.log('[SoftphoneDialer] Cliente Telnyx inicializado con credencial asignada.');
+          setHasSipAssigned(true);
+          setConnectionStatus('connected');
+          setConnectionError(null);
+          console.log('[SoftphoneDialer] Token obtenido y evento telnyx.ready recibido.');
         } else {
+          const noSip = /no tienes línea sip asignada/i.test(result.message);
+          setHasSipAssigned(!noSip);
+          setConnectionStatus('error');
+          setConnectionError(result.message);
           console.warn('[SoftphoneDialer] No se pudo inicializar Telnyx:', result.message);
-          if (/número de origen no está configurado|asignación de telefonía no coincide/i.test(result.message)) {
-            showToast(result.message);
-          }
+          showToast(noSip ? 'No tienes línea SIP asignada. Contacta al administrador.' : `Error de conexión con Telnyx: ${result.message}. Reintentar.`);
         }
       } catch (err: any) {
         console.error('[SoftphoneDialer] Error inicializando Telnyx:', err);
@@ -219,7 +233,7 @@ export default function SoftphoneDialer({
     };
     initTelnyx();
     return () => { cancelled = true; };
-  }, [user, authLoading, userData?.role, userData?.assignedCallerId]);
+  }, [user, authLoading, userData?.role, userData?.assignedCallerId, showToast]);
 
   // ============================================================
   // Renovación automática del JWT cada 24 horas
@@ -637,6 +651,17 @@ export default function SoftphoneDialer({
     const dialNum = targetPhone || phoneNumber;
     if (!dialNum || dialNum.trim().length === 0) return;
 
+    const isTelnyxCarrier = selectedCarrier === 'telnyx' || activeCarrierObj.name.includes('Telnyx');
+    if (isTelnyxCarrier && connectionStatus !== 'connected') {
+      const message = hasSipAssigned === false
+        ? 'No tienes línea SIP asignada. Contacta al administrador.'
+        : connectionStatus === 'connecting'
+          ? 'Conectando con Telnyx… espera a que aparezca Conectado.'
+          : `Error de conexión con Telnyx: ${connectionError || 'sesión no conectada'}. Reintentar.`;
+      showToast(message);
+      return;
+    }
+
     const cleanDigits = dialNum.replace(/\D/g, '');
     if (cleanDigits.length < 8) {
       showToast(t('voip.min_digits', 'El número debe tener al menos 8 dígitos'));
@@ -659,7 +684,6 @@ export default function SoftphoneDialer({
       return;
     }
 
-    const isTelnyxCarrier = selectedCarrier === 'telnyx' || activeCarrierObj.name.includes('Telnyx');
     let normalizedCallerId = selectedCallerId;
     if (isTelnyxCarrier) {
       try {
@@ -894,6 +918,50 @@ export default function SoftphoneDialer({
         )}
       </AnimatePresence>
 
+      {selectedCarrier === 'telnyx' && (
+        <div aria-live="polite" className={`mb-3 rounded-xl border px-3 py-2 flex items-center justify-between gap-3 text-xs ${
+          connectionStatus === 'connected'
+            ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+            : connectionStatus === 'connecting'
+              ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'
+              : 'border-amber-500/30 bg-amber-500/10 text-amber-200'
+        }`}>
+          <div className="min-w-0">
+            <div className="font-bold">
+              {connectionStatus === 'connected' ? 'Conectado a Telnyx' : connectionStatus === 'connecting' ? 'Conectando…' : hasSipAssigned === false ? 'No tienes línea SIP asignada. Contacta al administrador.' : 'Softphone desconectado'}
+            </div>
+            {connectionStatus === 'error' && hasSipAssigned !== false && connectionError && (
+              <div className="mt-1 break-words text-[11px] opacity-90">{connectionError}</div>
+            )}
+          </div>
+          {connectionStatus !== 'connected' && hasSipAssigned !== false && (
+            <button
+              type="button"
+              disabled={connectionStatus === 'connecting'}
+              onClick={async () => {
+                setConnectionStatus('connecting');
+                setConnectionError(null);
+                const result = await telnyxWebRTCService.fetchFreshTokenFromBackend();
+                if (result.success) {
+                  setHasSipAssigned(true);
+                  setConnectionStatus('connected');
+                  setConnectionError(null);
+                } else {
+                  const noSip = /no tienes línea sip asignada/i.test(result.message);
+                  setHasSipAssigned(!noSip);
+                  setConnectionStatus('error');
+                  setConnectionError(result.message);
+                  showToast(noSip ? 'No tienes línea SIP asignada. Contacta al administrador.' : `Error de conexión con Telnyx: ${result.message}. Reintentar.`);
+                }
+              }}
+              className="shrink-0 rounded-lg border border-current/30 px-3 py-1.5 font-bold disabled:opacity-50"
+            >
+              {connectionStatus === 'connecting' ? 'Conectando…' : 'Reintentar'}
+            </button>
+          )}
+        </div>
+      )}
+
       {isMinimized ? (
         <div className="flex items-center justify-between gap-2">
           {isFloating && !isMobile && (
@@ -931,7 +999,7 @@ export default function SoftphoneDialer({
             )}
           </div>
           {callStatus === 'idle' ? (
-            <button type="button" onClick={() => handleStartCall()} disabled={!phoneNumber.trim()} className="p-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black disabled:opacity-40 transition-all cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.3)] active:scale-95 shrink-0" title="Llamar">
+            <button type="button" onClick={() => handleStartCall()} disabled={!phoneNumber.trim() || (selectedCarrier === 'telnyx' && connectionStatus !== 'connected')} className="p-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black disabled:opacity-40 transition-all cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.3)] active:scale-95 shrink-0" title="Llamar">
               <Phone className="w-3.5 h-3.5 fill-current" />
             </button>
           ) : (
@@ -1061,7 +1129,7 @@ export default function SoftphoneDialer({
           <div className="pt-2.5">
             {callStatus === 'idle' ? (
               <div className="flex items-center gap-2">
-                <button type="button" onClick={() => handleStartCall()} disabled={!phoneNumber.trim()} className="flex-1 py-2.5 sm:py-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:hover:bg-emerald-500 text-black font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 cursor-pointer active:scale-98">
+                <button type="button" onClick={() => handleStartCall()} disabled={!phoneNumber.trim() || (selectedCarrier === 'telnyx' && connectionStatus !== 'connected')} className="flex-1 py-2.5 sm:py-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:hover:bg-emerald-500 text-black font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 cursor-pointer active:scale-98">
                   <Phone className="w-4 h-4 fill-current" />
                   <span>{t('voip.call', 'Llamar')}</span>
                 </button>
