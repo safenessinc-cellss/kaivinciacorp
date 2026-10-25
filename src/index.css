@@ -34,6 +34,11 @@
   --font-serif: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif;
   --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, monospace;
   --color-primary: var(--mac-accent);
+  --color-primary-hover: var(--mac-accent-hover);
+  --color-primary-light: var(--mac-accent-soft);
+  --color-accent: var(--mac-accent);
+  --color-accent-light: var(--mac-accent-soft);
+  --color-bg: var(--mac-bg-window);
   /* Preserve the app's existing Tailwind semantic color utilities. */
   --color-secondary: var(--mac-text-secondary);
   --color-background: var(--mac-bg-window);
