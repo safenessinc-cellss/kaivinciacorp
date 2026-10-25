@@ -84,7 +84,7 @@
   box-shadow: var(--mac-shadow-window);
   backdrop-filter: blur(var(--mac-material-blur)) saturate(180%);
   -webkit-backdrop-filter: blur(var(--mac-material-blur)) saturate(180%);
-  overflow: clip;
+  overflow: visible;
 }
 .macos-window-titlebar {
   min-height: 38px;
