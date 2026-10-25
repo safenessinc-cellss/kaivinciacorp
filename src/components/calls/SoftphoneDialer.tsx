@@ -1044,7 +1044,7 @@ export default function SoftphoneDialer({
             <SoftphoneTabs activeTab={activeTab} onTabChange={setActiveTab} selectedCarrierName={activeCarrierObj?.name} hasValidSip={hasValidSipCredentials} authorizedCallerId={selectedCallerId} isFloating={isFloating} />
           )}
 
-          <SoftphoneDisplay phoneNumber={phoneNumber} callerId={selectedCallerId} onPhoneNumberChange={setPhoneNumber} onBackspace={handleBackspace} onClear={handleClear} callStatus={callStatus} duration={duration} onForceConnect={handleForceConnectNow} compact={isFloating} onCopySuccess={showToast} onPasteSuccess={showToast} onDigitType={playDtmfTone} />
+          <SoftphoneDisplay phoneNumber={phoneNumber} callerId={selectedCallerId} onPhoneNumberChange={setPhoneNumber} onBackspace={handleBackspace} onClear={handleClear} callStatus={callStatus} duration={duration} onForceConnect={() => showToast('El estado de llamada sólo cambia cuando Telnyx confirma el evento remoto.')} compact={isFloating} onCopySuccess={showToast} onPasteSuccess={showToast} onDigitType={playDtmfTone} />
 
           {activeTab === 'dialer' ? (
             <div className="space-y-2">
