@@ -17,7 +17,6 @@ import SoftphoneDisplay, { sanitizeDialNumber } from './SoftphoneDisplay';
 import SoftphoneKeypad from './SoftphoneKeypad';
 import SoftphoneConfig from './SoftphoneConfig';
 import SoftphoneSettings from './SoftphoneSettings';
-import '../../styles/softphone.css';
 import SoftphoneSipConsole from './SoftphoneSipConsole';
 import { telnyxWebRTCService, normalizeTelnyxE164, validateTelnyxCallerId } from '../../services/telnyxWebRTCService';
 import { formatPhoneE164 } from '../../utils/phone';
