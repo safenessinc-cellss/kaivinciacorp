@@ -334,6 +334,13 @@ class TelnyxWebRTCService {
         client.on('telnyx.notification', (notification: any) => {
           const code = String(notification?.code || notification?.data?.code || '');
           const type = String(notification?.type || '');
+          if (type === 'callUpdate') {
+            if (notification?.call) {
+              this.state.activeCallId = notification.call.id;
+              this.notify();
+            }
+            return;
+          }
           if (code === '34001' || type === 'TOKEN_EXPIRING_SOON') {
             void this.refreshCurrentToken();
           }
