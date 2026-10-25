@@ -93,11 +93,8 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isAuthenticated() && (isUser(userId) || isAdmin());
 
-      // Los perfiles se crean mediante el backend bootstrap (Admin SDK).
-      // Desde cliente, los administradores solo pueden crear solicitudes sin privilegios.
-      allow create: if isAdmin()
-        && request.resource.data.get("role", "none") == "none"
-        && request.resource.data.get("status", "pending") == "pending";
+      // Los perfiles solo se crean desde el backend bootstrap con Admin SDK.
+      allow create: if false;
 
       // Los cambios de aprobación/rol quedan separados de las actualizaciones ordinarias.
       allow update: if (
