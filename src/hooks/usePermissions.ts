@@ -13,7 +13,8 @@ ventas:{dashboard:true,clients:true,marketing:true,calls:true,calendar:true,chat
 agente:{dashboard:true,clients:true,calls:true,calendar:true,tasks:true,chat:true,helpdesk:true}
 };
 export function resolvePermissions(roleValue:unknown, customValue:unknown):Record<PermissionKey,boolean>{
-const role=String(roleValue||'none').trim().toLowerCase();
+const rawRole=String(roleValue||'none').trim().toLowerCase();
+const role=({sales:'ventas',agent:'agente',agente_tlmk:'tlmk'} as Record<string,string>)[rawRole]||rawRole;
 const custom=customValue&&typeof customValue==='object'?customValue as Record<string,unknown>:{};
 const defaults=DEFAULTS[role]||{};
 return Object.fromEntries(PERMISSION_MODULES.map(({key})=>[key,role==='superadmin'?true:(typeof custom[key]==='boolean'?custom[key]:defaults[key]===true)])) as Record<PermissionKey,boolean>;
