@@ -95,6 +95,19 @@ export default function App() {
 
       setUser(currentUser);
       try {
+        // Provision/repair the authenticated profile on the trusted server before
+        // reading Firestore. This is required for allowlisted SuperAdmins whose
+        // legacy profile still has a pending or incorrect role/status.
+        const idToken = await currentUser.getIdToken();
+        const bootstrapResponse = await fetch('/api/auth/bootstrap-user', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+        if (!bootstrapResponse.ok) {
+          const bootstrapError = await bootstrapResponse.text().catch(() => '');
+          throw new Error(`User bootstrap failed (${bootstrapResponse.status}): ${bootstrapError.slice(0, 300)}`);
+        }
+
         const userRef = doc(db, 'users', currentUser.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
