@@ -162,29 +162,31 @@ service cloud.firestore {
     // ===============================================================
     match /clients/{clientId} {
       allow read: if hasModulePermission('clients', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']);
-      allow create: if hasModulePermission('clients', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']) &&
+      allow create: if hasModulePermission('clientsCreate', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']) &&
                        request.resource.data.get('createdBy', '') == request.auth.uid;
-      allow update: if hasModulePermission('clients', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']) &&
+      allow update: if hasModulePermission('clientsEdit', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']) &&
                        (isAdmin() || existing().get('createdBy', '') == request.auth.uid || existing().get('assignedTo', '') == request.auth.uid);
-      allow delete: if isAdmin();
+      allow delete: if hasModulePermission('clientsDelete', ['admin']);
 
       match /{subcollection}/{document=**} {
-        allow read:  if isAuthenticated();
-        allow write: if isAdmin() ||
+        allow read: if hasModulePermission('clients', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']);
+        allow write: if hasModulePermission('clientsEdit', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']) &&
+          (isAdmin() ||
           get(/databases/$(database)/documents/clients/$(clientId)).data.get('createdBy', '') == request.auth.uid ||
-          get(/databases/$(database)/documents/clients/$(clientId)).data.get('assignedTo', '') == request.auth.uid;
+          get(/databases/$(database)/documents/clients/$(clientId)).data.get('assignedTo', '') == request.auth.uid);
       }
     }
 
     match /leads/{leadId} {
-      allow read, create, update: if hasModulePermission('marketing', ['admin', 'supervisor', 'tlmk', 'ventas']);
-      allow delete: if isAdmin();
+      allow read: if hasModulePermission('marketing', ['admin', 'supervisor', 'tlmk', 'ventas']);
+      allow create: if hasModulePermission('marketingCreate', ['admin', 'supervisor', 'tlmk', 'ventas']);
+      allow update: if hasModulePermission('marketingEdit', ['admin', 'supervisor', 'tlmk', 'ventas']);
+      allow delete: if hasModulePermission('marketingDelete', ['admin']);
     }
 
     match /form_templates/{templateId} {
-      allow read:   if isAuthenticated();
-      allow create, update: if isAuthenticated();
-      allow delete: if isAdmin();
+      allow read: if hasModulePermission('formTemplates', ['admin', 'supervisor']);
+      allow create, update, delete: if hasModulePermission('formTemplates', ['admin']);
     }
 
     match /client_interactions/{interactionId} {
@@ -195,17 +197,16 @@ service cloud.firestore {
     }
 
     match /tasks/{taskId} {
-      allow read, create, update: if hasModulePermission('tasks', ['admin', 'supervisor', 'agente', 'tlmk', 'ventas']);
-      allow delete: if isAdmin();
+      allow read: if hasModulePermission('tasks', ['admin', 'supervisor', 'agente', 'tlmk', 'ventas']);
+      allow create, update: if hasModulePermission('tasksManage', ['admin', 'supervisor', 'agente', 'tlmk', 'ventas']);
+      allow delete: if hasModulePermission('tasksManage', ['admin']);
     }
 
     match /chat_messages/{messageId} {
-      allow read:   if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() &&
-                       (isAdmin() ||
-                        existing().get('targetId', '') == request.auth.uid ||
-                        existing().get('senderId', '') == request.auth.uid);
+      allow read: if hasModulePermission('chat', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']);
+      allow create: if hasModulePermission('chat', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']);
+      allow update: if hasModulePermission('chat', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']) &&
+                       (isAdmin() || existing().get('targetId', '') == request.auth.uid || existing().get('senderId', '') == request.auth.uid);
       allow delete: if isAdmin();
     }
 
@@ -353,8 +354,7 @@ service cloud.firestore {
     // ===============================================================
     match /integrations/{integrationId} {
       allow read: if hasModulePermission('integrations', ['admin']);
-      allow create, update: if hasModulePermission('integrations', ['admin']);
-      allow delete: if isAdmin();
+      allow create, update, delete: if hasModulePermission('integrationsManage', ['admin']);
     }
 
     match /integration_test_logs/{logId} {
@@ -381,8 +381,7 @@ service cloud.firestore {
 
     match /automation_rules/{ruleId} {
       allow read: if hasModulePermission('automations', ['admin']);
-      allow create, update: if hasModulePermission('automations', ['admin']);
-      allow delete: if isAdmin();
+      allow create, update, delete: if hasModulePermission('automationsManage', ['admin']);
     }
 
     match /automation_logs/{logId} {
@@ -408,16 +407,15 @@ service cloud.firestore {
     // ===============================================================
     match /projects/{projectId} {
       allow read: if hasModulePermission('projects', ['admin', 'supervisor']);
-      allow create: if hasModulePermission('projects', ['admin', 'supervisor']) && isValidProject(incoming());
-      allow update: if hasModulePermission('projects', ['admin', 'supervisor']) && isValidProject(incoming());
-      allow delete: if isAdmin();
+      allow create, update: if hasModulePermission('projectsWrite', ['admin', 'supervisor']) && isValidProject(incoming());
+      allow delete: if hasModulePermission('projectsWrite', ['admin']);
     }
 
     match /invoices/{invoiceId} {
       allow read: if hasModulePermission('billing', ['admin']);
-      allow create: if hasModulePermission('billing', ['admin']) && isValidInvoice(incoming());
-      allow update: if hasModulePermission('billing', ['admin']) && isValidInvoice(incoming());
-      allow delete: if isAdmin();
+      allow create: if hasModulePermission('billingWrite', ['admin']) && isValidInvoice(incoming());
+      allow update: if hasModulePermission('billingWrite', ['admin']) && isValidInvoice(incoming());
+      allow delete: if hasModulePermission('billingWrite', ['admin']);
     }
 
     match /time_logs/{logId} {
