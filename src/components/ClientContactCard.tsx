@@ -30,7 +30,7 @@ export default function ClientContactCard({ client }: ClientContactCardProps) {
   return (
     <motion.div 
       whileHover={{ y: -5, scale: 1.02 }}
-      className="bg-[#161B22] border border-white/5 rounded-[2.5rem] p-6 relative overflow-hidden group shadow-2xl transition-all hover:border-[#22D3EE]/30"
+      className="bg-[var(--bg-elevated)] border border-white/5 rounded-[2.5rem] p-6 relative overflow-hidden group shadow-2xl transition-all hover:border-[var(--color-cyan)]/30"
     >
       {/* Background Decorative Element */}
       <div className="absolute -right-8 -top-8 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -40,7 +40,7 @@ export default function ClientContactCard({ client }: ClientContactCardProps) {
       {/* Top Header */}
       <div className="flex justify-between items-start mb-6 relative z-10">
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 bg-black/40 rounded-2xl border border-white/5 flex items-center justify-center text-[#22D3EE] shadow-inner">
+          <div className="h-12 w-12 bg-black/40 rounded-2xl border border-white/5 flex items-center justify-center text-[var(--color-cyan)] shadow-inner">
             <Building2 className="w-6 h-6" />
           </div>
           <div>
@@ -64,7 +64,7 @@ export default function ClientContactCard({ client }: ClientContactCardProps) {
         
         <div className="grid grid-cols-1 gap-2">
           <div className="flex items-center gap-3 px-3 py-2">
-            <Mail className="w-3.5 h-3.5 text-[#22D3EE]/50" />
+            <Mail className="w-3.5 h-3.5 text-[var(--color-cyan)]/50" />
             <span className="text-[10px] font-mono text-fg-tertiary truncate">{client.email}</span>
           </div>
           <div className="flex items-center gap-3 px-3 py-2">
@@ -77,7 +77,7 @@ export default function ClientContactCard({ client }: ClientContactCardProps) {
       {/* Primary Action Button */}
       <button 
         onClick={() => navigate(`/crm/clients/${client.id}`)}
-        className="w-full py-4 bg-[#22D3EE] text-black font-black uppercase italic tracking-[0.2em] text-[10px] rounded-2xl flex items-center justify-center gap-2 group/btn relative overflow-hidden transition-all active:scale-95"
+        className="w-full py-4 bg-[var(--color-cyan)] text-black font-black uppercase italic tracking-[0.2em] text-[10px] rounded-2xl flex items-center justify-center gap-2 group/btn relative overflow-hidden transition-all active:scale-95"
       >
         <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-500 skew-x-12" />
         Ver Perfil 360° <ArrowUpRight className="w-4 h-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
@@ -86,7 +86,7 @@ export default function ClientContactCard({ client }: ClientContactCardProps) {
       {/* System Metadata Footer */}
       <div className="mt-6 pt-4 border-t border-white/5 flex justify-between items-center opacity-30">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="w-3 h-3 text-[#22D3EE]" />
+          <ShieldCheck className="w-3 h-3 text-[var(--color-cyan)]" />
           <span className="text-[7px] font-black uppercase tracking-widest text-fg-secondary font-mono">ID: {client.id.substring(0, 8)}</span>
         </div>
         <Zap className="w-3 h-3 text-cyan-500/100" />
