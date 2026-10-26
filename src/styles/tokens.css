@@ -51,6 +51,10 @@
   --color-header-bg: var(--bg-toolbar);
 }
 :root[data-mac-appearance="dark"], :root[data-theme="dark"] {
+  --color-red: #FF453A; --color-orange: #FF9F0A; --color-yellow: #FFD60A; --color-green: #30D158;
+  --color-mint: #63E6E2; --color-teal: #40C8E0; --color-cyan: #64D2FF; --color-blue: #0A84FF;
+  --color-indigo: #5E5CE6; --color-purple: #BF5AF2; --color-pink: #FF375F; --color-brown: #AC8E68; --color-gray: #8E8E93;
+  --gray-1: #8E8E93; --gray-2: #636366; --gray-3: #48484A; --gray-4: #3A3A3C; --gray-5: #2C2C2E; --gray-6: #1C1C1E;
   color-scheme: dark;
   --fg-primary: #FFFFFF; --fg-secondary: #C8C8D0; --fg-tertiary: #AEAEB2; --fg-placeholder: #AEAEB2;
   --fg-link: #409CFF; --fg-inverse: #000000;
