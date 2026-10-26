@@ -86,6 +86,15 @@ export default async function handler(req: any, res: any) {
     createdAt: new Date().toISOString(),
     lastLogin: FieldValue.serverTimestamp(),
   };
-  await userRef.create(profile);
+  // LoginPage y AuthContext pueden invocar bootstrap en paralelo durante el mismo login.
+  // Hacer la creación idempotente evita que la segunda petición falle por documento existente.
+  try {
+    await userRef.create(profile);
+  } catch (createError) {
+    const latest = await userRef.get();
+    if (!latest.exists) throw createError;
+    return sendJson(res, 200, { user: latest.data() });
+  }
+
   return sendJson(res, 201, { user: profile });
 }
