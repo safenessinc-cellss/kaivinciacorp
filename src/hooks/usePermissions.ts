@@ -18,8 +18,9 @@ const custom=customValue&&typeof customValue==='object'?customValue as Record<st
 const defaults=DEFAULTS[role]||{};
 return Object.fromEntries(PERMISSION_MODULES.map(({key})=>[key,role==='superadmin'?true:(typeof custom[key]==='boolean'?custom[key]:defaults[key]===true)])) as Record<PermissionKey,boolean>;
 }
-export function usePermissions(){
-const {userData}=useAuth();
+export function usePermissions(profileOverride?: {role?:unknown;permissions?:unknown}){
+const {userData:contextUserData}=useAuth();
+const userData=profileOverride||contextUserData;
 const permissions=useMemo(()=>resolvePermissions(userData?.role,userData?.permissions),[userData?.role,userData?.permissions]);
 const isSuperAdmin=String(userData?.role||'').trim().toLowerCase()==='superadmin';
 const can=useCallback((key:PermissionKey)=>isSuperAdmin||permissions[key]===true,[isSuperAdmin,permissions]);
