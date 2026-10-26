@@ -22,9 +22,9 @@ export default function ClientContactCard({ client }: ClientContactCardProps) {
   const navigate = useNavigate();
 
   const statusColors = {
-    active: 'text-emerald-500 bg-emerald-500/10',
+    active: 'text-semantic-success bg-semantic-success-bg',
     lead: 'text-cyan-500 bg-cyan-500/10',
-    risk: 'text-red-500 bg-red-500/10'
+    risk: 'text-semantic-danger bg-semantic-danger/10'
   };
 
   return (
@@ -45,7 +45,7 @@ export default function ClientContactCard({ client }: ClientContactCardProps) {
           </div>
           <div>
             <h3 className="text-sm font-black uppercase italic tracking-tighter text-white">{client.companyName}</h3>
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 font-mono">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-fg-secondary font-mono">
               {client.industry || 'B2B ENTERPRISE'}
             </span>
           </div>
@@ -58,18 +58,18 @@ export default function ClientContactCard({ client }: ClientContactCardProps) {
       {/* Contact Details */}
       <div className="space-y-4 mb-8 relative z-10">
         <div className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-transparent hover:border-white/5 transition-all">
-          <User className="w-4 h-4 text-gray-500" />
+          <User className="w-4 h-4 text-fg-secondary" />
           <span className="text-xs font-bold text-gray-300">{client.contactName}</span>
         </div>
         
         <div className="grid grid-cols-1 gap-2">
           <div className="flex items-center gap-3 px-3 py-2">
             <Mail className="w-3.5 h-3.5 text-[#22D3EE]/50" />
-            <span className="text-[10px] font-mono text-gray-400 truncate">{client.email}</span>
+            <span className="text-[10px] font-mono text-fg-tertiary truncate">{client.email}</span>
           </div>
           <div className="flex items-center gap-3 px-3 py-2">
-            <Phone className="w-3.5 h-3.5 text-emerald-500/50" />
-            <span className="text-[10px] font-mono text-gray-400">{client.phone}</span>
+            <Phone className="w-3.5 h-3.5 text-semantic-success/50" />
+            <span className="text-[10px] font-mono text-fg-tertiary">{client.phone}</span>
           </div>
         </div>
       </div>
@@ -87,7 +87,7 @@ export default function ClientContactCard({ client }: ClientContactCardProps) {
       <div className="mt-6 pt-4 border-t border-white/5 flex justify-between items-center opacity-30">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-3 h-3 text-[#22D3EE]" />
-          <span className="text-[7px] font-black uppercase tracking-widest text-gray-500 font-mono">ID: {client.id.substring(0, 8)}</span>
+          <span className="text-[7px] font-black uppercase tracking-widest text-fg-secondary font-mono">ID: {client.id.substring(0, 8)}</span>
         </div>
         <Zap className="w-3 h-3 text-cyan-500/100" />
       </div>
