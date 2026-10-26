@@ -35,7 +35,7 @@ export default async function handler(req: any, res: any) {
 
   const targetUid = String(req.body?.userId || '').trim();
   if (!targetUid) return sendJson(res, 400, { error: 'userId es obligatorio' });
-  if (targetUid === decoded.uid) return sendJson(res, 400, { error: 'La cuenta root no puede eliminarse a sí misma' });
+  if (targetUid === decoded.uid) return sendJson(res, 400, { error: 'No puedes eliminar tu propia cuenta' });
 
   const targetRef = adminDb.collection('users').doc(targetUid);
   const targetSnap = await targetRef.get();
