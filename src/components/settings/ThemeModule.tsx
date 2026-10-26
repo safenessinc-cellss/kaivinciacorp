@@ -60,7 +60,7 @@ export default function ThemeModule({ initial, onSave, autoApplyDefault = true }
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Palette className="w-6 h-6" /> Apariencia y Tema
           </h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-fg-secondary mt-1">
             Elige una paleta o personaliza. Los cambios se aplican automaticamente.
           </p>
         </div>
@@ -70,7 +70,7 @@ export default function ThemeModule({ initial, onSave, autoApplyDefault = true }
         </label>
       </div>
 
-      <div className="border rounded-lg p-4 bg-gray-50">
+      <div className="border rounded-lg p-4 bg-surface-grouped">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-semibold">Vista previa en tiempo real</span>
           <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">Live</span>
@@ -89,15 +89,15 @@ export default function ThemeModule({ initial, onSave, autoApplyDefault = true }
         <h3 className="text-lg font-semibold mb-3">12 paletas predefinidas</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {PREDEFINED_PALETTES.map(p => (
-            <button key={p.id} onClick={() => selectPalette(p)} className={'p-3 rounded-lg border-2 text-left transition ' + (settings.paletteId === p.id ? 'border-gray-900 shadow-md' : 'border-gray-200 hover:border-gray-300')}>
+            <button key={p.id} onClick={() => selectPalette(p)} className={'p-3 rounded-lg border-2 text-left transition ' + (settings.paletteId === p.id ? 'border-gray-900 shadow-md' : 'border-separator hover:border-separator')}>
               <div className="flex gap-1 mb-2">
                 {[p.colors.primary, p.colors.accent, p.colors.light, p.colors.accentLight].map((c, i) => (
-                  <div key={i} style={{ background: c }} className="w-4 h-4 rounded-full border border-gray-200" />
+                  <div key={i} style={{ background: c }} className="w-4 h-4 rounded-full border border-separator" />
                 ))}
               </div>
               <div className="font-semibold text-sm">{p.name}</div>
-              <div className="text-xs text-gray-500">{p.description}</div>
-              {settings.paletteId === p.id && <Check className="w-4 h-4 mt-1 text-gray-900" />}
+              <div className="text-xs text-fg-secondary">{p.description}</div>
+              {settings.paletteId === p.id && <Check className="w-4 h-4 mt-1 text-fg-primary" />}
             </button>
           ))}
         </div>
@@ -126,7 +126,7 @@ export default function ThemeModule({ initial, onSave, autoApplyDefault = true }
           <label className="block text-sm font-medium mb-2">Densidad</label>
           <div className="flex gap-2 flex-wrap">
             {(['compact','normal','comfortable'] as Density[]).map(d => (
-              <button key={d} onClick={() => setSettings(s => ({ ...s, density: d }))} className={'px-4 py-2 rounded border-2 font-medium transition ' + (settings.density === d ? 'border-gray-900 bg-gray-100' : 'border-gray-200 hover:border-gray-300')}>
+              <button key={d} onClick={() => setSettings(s => ({ ...s, density: d }))} className={'px-4 py-2 rounded border-2 font-medium transition ' + (settings.density === d ? 'border-gray-900 bg-surface-grouped' : 'border-separator hover:border-separator')}>
                 {d === 'compact' ? 'Compacta' : d === 'normal' ? 'Normal' : 'Comoda'}
               </button>
             ))}
@@ -136,10 +136,10 @@ export default function ThemeModule({ initial, onSave, autoApplyDefault = true }
         <div className="mt-4">
           <label className="block text-sm font-medium mb-2">Modo de visualizacion</label>
           <div className="flex gap-2">
-            <button onClick={() => setSettings(s => ({ ...s, mode: 'light' }))} className={'px-4 py-2 rounded border-2 font-medium flex items-center gap-2 transition ' + (settings.mode === 'light' ? 'border-gray-900 bg-gray-100' : 'border-gray-200 hover:border-gray-300')}>
+            <button onClick={() => setSettings(s => ({ ...s, mode: 'light' }))} className={'px-4 py-2 rounded border-2 font-medium flex items-center gap-2 transition ' + (settings.mode === 'light' ? 'border-gray-900 bg-surface-grouped' : 'border-separator hover:border-separator')}>
               <Sun className="w-4 h-4" /> Claro
             </button>
-            <button onClick={() => setSettings(s => ({ ...s, mode: 'dark' }))} className={'px-4 py-2 rounded border-2 font-medium flex items-center gap-2 transition ' + (settings.mode === 'dark' ? 'border-gray-900 bg-gray-100' : 'border-gray-200 hover:border-gray-300')}>
+            <button onClick={() => setSettings(s => ({ ...s, mode: 'dark' }))} className={'px-4 py-2 rounded border-2 font-medium flex items-center gap-2 transition ' + (settings.mode === 'dark' ? 'border-gray-900 bg-surface-grouped' : 'border-separator hover:border-separator')}>
               <Moon className="w-4 h-4" /> Oscuro
             </button>
           </div>
@@ -147,7 +147,7 @@ export default function ThemeModule({ initial, onSave, autoApplyDefault = true }
       </div>
 
       <div className="flex justify-between pt-4 border-t flex-wrap gap-3">
-        <button onClick={reset} className="px-4 py-2 border rounded-lg font-medium flex items-center gap-2 hover:bg-gray-50">
+        <button onClick={reset} className="px-4 py-2 border rounded-lg font-medium flex items-center gap-2 hover:bg-surface-grouped">
           <RotateCcw className="w-4 h-4" /> Restaurar predeterminado
         </button>
         <button onClick={handleSave} className="px-6 py-2 rounded-lg font-semibold text-white flex items-center gap-2" style={{ background: settings.colors.primary }}>
