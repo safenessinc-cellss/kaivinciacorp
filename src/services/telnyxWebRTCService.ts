@@ -74,8 +74,7 @@ class TelnyxWebRTCService {
       }
 
       if (data.token) {
-        await this.setLoginToken(data.token, true);
-        await this.initClient(data.token);
+        await this.setLoginToken(data.token, false);
         return {
           success: true,
           token: data.token,
