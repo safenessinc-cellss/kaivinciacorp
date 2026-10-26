@@ -84,7 +84,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
       title: t('nav.groups.academy', 'ACADEMIA KAIVINCIA'),
       items: [
         { name: t('nav.academy_internal', 'Cursos & Formación'), href: '/crm/academy-internal', icon: GraduationCap, color: 'text-purple-500' },
-        { name: t('nav.sop_manuals', 'Manuales de Élite'), href: '/crm/manuales', icon: BookOpen, color: 'text-emerald-400' },
+        { name: t('nav.sop_manuals', 'Manuales de Élite'), href: '/crm/manuales', icon: BookOpen, color: 'text-semantic-success' },
       ]
     };
 
@@ -94,7 +94,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
         { name: t('nav.nervous_system', 'Nervous System'), href: '/crm/nervous', icon: BrainCircuit, highlight: true, color: 'text-[#22D3EE]' },
         { name: t('nav.master_dashboard', 'Panel Maestro'), href: '/crm/dashboard', icon: Home, highlight: true, color: 'text-cyan-500' },
         { name: t('nav.neural_chat', 'Neural Chat'), href: '/crm/chat', icon: MessageSquare, badge: '9+', color: 'text-[#A855F7]' },
-        { name: t('nav.members_roles', 'Miembros / Roles'), href: '/crm/chat?view=contacts', icon: Users, color: 'text-emerald-400' },
+        { name: t('nav.members_roles', 'Miembros / Roles'), href: '/crm/chat?view=contacts', icon: Users, color: 'text-semantic-success' },
       ]
     };
 
@@ -111,8 +111,8 @@ export default function CRMLayout({ userData }: { userData: any }) {
       title: t('nav.groups.clients', 'ECOSISTEMA DE CLIENTES'),
       items: [
         { name: t('nav.pipeline', 'Marketing (Oportunidades)'), href: '/crm/pipeline', icon: Navigation, highlight: true, color: 'text-[#00F0FF]', badge: 'Meta Ads' },
-        { name: t('nav.voip_softphone', 'Discador & VoIP Softphone'), href: '/crm/calls', icon: PhoneCall, highlight: true, color: 'text-emerald-400' },
-        { name: t('nav.clients', 'Base de Clientes'), href: '/crm/clients', icon: Users, color: 'text-emerald-500' },
+        { name: t('nav.voip_softphone', 'Discador & VoIP Softphone'), href: '/crm/calls', icon: PhoneCall, highlight: true, color: 'text-semantic-success' },
+        { name: t('nav.clients', 'Base de Clientes'), href: '/crm/clients', icon: Users, color: 'text-semantic-success' },
         { name: t('nav.calendar', 'Agenda & Reuniones'), href: '/crm/calendar', icon: Calendar, color: 'text-cyan-400' },
         { name: t('nav.debt_collection', 'Cobranza GPS'), href: '/crm/cobranza', icon: DollarSign, color: 'text-amber-500' },
       ]
@@ -122,9 +122,9 @@ export default function CRMLayout({ userData }: { userData: any }) {
       title: t('nav.groups.tlmk', 'TELEMARKETING & VENTAS (TLMK)'),
       items: [
         { name: t('nav.pipeline', 'Marketing (Oportunidades)'), href: '/crm/pipeline', icon: Navigation, highlight: true, color: 'text-[#00F0FF]', badge: 'Meta Ads' },
-        { name: t('nav.voip_softphone', 'Discador & VoIP Softphone'), href: '/crm/calls', icon: PhoneCall, highlight: true, color: 'text-emerald-400' },
+        { name: t('nav.voip_softphone', 'Discador & VoIP Softphone'), href: '/crm/calls', icon: PhoneCall, highlight: true, color: 'text-semantic-success' },
         { name: t('nav.calendar', 'Agenda & Reuniones'), href: '/crm/calendar', icon: Calendar, color: 'text-cyan-400' },
-        { name: t('nav.clients', 'Base de Clientes'), href: '/crm/clients', icon: Users, color: 'text-emerald-500' },
+        { name: t('nav.clients', 'Base de Clientes'), href: '/crm/clients', icon: Users, color: 'text-semantic-success' },
         { name: t('nav.debt_collection', 'Cobranza GPS & Feedback'), href: '/crm/cobranza', icon: DollarSign, color: 'text-amber-400' },
       ]
     };
@@ -152,7 +152,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
     const portalGroup = {
       title: t('nav.groups.portal', 'PORTAL PERSONAL'),
       items: [
-        { name: t('nav.my_portal', 'Mi Portal'), href: '/crm/user-portal', icon: UserCircle, color: 'text-gray-400' },
+        { name: t('nav.my_portal', 'Mi Portal'), href: '/crm/user-portal', icon: UserCircle, color: 'text-fg-tertiary' },
         { name: t('nav.billing', 'Facturación GPS'), href: '/crm/billing', icon: Receipt, color: 'text-cyan-600' },
       ]
     };
@@ -164,9 +164,9 @@ export default function CRMLayout({ userData }: { userData: any }) {
         {
           title: t('nav.groups.portal', 'PAGOS & PORTAL'),
           items: [
-            { name: t('nav.my_portal', 'Mi Portal'), href: '/crm/user-portal', icon: UserCircle, color: 'text-gray-400' },
+            { name: t('nav.my_portal', 'Mi Portal'), href: '/crm/user-portal', icon: UserCircle, color: 'text-fg-tertiary' },
             { name: t('nav.billing', 'Pagos y Facturas'), href: '/crm/billing', icon: Receipt, color: 'text-cyan-600' },
-            { name: t('nav.digital_products', 'Academy Store'), href: '/crm/digital-products', icon: ShoppingCart, color: 'text-gray-400' },
+            { name: t('nav.digital_products', 'Academy Store'), href: '/crm/digital-products', icon: ShoppingCart, color: 'text-fg-tertiary' },
           ]
         }
       ];
@@ -185,7 +185,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
             { name: t('nav.master_dashboard', 'Panel Operativo'), href: '/crm/dashboard', icon: Home, color: 'text-cyan-500' },
             { name: t('nav.tasks', 'Tareas Asignadas'), href: '/crm/tasks', icon: ClipboardCheck, color: 'text-blue-400' },
             { name: t('nav.neural_chat', 'Neural Chat'), href: '/crm/chat', icon: MessageSquare, color: 'text-[#A855F7]' },
-            { name: t('nav.sop_manuals', 'Manuales SOP'), href: '/crm/manuales', icon: BookOpen, color: 'text-emerald-400' },
+            { name: t('nav.sop_manuals', 'Manuales SOP'), href: '/crm/manuales', icon: BookOpen, color: 'text-semantic-success' },
           ]
         },
         portalGroup
@@ -234,7 +234,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
       {
         title: t('common.welcome', 'BIENVENIDO'),
         items: [
-          { name: t('nav.my_portal', 'Mi Portal'), href: '/crm/user-portal', icon: UserCircle, color: 'text-gray-400' },
+          { name: t('nav.my_portal', 'Mi Portal'), href: '/crm/user-portal', icon: UserCircle, color: 'text-fg-tertiary' },
           { name: t('nav.helpdesk', 'Centro de Soporte'), href: '/crm/helpdesk', icon: HelpCircle, color: 'text-cyan-400' },
         ]
       }
@@ -325,7 +325,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
           <div className="flex items-center justify-around p-3 border-b border-gray-800 shrink-0 bg-[#111]">
             <Link to="/crm/chat" className="p-2 rounded-lg hover:bg-gray-800 hover:text-[#00F0FF] transition-colors relative group" title={t('nav.neural_chat', 'Chat Interno')}>
               <MessageSquare className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-semantic-danger rounded-full"></span>
             </Link>
             <Link to="/crm/calls" className="p-2 rounded-lg hover:bg-gray-800 hover:text-[#00F0FF] transition-colors group" title={t('nav.voip_softphone', 'Sistema de Llamadas')}>
               <PhoneCall className="w-5 h-5" />
@@ -340,7 +340,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
         {!isSidebarCollapsed && (
           <div className="p-3 shrink-0">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-secondary" />
               <input 
                 type="text" 
                 placeholder={t('header.search_placeholder', 'Buscar módulo...')} 
@@ -360,7 +360,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
                 {!isSidebarCollapsed && (
                   <button 
                     onClick={() => toggleGroup(group.title)}
-                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors text-gray-500 hover:text-gray-300"
+                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors text-fg-secondary hover:text-gray-300"
                   >
                     <span>{group.title}</span>
                     {isExpanded ? (
@@ -383,13 +383,13 @@ export default function CRMLayout({ userData }: { userData: any }) {
                           className={`flex items-center group relative overflow-hidden ${isSidebarCollapsed ? 'justify-center p-2.5 mx-auto w-10 h-10' : 'px-4 py-2.5'} rounded-2xl text-sm font-medium transition-all duration-300 ${
                             isActive 
                               ? 'bg-white/10 text-white border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)]' 
-                              : 'text-gray-500 hover:bg-white/5 hover:text-gray-200'
+                              : 'text-fg-secondary hover:bg-white/5 hover:text-gray-200'
                           } ${item.highlight && !isActive ? 'text-gray-300 font-bold' : ''}`}
                         >
                           <item.icon className={`${!isSidebarCollapsed ? 'mr-3' : ''} h-4 w-4 shrink-0 transition-transform group-hover:scale-125 ${
                             isActive 
                               ? item.color || 'text-[#00F0FF]' 
-                              : item.color || 'text-gray-600'
+                              : item.color || 'text-fg-secondary'
                           }`} />
                           {!isSidebarCollapsed && (
                             <div className="flex-1 flex justify-between items-center mr-1">
@@ -437,14 +437,14 @@ export default function CRMLayout({ userData }: { userData: any }) {
                     <span className="text-[10px] bg-gray-800 text-[#00F0FF] px-1.5 py-0.5 rounded border border-gray-700 uppercase font-black tracking-tighter shadow-sm">
                       {userData?.role || 'User'}
                     </span>
-                    <span className={`w-2 h-2 rounded-full ${userData?.status === 'active' ? 'bg-green-500' : 'bg-cyan-500/100'}`}></span>
+                    <span className={`w-2 h-2 rounded-full ${userData?.status === 'active' ? 'bg-semantic-success' : 'bg-cyan-500/100'}`}></span>
                   </div>
                 </div>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => navigate('/crm/user-portal')}
-                  className="flex-1 flex items-center justify-center px-3 py-2 text-xs font-medium text-gray-400 bg-gray-900 rounded-lg hover:bg-gray-800 hover:text-white transition-colors border border-gray-800 cursor-pointer"
+                  className="flex-1 flex items-center justify-center px-3 py-2 text-xs font-medium text-fg-tertiary bg-gray-900 rounded-lg hover:bg-gray-800 hover:text-white transition-colors border border-gray-800 cursor-pointer"
                 >
                   <UserCircle className="mr-2 h-3.5 w-3.5" />
                   {t('header.profile', 'Perfil')}
@@ -469,7 +469,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
               )}
               <button
                   onClick={handleLogout}
-                  className="p-2 text-red-500 hover:bg-red-900/30 rounded-lg transition-colors mt-2 cursor-pointer"
+                  className="p-2 text-semantic-danger hover:bg-red-900/30 rounded-lg transition-colors mt-2 cursor-pointer"
                   title={t('header.logout', 'Salir')}
                 >
                   <LogOut className="h-4 w-4" />
@@ -494,7 +494,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
           <div className="flex flex-1 items-center gap-4">
             <button 
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
-              className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+              className="p-2 text-fg-tertiary hover:text-fg-primary hover:bg-surface-grouped rounded-lg transition-colors cursor-pointer"
               title={isSidebarCollapsed ? t('header.expand_menu', 'Expandir Menú') : t('header.collapse_menu', 'Colapsar Menú')}
             >
               {isSidebarCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
@@ -505,11 +505,11 @@ export default function CRMLayout({ userData }: { userData: any }) {
               <button 
                 id="btn-historical-back"
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200/80 active:bg-gray-200 border border-gray-200 rounded-xl transition-all font-bold text-xs shadow-xs active:scale-95 cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-fg-secondary hover:text-fg-primary bg-surface-grouped hover:bg-gray-200/80 active:bg-gray-200 border border-separator rounded-xl transition-all font-bold text-xs shadow-xs active:scale-95 cursor-pointer"
                 title={t('header.back', 'Volver a la página anterior')}
                 aria-label="Volver"
               >
-                <ArrowLeft className="w-4 h-4 text-gray-700" />
+                <ArrowLeft className="w-4 h-4 text-fg-secondary" />
                 <span className="hidden sm:inline font-black tracking-tight uppercase text-[11px]">{t('header.back', 'Volver')}</span>
               </button>
             </div>
@@ -519,19 +519,19 @@ export default function CRMLayout({ userData }: { userData: any }) {
                 {breadcrumbs.map((crumb, index) => (
                   <li key={crumb.href} className="flex items-center">
                     {index === 0 ? (
-                      <Link to={crumb.href} className="text-gray-400 hover:text-gray-500">
+                      <Link to={crumb.href} className="text-fg-tertiary hover:text-fg-secondary">
                         <Home className="h-4 w-4" />
                         <span className="sr-only">{t('header.home', 'Inicio')}</span>
                       </Link>
                     ) : (
                       <>
-                        <ChevronRight className="h-4 w-4 text-gray-400 mx-1" />
+                        <ChevronRight className="h-4 w-4 text-fg-tertiary mx-1" />
                         <Link 
                           to={crumb.href} 
                           className={`text-sm font-medium ${
                             index === breadcrumbs.length - 1 
-                              ? 'text-gray-900 pointer-events-none' 
-                              : 'text-gray-500 hover:text-gray-700'
+                              ? 'text-fg-primary pointer-events-none' 
+                              : 'text-fg-secondary hover:text-fg-secondary'
                           }`}
                           aria-current={index === breadcrumbs.length - 1 ? 'page' : undefined}
                         >
@@ -549,7 +549,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
             {/* CEO MODE SWITCH */}
             {isAdminOrFin && (
               <div className="flex items-center gap-2 mr-1">
-                <span className="text-xs font-black uppercase tracking-wider text-gray-500 hidden xl:inline">{t('header.ceo_mode', 'CEO Mode')}</span>
+                <span className="text-xs font-black uppercase tracking-wider text-fg-secondary hidden xl:inline">{t('header.ceo_mode', 'CEO Mode')}</span>
                 <button
                   type="button"
                   onClick={() => setCeoMode(!ceoMode)}
@@ -566,7 +566,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
                       ceoMode ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   >
-                    {ceoMode ? <Eye className="w-3 h-3 text-[#00F0FF]" /> : <EyeOff className="w-3 h-3 text-gray-400" />}
+                    {ceoMode ? <Eye className="w-3 h-3 text-[#00F0FF]" /> : <EyeOff className="w-3 h-3 text-fg-tertiary" />}
                   </span>
                 </button>
               </div>
@@ -575,7 +575,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
             {/* QUICK OPERATIONAL SHORTCUTS FOR TLMK */}
             <button 
               onClick={() => navigate('/crm/calls?dialer=open')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500 hover:text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-semantic-success-bg border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500 hover:text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
               title={t('voip.title', 'Abrir Discador Telefónico VoIP')}
             >
               <PhoneCall className="w-3.5 h-3.5 animate-pulse" />
@@ -593,11 +593,11 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
             <button 
               onClick={() => setIsCommandBarOpen(true)}
-              className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm text-gray-500 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all hover:border-[#00F0FF] group sm:min-w-[180px] cursor-pointer"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm text-fg-secondary bg-surface-grouped hover:bg-surface-grouped border border-separator rounded-xl transition-all hover:border-[#00F0FF] group sm:min-w-[180px] cursor-pointer"
             >
               <Search className="w-4 h-4 group-hover:text-[#00F0FF]" />
               <span className="flex-1 text-left hidden sm:inline">{t('header.search_placeholder', 'Buscar o comando...')}</span>
-              <kbd className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold text-gray-400 bg-white border border-gray-200 rounded">⌘K</kbd>
+              <kbd className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold text-fg-tertiary bg-white border border-separator rounded">⌘K</kbd>
             </button>
 
             <div className="hidden sm:block h-8 w-px bg-gray-200"></div>
@@ -619,10 +619,10 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
             <button 
               onClick={() => navigate('/crm/automations')}
-              className="h-10 w-10 rounded-xl bg-gray-50 hover:bg-[#00F0FF]/10 border border-gray-200 hover:border-[#00F0FF]/30 flex flex-shrink-0 items-center justify-center transition-all hidden sm:flex cursor-pointer group"
+              className="h-10 w-10 rounded-xl bg-surface-grouped hover:bg-[#00F0FF]/10 border border-separator hover:border-[#00F0FF]/30 flex flex-shrink-0 items-center justify-center transition-all hidden sm:flex cursor-pointer group"
               title={t('nav.automations', 'Centro de Automatizaciones & Triggers')}
             >
-              <Zap className="w-5 h-5 text-gray-500 group-hover:text-[#00F0FF] transition-colors" />
+              <Zap className="w-5 h-5 text-fg-secondary group-hover:text-[#00F0FF] transition-colors" />
             </button>
           </div>
         </header>
