@@ -79,6 +79,11 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("role", "") in ["superadmin", "admin"];
     }
 
+    // Only the root identity can approve/reject users or change their base role.
+    function canApproveUsers() {
+      return isRoot();
+    }
+
     function isUser(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
@@ -130,7 +135,7 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['permissions', 'permissionsUpdatedAt', 'permissionsUpdatedBy'])
       ) || (
-        canApprove()
+        canApproveUsers()
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['status', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason', 'blockedBy', 'blockedAt', 'blockReason', 'role'])
         && (
