@@ -301,6 +301,8 @@ export default function SoftphoneDialer({
     try {
       const res = await telnyxWebRTCService.fetchFreshTokenFromBackend();
       if (res.success && res.token) {
+        const initResult = await telnyxWebRTCService.initClient(res.token);
+        if (!initResult.success) throw new Error(initResult.message);
         showToast('Nuevo login_token generado vía API de Telnyx');
         setSipLogs(prev => [
           `[${new Date().toLocaleTimeString()}] Telnyx WebRTC -> Nuevo login_token generado vía API (${res.token.slice(0, 10)}...${res.token.slice(-6)})`,
