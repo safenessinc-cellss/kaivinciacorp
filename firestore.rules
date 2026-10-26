@@ -44,6 +44,15 @@ service cloud.firestore {
       );
     }
 
+    function isSuperAdminOnly() {
+      return isRoot() || (
+        isAuthenticated()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("status", "") == "approved"
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("role", "") == "superadmin"
+      );
+    }
+
     function canApprove() {
       return isAuthenticated()
         && exists(/databases/$(database)/documents/users/$(request.auth.uid))
@@ -100,15 +109,20 @@ service cloud.firestore {
       allow update: if (
         canApprove()
         && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['status', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason', 'role'])
+          .hasOnly(['status', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason', 'blockedBy', 'blockedAt', 'blockReason', 'role'])
+        && (
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
+          || isSuperAdminOnly()
+          || request.resource.data.get('role', '') in ['tlmk', 'sales', 'agente', 'ceo', 'gestor', 'rrhh', 'collaborator', 'tutor', 'alumno', 'cliente', 'user']
+        )
       ) || (
         isAdmin()
         && !request.resource.data.diff(resource.data).affectedKeys()
-          .hasAny(['status', 'role', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason'])
+          .hasAny(['status', 'role', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason', 'blockedBy', 'blockedAt', 'blockReason'])
       ) || (
         isUser(userId)
         && !request.resource.data.diff(resource.data).affectedKeys()
-          .hasAny(['role', 'status', 'permissions', 'uid', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason'])
+          .hasAny(['role', 'status', 'permissions', 'uid', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason', 'blockedBy', 'blockedAt', 'blockReason'])
       );
 
       allow delete: if isRoot();
