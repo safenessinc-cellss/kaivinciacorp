@@ -202,10 +202,16 @@ export default function SoftphoneDialer({
       try {
         await new Promise(resolve => setTimeout(resolve, 1500));
         if (cancelled) return;
-        const token = telnyxWebRTCService.getLoginToken();
+        let token = telnyxWebRTCService.getLoginToken();
         if (!token) {
-          console.log('[SoftphoneDialer] No hay JWT configurado aún. Usa "Configurar JWT" para inicializar Telnyx.');
-          return;
+          console.log('[SoftphoneDialer] Solicitando JWT de Telnyx al backend autorizado...');
+          const tokenResult = await telnyxWebRTCService.fetchFreshTokenFromBackend();
+          if (cancelled) return;
+          if (!tokenResult.success || !tokenResult.token) {
+            console.warn('[SoftphoneDialer] No se pudo obtener el JWT de Telnyx:', tokenResult.message);
+            return;
+          }
+          token = tokenResult.token;
         }
         console.log('[SoftphoneDialer] Inicializando cliente Telnyx automáticamente...');
         const result = await telnyxWebRTCService.initClient(token);
