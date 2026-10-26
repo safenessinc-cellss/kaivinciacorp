@@ -29,7 +29,9 @@ export default function RouteGuard({ children }: RouteGuardProps) {
   // Missing profile, unknown role, and non-approved statuses always fail closed.
   if (!userData) return <PendingApproval />;
 
-  const status = String(userData.status || '').trim().toLowerCase();
+  const rawStatus = String(userData.status || '').trim().toLowerCase();
+  // Legacy ACTIVE/ENABLED values mean the account is approved, not pending.
+  const status = ({ active: 'approved', enabled: 'approved' } as Record<string, string>)[rawStatus] || rawStatus;
   const rawRole = String(userData.role || 'none').trim().toLowerCase();
   const role = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[rawRole] || rawRole;
   const knownRoles = new Set(['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas', 'ceo', 'gestor', 'alumno', 'rrhh', 'collaborator', 'tutor', 'cliente', 'user']);
