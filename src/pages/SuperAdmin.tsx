@@ -634,7 +634,9 @@ export default function SuperAdmin() {
                               'bg-amber-100 text-amber-800'
                             }`}
                           >
-                            <option value="approved">Aprobado</option>
+                            <option value="approved">Aprobado explícitamente</option>
+                            <option value="active">Activo antiguo (requiere aprobación)</option>
+                            <option value="enabled">Enabled antiguo (requiere aprobación)</option>
                             <option value="pending">Pendiente</option>
                             <option value="rejected">Rechazado</option>
                             <option value="suspended">Suspendido</option>
