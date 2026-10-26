@@ -24,16 +24,19 @@ interface RBACPermission {
 
 const RBAC_ROLES = [
   { id: 'superadmin', label: 'SuperAdmin', color: 'bg-red-500/10 text-red-600 border-red-200' },
-  { id: 'ceo', label: 'CEO / Director', color: 'bg-purple-500/10 text-purple-600 border-purple-200' },
+  { id: 'ceo', label: 'CEO', color: 'bg-purple-500/10 text-purple-600 border-purple-200' },
   { id: 'admin', label: 'Administrador', color: 'bg-blue-500/10 text-blue-600 border-blue-200' },
   { id: 'gestor', label: 'Gestión Operaciones', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-200' },
+  { id: 'operador', label: 'Operador', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-200' },
+  { id: 'mkt', label: 'MKT / Marketing', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-200' },
+  { id: 'professor', label: 'Professor / Profesor', color: 'bg-amber-500/10 text-amber-600 border-amber-200' },
   { id: 'sales', label: 'Ventas (TLMK / Closer)', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-200' },
   { id: 'rrhh', label: 'Recursos Humanos', color: 'bg-pink-500/10 text-pink-600 border-pink-200' },
   { id: 'collaborator', label: 'Colaborador', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-200' },
   { id: 'tutor', label: 'Tutor Académico', color: 'bg-amber-500/10 text-amber-600 border-amber-200' },
   { id: 'alumno', label: 'Alumno', color: 'bg-slate-500/10 text-slate-600 border-slate-200' },
   { id: 'cliente', label: 'Cliente (B2B)', color: 'bg-teal-500/10 text-teal-600 border-teal-200' },
-  { id: 'user', label: 'Usuario Básico', color: 'bg-gray-500/10 text-gray-600 border-gray-200' },
+  { id: 'user', label: 'Usuario', color: 'bg-gray-500/10 text-gray-600 border-gray-200' },
 ];
 
 const RBAC_PERMISSIONS: RBACPermission[] = [
@@ -109,7 +112,8 @@ export default function SuperAdmin() {
   // Auth Timing State
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const isRootUser = user?.email?.toLowerCase() === 'safeness.c.a@gmail.com';
+  const isRootUser = user?.email?.trim().toLowerCase() === 'safeness.c.a@gmail.com';
+  const isSuperAdminUser = isRootUser || users.some((profile) => profile.id === user?.uid && String(profile.role || '').trim().toLowerCase() === 'superadmin' && String(profile.status || '').trim().toLowerCase() === 'approved');
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -186,8 +190,8 @@ export default function SuperAdmin() {
   };
 
   const updateUserStatus = async (userId: string, status: string) => {
-    if (!isRootUser) {
-      triggerFeedback('Solo safeness.c.a@gmail.com puede aprobar o cambiar el estado de acceso.');
+    if (!isSuperAdminUser) {
+      triggerFeedback('Solo una cuenta SuperAdmin aprobada puede aprobar o cambiar el estado de acceso.');
       return;
     }
     try {
@@ -239,8 +243,8 @@ export default function SuperAdmin() {
   };
 
   const updateUserRole = async (userId: string, role: string) => {
-    if (!isRootUser) {
-      triggerFeedback('Solo safeness.c.a@gmail.com puede cambiar el rol base.');
+    if (!isSuperAdminUser) {
+      triggerFeedback('Solo una cuenta SuperAdmin aprobada puede cambiar el rol base.');
       return;
     }
     try {
@@ -326,7 +330,7 @@ export default function SuperAdmin() {
   };
 
   const handleDeleteUserPermanently = async () => {
-    if (!userToDelete || !isRootUser) return;
+    if (!userToDelete || !isSuperAdminUser) return;
     const targetEmail = String(userToDelete.email || '').trim();
     if (!targetEmail || deleteConfirmInput !== targetEmail || !auth.currentUser) return;
     setIsDeleting(true);
@@ -558,7 +562,7 @@ export default function SuperAdmin() {
                 <section className="m-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <h3 className="text-sm font-black text-amber-900">Usuarios que aún no pueden entrar ({pendingUsers.length})</h3>
-                    <p className="text-xs text-amber-800">Solo safeness.c.a@gmail.com puede aprobar o rechazar el acceso.</p>
+                    <p className="text-xs text-amber-800">Cualquier SuperAdmin aprobado puede aprobar o rechazar el acceso. Solo safeness.c.a@gmail.com puede eliminar cuentas SuperAdmin.</p>
                   </div>
                   <div className="space-y-2">
                     {pendingUsers.map((pendingUser) => (
@@ -568,7 +572,7 @@ export default function SuperAdmin() {
                           <p className="truncate text-xs text-gray-600">{pendingUser.email || pendingUser.id}</p>
                           <p className="text-[10px] text-amber-700">Rol: {pendingUser.role || 'none'} · Estado: {pendingUser.status || 'pending'}</p>
                         </div>
-                        {isRootUser ? (
+                        {isSuperAdminUser ? (
                           <div className="flex gap-2">
                             <button onClick={() => updateUserStatus(pendingUser.id, 'approved')} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700">Aprobar acceso</button>
                             <button onClick={() => updateUserStatus(pendingUser.id, 'rejected')} className="rounded-lg bg-rose-600 px-3 py-2 text-xs font-bold text-white hover:bg-rose-700">Rechazar</button>
@@ -616,7 +620,7 @@ export default function SuperAdmin() {
                           <select
                             value={user.role || 'none'}
                             onChange={(e) => updateUserRole(user.id, e.target.value)}
-                            disabled={!isRootUser}
+                            disabled={!isSuperAdminUser}
                             className="text-xs font-bold border border-gray-200 rounded-xl px-2.5 py-1.5 bg-white text-gray-800 focus:ring-[#00F0FF] focus:border-[#00F0FF] disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <option value="none">⚠️ Sin Rol Asignado</option>
@@ -631,7 +635,7 @@ export default function SuperAdmin() {
                           <select
                             value={user.status || 'pending'}
                             onChange={(e) => updateUserStatus(user.id, e.target.value)}
-                            disabled={!isRootUser}
+                            disabled={!isSuperAdminUser}
                             className={`text-[11px] border-0 rounded-full px-3 py-1 font-bold ${
                               user.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 
                               user.status === 'suspended' ? 'bg-rose-100 text-rose-800' : 
@@ -699,7 +703,7 @@ export default function SuperAdmin() {
                             </button>
 
                             {/* Solo la cuenta root puede solicitar la eliminación permanente. */}
-                            {isRootUser && (
+                            {isSuperAdminUser && (isRootUser || String(user.role || '').toLowerCase() !== 'superadmin') && (
                               <button 
                                 onClick={() => { setDeleteConfirmInput(''); setUserToDelete(user); }}
                                 title="Eliminar Usuario Definitivamente (solo root)" 
@@ -730,9 +734,9 @@ export default function SuperAdmin() {
                     <p className="mt-1 text-sm text-gray-600">Selecciona una cuenta, elige su rol base y guarda el cambio. Asignar un rol no aprueba ni activa la cuenta.</p>
                   </div>
                 </div>
-                {!isRootUser && (
+                {!isSuperAdminUser && (
                   <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
-                    Solo safeness.c.a@gmail.com puede guardar cambios de rol. Los demás administradores pueden consultar esta pantalla.
+                    Solo una cuenta SuperAdmin aprobada puede guardar cambios de rol.
                   </div>
                 )}
                 <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -760,8 +764,10 @@ export default function SuperAdmin() {
                   </div>
                   <div>
                     <label htmlFor="role-assignment-role" className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-600">Rol que se asignará</label>
-                    <select id="role-assignment-role" value={roleAssignmentDraft} onChange={e => setRoleAssignmentDraft(e.target.value)} disabled={!roleAssignmentUserId || !isRootUser} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 disabled:cursor-not-allowed disabled:bg-gray-100">
+                    <select id="role-assignment-role" value={roleAssignmentDraft} onChange={e => setRoleAssignmentDraft(e.target.value)} disabled={!roleAssignmentUserId || !isSuperAdminUser} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 disabled:cursor-not-allowed disabled:bg-gray-100">
                       <option value="none">Sin rol asignado</option>
+                      <option value="alumno">Alumno</option>
+                      <option value="user">Usuario</option>
                       <option value="alumno">Alumno</option>
                       <option value="professor">Professor / Profesor</option>
                       <option value="mkt">MKT / Marketing</option>
@@ -783,8 +789,8 @@ export default function SuperAdmin() {
                     })()}
                     <button type="button" onClick={async () => {
                       const target = users.find(item => item.id === roleAssignmentUserId);
-                      if (!isRootUser) {
-                        triggerFeedback('Solo safeness.c.a@gmail.com puede guardar cambios de rol.');
+                      if (!isSuperAdminUser) {
+                        triggerFeedback('Solo una cuenta SuperAdmin aprobada puede guardar cambios de rol.');
                         return;
                       }
                       if (!target || !roleAssignmentDraft) {
@@ -814,7 +820,7 @@ export default function SuperAdmin() {
                       } finally {
                         setRoleAssignmentSaving(false);
                       }
-                    }} disabled={!isRootUser || !roleAssignmentUserId || !roleAssignmentDraft || roleAssignmentSaving} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-black text-white transition hover:bg-cyan-500 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40">
+                    }} disabled={!isSuperAdminUser || !roleAssignmentUserId || !roleAssignmentDraft || roleAssignmentSaving} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-black text-white transition hover:bg-cyan-500 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40">
                       {roleAssignmentSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                       {roleAssignmentSaving ? 'Guardando…' : 'Guardar asignación de rol'}
                     </button>
@@ -1321,7 +1327,7 @@ export default function SuperAdmin() {
       )}
 
       {/* MODAL 3: PERMANENT USER DELETION CONFIRMATION */}
-      {userToDelete && isRootUser && (
+      {userToDelete && isSuperAdminUser && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden border border-red-200">
             <div className="p-6 bg-red-50 border-b border-red-100 flex items-center gap-3">
