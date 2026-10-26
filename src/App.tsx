@@ -56,6 +56,8 @@ import CompanyAuth from './pages/b2b/CompanyAuth';
 import CompanyDashboard from './pages/b2b/CompanyDashboard';
 import CallCenterAdmin from './pages/CallCenterAdmin';
 import RouteGuard from "./components/RouteGuard";
+import PermissionGate, { AccessDenied } from "./components/auth/PermissionGate";
+import PermissionsManager from "./components/admin/PermissionsManager";
 export default function App() {
   const [user, setUser] = useState<any>(null);
   const [userData, setUserData] = useState<any>(null);
@@ -237,47 +239,49 @@ export default function App() {
           }
         >
           <Route index element={<Navigate to={normalizedRole === 'alumno' ? "/crm/academy-internal" : (normalizedRole === 'tlmk' || normalizedRole === 'ventas' ? "/crm/pipeline" : "/crm/dashboard")} />} />
-          <Route path="dashboard" element={normalizedRole === 'alumno' ? <Navigate to="/crm/academy-internal" /> : <Dashboard />} />
+          <Route path="dashboard" element={<PermissionGate module="dashboard" userData={effectiveUserData}><Dashboard /></PermissionGate>} />
           <Route path="dashboard/customize" element={isManagementRole ? <DashboardCustomizer /> : <Navigate to="/crm/dashboard" />} />
-          <Route path="strategic-report" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <StrategicReport />} />
-          <Route path="clients" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Clients />} />
-          <Route path="pipeline" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Pipeline />} />
-          <Route path="tasks" element={<Tasks />} />
-          <Route path="calendar" element={<CalendarView />} />
-          <Route path="chat" element={<Chat />} />
-          <Route path="cobranza" element={isManagementRole ? <Cobranza /> : <Navigate to="/crm/dashboard" />} />
+          <Route path="strategic-report" element={<PermissionGate module="strategicReport" userData={effectiveUserData}><StrategicReport /></PermissionGate>} />
+          <Route path="clients" element={<PermissionGate module="clients" userData={effectiveUserData}><Clients /></PermissionGate>} />
+          <Route path="pipeline" element={<PermissionGate module="marketing" userData={effectiveUserData}><Pipeline /></PermissionGate>} />
+          <Route path="tasks" element={<PermissionGate module="tasks" userData={effectiveUserData}><Tasks /></PermissionGate>} />
+          <Route path="calendar" element={<PermissionGate module="calendar" userData={effectiveUserData}><CalendarView /></PermissionGate>} />
+          <Route path="chat" element={<PermissionGate module="chat" userData={effectiveUserData}><Chat /></PermissionGate>} />
+          <Route path="cobranza" element={<PermissionGate module="cobranza" userData={effectiveUserData}><Cobranza /></PermissionGate>} />
           <Route path="call-center" element={normalizedRole !== 'superadmin' && normalizedRole !== 'admin' ? <Navigate to="/crm/dashboard" /> : <CallCenterAdmin />} />
           
           {/* New Modules */}
-          <Route path="superadmin" element={normalizedRole !== 'superadmin' ? <Navigate to="/crm/dashboard" /> : <SuperAdmin />} />
-          <Route path="appearance" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <AppearancePanel />} />
-          <Route path="automations" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Automations />} />
-          <Route path="form-templates" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <FormTemplates />} />
-          <Route path="integrations" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Integrations />} />
-          <Route path="academy-internal" element={<AcademyInternal />} />
+          <Route path="superadmin" element={normalizedRole !== 'superadmin' ? <Navigate to="/crm/access-denied" replace /> : <SuperAdmin />} />
+          <Route path="permissions" element={normalizedRole !== 'superadmin' ? <Navigate to="/crm/access-denied" replace /> : <PermissionsManager />} />
+          <Route path="access-denied" element={<AccessDenied />} />
+          <Route path="appearance" element={<PermissionGate module="appearance" userData={effectiveUserData}><AppearancePanel /></PermissionGate>} />
+          <Route path="automations" element={<PermissionGate module="automations" userData={effectiveUserData}><Automations /></PermissionGate>} />
+          <Route path="form-templates" element={<PermissionGate module="formTemplates" userData={effectiveUserData}><FormTemplates /></PermissionGate>} />
+          <Route path="integrations" element={<PermissionGate module="integrations" userData={effectiveUserData}><Integrations /></PermissionGate>} />
+          <Route path="academy-internal" element={<PermissionGate module="academy" userData={effectiveUserData}><AcademyInternal /></PermissionGate>} />
           <Route path="academy-external" element={<AcademyExternal />} />
           <Route path="digital-products" element={<DigitalProducts />} />
-          <Route path="calls" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <CallSystem />} />
+          <Route path="calls" element={<PermissionGate module="calls" userData={effectiveUserData}><CallSystem /></PermissionGate>} />
           
           {/* Administrativo */}
-          <Route path="recruitment" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Recruitment />} />
-          <Route path="team" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <TeamManagement />} />
-          <Route path="payroll" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Payroll />} />
-          <Route path="accounting" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Accounting />} />
-          <Route path="client-management" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <ClientManagement />} />
-          <Route path="billing" element={isManagementRole ? <Billing /> : <Navigate to="/crm/dashboard" />} />
-          <Route path="operations" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Operations />} />
-          <Route path="marketing" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Marketing />} />
-          <Route path="projects" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Projects />} />
-          <Route path="reports" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Reports />} />
-          <Route path="commissions" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Commissions />} />
+          <Route path="recruitment" element={<PermissionGate module="recruitment" userData={effectiveUserData}><Recruitment /></PermissionGate>} />
+          <Route path="team" element={<PermissionGate module="team" userData={effectiveUserData}><TeamManagement /></PermissionGate>} />
+          <Route path="payroll" element={<PermissionGate module="payroll" userData={effectiveUserData}><Payroll /></PermissionGate>} />
+          <Route path="accounting" element={<PermissionGate module="accounting" userData={effectiveUserData}><Accounting /></PermissionGate>} />
+          <Route path="client-management" element={<PermissionGate module="clients" userData={effectiveUserData}><ClientManagement /></PermissionGate>} />
+          <Route path="billing" element={<PermissionGate module="billing" userData={effectiveUserData}><Billing /></PermissionGate>} />
+          <Route path="operations" element={<PermissionGate module="operations" userData={effectiveUserData}><Operations /></PermissionGate>} />
+          <Route path="marketing" element={<PermissionGate module="marketing" userData={effectiveUserData}><Marketing /></PermissionGate>} />
+          <Route path="projects" element={<PermissionGate module="projects" userData={effectiveUserData}><Projects /></PermissionGate>} />
+          <Route path="reports" element={<PermissionGate module="reports" userData={effectiveUserData}><Reports /></PermissionGate>} />
+          <Route path="commissions" element={<PermissionGate module="reports" userData={effectiveUserData}><Commissions /></PermissionGate>} />
           <Route path="tactical" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <TacticalDeployment />} />
-          <Route path="manuales" element={<SOPManuals />} />
+          <Route path="manuales" element={<PermissionGate module="academy" userData={effectiveUserData}><SOPManuals /></PermissionGate>} />
           <Route path="turs" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <MasterForms />} />
-          <Route path="helpdesk" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Helpdesk />} />
-          <Route path="drive" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <DocumentDrive />} />
+          <Route path="helpdesk" element={<PermissionGate module="helpdesk" userData={effectiveUserData}><Helpdesk /></PermissionGate>} />
+          <Route path="drive" element={<PermissionGate module="drive" userData={effectiveUserData}><DocumentDrive /></PermissionGate>} />
           <Route path="audits" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <AuditsSGI />} />
-          <Route path="security" element={normalizedRole !== 'superadmin' ? <Navigate to="/crm/dashboard" /> : <SecurityCenter />} />
+          <Route path="security" element={<PermissionGate module="security" userData={effectiveUserData}><SecurityCenter /></PermissionGate>} />
           <Route path="nervous" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <NervousSystem />} />
           <Route path="strategy-blog" element={<StrategyBlog />} />
           
