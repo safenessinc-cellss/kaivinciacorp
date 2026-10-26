@@ -67,9 +67,13 @@ const DEFAULT_MATRIX_STATE: Record<string, Record<string, boolean>> = {
 
 export default function SuperAdmin() {
   const { t, language } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'audit' | 'alerts' | 'guide'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'assign-role' | 'audit' | 'alerts' | 'guide'>('users');
   const navigate = useNavigate();
   const [users, setUsers] = useState<any[]>([]);
+  const [roleAssignmentUserId, setRoleAssignmentUserId] = useState('');
+  const [roleAssignmentDraft, setRoleAssignmentDraft] = useState('');
+  const [roleAssignmentSaving, setRoleAssignmentSaving] = useState(false);
+  const [roleAssignmentSearch, setRoleAssignmentSearch] = useState('');
   const [clientsList, setClientsList] = useState<any[]>([]);
   const [projectsList, setProjectsList] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
@@ -495,6 +499,7 @@ export default function SuperAdmin() {
         <div className="flex border-b border-gray-200 overflow-x-auto hide-scrollbar shrink-0 bg-gray-50/50">
           {[
             { id: 'users', label: t('rbac_admin.tab_users', 'Gestión de Usuarios & Cuentas'), icon: Users },
+            { id: 'assign-role', label: 'Asignación de roles', icon: ShieldCheck },
             { id: 'roles', label: t('rbac_admin.tab_roles', 'Matriz de Permisos (RBAC)'), icon: Key },
             { id: 'audit', label: t('rbac_admin.tab_audit', 'Historial de Auditoría'), icon: Activity },
             { id: 'alerts', label: 'Alertas de Seguridad', icon: ShieldAlert },
@@ -710,6 +715,111 @@ export default function SuperAdmin() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: ASSIGN BASE ROLE */}
+          {activeTab === 'assign-role' && (
+            <div className="mx-auto max-w-5xl space-y-5">
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-xl bg-cyan-50 p-3 text-cyan-700"><ShieldCheck className="h-6 w-6" /></div>
+                  <div>
+                    <h3 className="text-lg font-black text-gray-900">Asignación de roles por usuario</h3>
+                    <p className="mt-1 text-sm text-gray-600">Selecciona una cuenta, elige su rol base y guarda el cambio. Asignar un rol no aprueba ni activa la cuenta.</p>
+                  </div>
+                </div>
+                {!isRootUser && (
+                  <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
+                    Solo safeness.c.a@gmail.com puede guardar cambios de rol. Los demás administradores pueden consultar esta pantalla.
+                  </div>
+                )}
+                <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div>
+                    <label htmlFor="role-assignment-search" className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-600">Buscar usuario</label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                      <input id="role-assignment-search" value={roleAssignmentSearch} onChange={e => setRoleAssignmentSearch(e.target.value)} placeholder="Nombre, correo o UID" className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-10 pr-3 text-sm outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" />
+                    </div>
+                    <label htmlFor="role-assignment-user" className="mb-2 mt-4 block text-xs font-black uppercase tracking-wider text-gray-600">Usuario</label>
+                    <select id="role-assignment-user" value={roleAssignmentUserId} onChange={e => {
+                      const id = e.target.value;
+                      setRoleAssignmentUserId(id);
+                      const target = users.find(item => item.id === id);
+                      setRoleAssignmentDraft(String(target?.role || 'none').toLowerCase());
+                    }} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100">
+                      <option value="">Selecciona un usuario…</option>
+                      {users.filter(item => {
+                        const query = roleAssignmentSearch.trim().toLowerCase();
+                        return !query || [item.name, item.email, item.id].some(value => String(value || '').toLowerCase().includes(query));
+                      }).sort((a,b) => String(a.name || a.email || '').localeCompare(String(b.name || b.email || ''))).map(item => (
+                        <option key={item.id} value={item.id}>{item.name || 'Usuario sin nombre'} — {item.email || item.id}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="role-assignment-role" className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-600">Rol que se asignará</label>
+                    <select id="role-assignment-role" value={roleAssignmentDraft} onChange={e => setRoleAssignmentDraft(e.target.value)} disabled={!roleAssignmentUserId || !isRootUser} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 disabled:cursor-not-allowed disabled:bg-gray-100">
+                      <option value="none">Sin rol asignado</option>
+                      <option value="alumno">Alumno</option>
+                      <option value="professor">Professor / Profesor</option>
+                      <option value="mkt">MKT / Marketing</option>
+                      <option value="operador">Operador</option>
+                      <option value="supervisor">Supervisor</option>
+                      <option value="admin">Admin</option>
+                      <option value="ceo">CEO</option>
+                      <option value="superadmin">SuperAdmin</option>
+                    </select>
+                    {roleAssignmentUserId && (() => {
+                      const target = users.find(item => item.id === roleAssignmentUserId);
+                      return target ? (
+                        <div className="mt-4 rounded-xl border border-gray-100 bg-gray-50 p-4 text-xs text-gray-600">
+                          <p><span className="font-bold text-gray-800">Estado de cuenta:</span> {target.status || 'pending'}</p>
+                          <p className="mt-1"><span className="font-bold text-gray-800">Rol actual:</span> {target.role || 'none'}</p>
+                          <p className="mt-2">El estado de aprobación no se modifica al cambiar el rol.</p>
+                        </div>
+                      ) : null;
+                    })()}
+                    <button type="button" onClick={async () => {
+                      const target = users.find(item => item.id === roleAssignmentUserId);
+                      if (!isRootUser) {
+                        triggerFeedback('Solo safeness.c.a@gmail.com puede guardar cambios de rol.');
+                        return;
+                      }
+                      if (!target || !roleAssignmentDraft) {
+                        triggerFeedback('Selecciona un usuario y un rol válido.');
+                        return;
+                      }
+                      if (String(target.role || 'none').toLowerCase() === roleAssignmentDraft) {
+                        triggerFeedback('El usuario ya tiene ese rol.');
+                        return;
+                      }
+                      setRoleAssignmentSaving(true);
+                      try {
+                        await updateDoc(doc(db, 'users', target.id), { role: roleAssignmentDraft });
+                        await addDoc(collection(db, 'audit_logs'), {
+                          userId: user?.uid || 'system_superadmin',
+                          userEmail: user?.email || '',
+                          action: 'UPDATE_USER_ROLE',
+                          resourceType: 'User',
+                          resourceId: target.id,
+                          details: `Rol asignado a ${roleAssignmentDraft}; estado de cuenta sin cambios`,
+                          timestamp: serverTimestamp(),
+                          ipAddress: '127.0.0.1'
+                        });
+                        triggerFeedback(`Rol "${roleAssignmentDraft}" asignado a ${target.name || target.email || target.id}. La aprobación no se modificó.`);
+                      } catch (error) {
+                        handleFirestoreError(error, OperationType.UPDATE, `users/${target.id}`);
+                      } finally {
+                        setRoleAssignmentSaving(false);
+                      }
+                    }} disabled={!isRootUser || !roleAssignmentUserId || !roleAssignmentDraft || roleAssignmentSaving} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-black text-white transition hover:bg-cyan-500 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40">
+                      {roleAssignmentSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      {roleAssignmentSaving ? 'Guardando…' : 'Guardar asignación de rol'}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
