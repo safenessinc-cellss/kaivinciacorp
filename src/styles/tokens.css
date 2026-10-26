@@ -18,3 +18,78 @@
 :root[data-reduce-transparency="true"]{--material-window:#ECECEC;--material-sidebar:#F6F6F6;--material-toolbar:#ECECEC;--material-popover:#fff;--material-sheet:#fff;--material-menu:#F5F5F5;--blur-window:none;--blur-sidebar:none;--blur-toolbar:none;--blur-popover:none;--blur-sheet:none}
 :root[data-reduce-transparency="true"][data-mac-appearance="dark"]{--material-window:#1E1E1E;--material-sidebar:#1C1C1E;--material-toolbar:#282828;--material-popover:#2C2C2E;--material-sheet:#1E1E1E;--material-menu:#323232}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+
+/* ── Public semantic color API (WCAG-aware) ──────────────────────────────
+   Keep macOS/iOS system colors above as reference colors. Semantic foreground
+   colors below are adjusted where the bright system color itself cannot meet
+   WCAG AA for small text on a neutral surface.
+*/
+:root {
+  color-scheme: light;
+  --color-red: var(--mac-red); --color-orange: var(--mac-orange); --color-yellow: var(--mac-yellow);
+  --color-green: var(--mac-green); --color-mint: var(--mac-mint); --color-teal: var(--mac-teal);
+  --color-cyan: var(--mac-cyan); --color-blue: var(--mac-blue); --color-indigo: var(--mac-indigo);
+  --color-purple: var(--mac-purple); --color-pink: var(--mac-pink); --color-brown: var(--mac-brown);
+  --color-gray: var(--mac-gray);
+  --gray-1: #8E8E93; --gray-2: #AEAEB2; --gray-3: #C7C7CC; --gray-4: #D1D1D6; --gray-5: #E5E5EA; --gray-6: #F2F2F7;
+  --fg-primary: #000000; --fg-secondary: #545459; --fg-tertiary: #6E6E73; --fg-placeholder: #6E6E73;
+  --fg-link: #0066CC; --fg-inverse: #FFFFFF;
+  --bg-page: #FFFFFF; --bg-grouped: #F2F2F7; --bg-elevated: #FFFFFF;
+  --bg-sidebar: rgba(246,246,246,.85); --bg-toolbar: rgba(236,236,236,.88); --bg-overlay: rgba(0,0,0,.60);
+  --separator: #8E8E93; --separator-opaque: #8E8E93;
+  --fill-primary: rgba(120,120,128,.20); --fill-secondary: rgba(120,120,128,.16);
+  --fill-tertiary: rgba(118,118,128,.12); --fill-quaternary: rgba(116,116,128,.08);
+  --success: #248A3D; --warning: #8A4B00; --danger: #D70015; --info: #0066CC;
+  --success-bg: rgba(52,199,89,.14); --warning-bg: rgba(255,149,0,.16);
+  --danger-bg: rgba(255,59,48,.12); --info-bg: rgba(0,122,255,.12);
+  --accent: var(--accent-blue); --accent-hover: #0059C9; --accent-active: #004299;
+  --accent-subtle: rgba(0,122,255,.12); --accent-light: rgba(0,122,255,.20); --accent-focus: rgba(0,102,204,.45);
+  --color-primary: var(--accent); --color-secondary: #545459; --color-background: var(--bg-page);
+  --color-surface: var(--bg-elevated); --color-text-primary: var(--fg-primary); --color-text-secondary: var(--fg-secondary);
+  --color-sidebar-bg: var(--bg-sidebar); --color-sidebar-text: var(--fg-primary); --color-sidebar-active: var(--accent);
+  --color-header-bg: var(--bg-toolbar);
+}
+:root[data-mac-appearance="dark"], :root[data-theme="dark"] {
+  color-scheme: dark;
+  --fg-primary: #FFFFFF; --fg-secondary: #C8C8D0; --fg-tertiary: #AEAEB2; --fg-placeholder: #AEAEB2;
+  --fg-link: #409CFF; --fg-inverse: #000000;
+  --bg-page: #000000; --bg-grouped: #1C1C1E; --bg-elevated: #2C2C2E;
+  --bg-sidebar: rgba(30,30,30,.85); --bg-toolbar: rgba(40,40,40,.88); --bg-overlay: rgba(0,0,0,.72);
+  --separator: #8E8E93; --separator-opaque: #636366;
+  --fill-primary: rgba(120,120,128,.36); --fill-secondary: rgba(120,120,128,.32);
+  --fill-tertiary: rgba(118,118,128,.24); --fill-quaternary: rgba(118,118,128,.18);
+  --success: #30D158; --warning: #FFB340; --danger: #FF6961; --info: #409CFF;
+  --success-bg: rgba(48,209,88,.18); --warning-bg: rgba(255,159,10,.18);
+  --danger-bg: rgba(255,69,58,.18); --info-bg: rgba(10,132,255,.18);
+  --accent: var(--accent-blue); --accent-hover: #409CFF; --accent-active: #70B5FF;
+  --accent-subtle: rgba(10,132,255,.18); --accent-light: rgba(10,132,255,.24); --accent-focus: rgba(64,156,255,.55);
+  --color-primary: var(--accent); --color-secondary: var(--fg-secondary); --color-background: var(--bg-page);
+  --color-surface: var(--bg-elevated); --color-text-primary: var(--fg-primary); --color-text-secondary: var(--fg-secondary);
+  --color-sidebar-bg: var(--bg-sidebar); --color-sidebar-text: var(--fg-primary); --color-sidebar-active: var(--accent);
+  --color-header-bg: var(--bg-toolbar);
+}
+:root[data-mac-appearance="light"], :root[data-theme="light"] { color-scheme: light; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mac-appearance="light"]):not([data-theme="light"]) {
+    color-scheme: dark;
+    --fg-primary: #FFFFFF; --fg-secondary: #C8C8D0; --fg-tertiary: #AEAEB2; --fg-placeholder: #AEAEB2;
+    --fg-link: #409CFF; --fg-inverse: #000000;
+    --bg-page: #000000; --bg-grouped: #1C1C1E; --bg-elevated: #2C2C2E;
+    --bg-sidebar: rgba(30,30,30,.85); --bg-toolbar: rgba(40,40,40,.88); --bg-overlay: rgba(0,0,0,.72);
+    --separator: #8E8E93; --separator-opaque: #636366;
+    --success: #30D158; --warning: #FFB340; --danger: #FF6961; --info: #409CFF;
+    --accent: var(--accent-blue); --accent-hover: #409CFF; --accent-active: #70B5FF;
+    --accent-subtle: rgba(10,132,255,.18); --accent-light: rgba(10,132,255,.24); --accent-focus: rgba(64,156,255,.55);
+    --color-primary: var(--accent); --color-secondary: var(--fg-secondary); --color-background: var(--bg-page);
+    --color-surface: var(--bg-elevated); --color-text-primary: var(--fg-primary); --color-text-secondary: var(--fg-secondary);
+    --color-sidebar-bg: var(--bg-sidebar); --color-sidebar-text: var(--fg-primary); --color-sidebar-active: var(--accent);
+    --color-header-bg: var(--bg-toolbar);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root { --bg-sidebar: #F6F6F6; --bg-toolbar: #ECECEC; --bg-overlay: rgba(0,0,0,.60); --material-sidebar: #F6F6F6; --material-toolbar: #ECECEC; --blur-window: none; --blur-sidebar: none; --blur-toolbar: none; --blur-popover: none; --blur-sheet: none; }
+  :root[data-mac-appearance="dark"], :root[data-theme="dark"] { --bg-sidebar: #1C1C1E; --bg-toolbar: #282828; --bg-overlay: rgba(0,0,0,.72); --material-sidebar: #1C1C1E; --material-toolbar: #282828; }
+}
+:root[data-reduce-transparency="true"] { --bg-sidebar: #F6F6F6; --bg-toolbar: #ECECEC; --bg-overlay: rgba(0,0,0,.60); --material-sidebar: #F6F6F6; --material-toolbar: #ECECEC; --blur-window: none; --blur-sidebar: none; --blur-toolbar: none; --blur-popover: none; --blur-sheet: none; }
+:root[data-reduce-transparency="true"][data-mac-appearance="dark"], :root[data-reduce-transparency="true"][data-theme="dark"] { --bg-sidebar: #1C1C1E; --bg-toolbar: #282828; --bg-overlay: rgba(0,0,0,.72); --material-sidebar: #1C1C1E; --material-toolbar: #282828; }
