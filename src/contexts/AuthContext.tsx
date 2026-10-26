@@ -67,10 +67,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Si el doc no existe, pedimos al backend que lo cree (role='none', status='pending')
         try {
           const token = await currentUser.getIdToken();
-          await fetch('/api/auth/bootstrap-user', {
+          const bootstrapResponse = await fetch('/api/auth/bootstrap-user', {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` },
           });
+          if (bootstrapResponse.ok) {
+            // Refresh once so server-synchronized base role/status claims are available to APIs.
+            await currentUser.getIdToken(true);
+          }
         } catch (e) {
           console.warn('bootstrap-user failed:', e);
         }
