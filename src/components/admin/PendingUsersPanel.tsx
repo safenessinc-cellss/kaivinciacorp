@@ -97,25 +97,25 @@ export default function PendingUsersPanel() {
   };
 
   if (loading) {
-    return <div className="p-6 text-sm text-gray-500">Cargando solicitudes…</div>;
+    return <div className="p-6 text-sm text-fg-secondary">Cargando solicitudes…</div>;
   }
 
   if (pending.length === 0) {
     return (
-      <div className="p-6 bg-white border border-gray-200 rounded-lg">
+      <div className="p-6 bg-white border border-separator rounded-lg">
         <div className="flex items-center gap-2 text-green-700 mb-2">
           <ShieldCheck className="w-5 h-5" />
           <h3 className="font-semibold">Sin solicitudes pendientes</h3>
         </div>
-        <p className="text-sm text-gray-500">No hay usuarios esperando aprobación.</p>
+        <p className="text-sm text-fg-secondary">No hay usuarios esperando aprobación.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+    <div className="bg-white border border-separator rounded-lg">
+      <div className="px-4 py-3 border-b border-separator flex items-center justify-between">
+        <h3 className="font-semibold text-fg-primary flex items-center gap-2">
           <Clock className="w-4 h-4 text-amber-500" />
           Solicitudes pendientes ({pending.length})
         </h3>
@@ -124,12 +124,12 @@ export default function PendingUsersPanel() {
         {pending.map(u => (
           <li key={u.id} className="p-4 flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-start gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                <UserIcon className="w-4 h-4 text-gray-500" />
+              <div className="w-9 h-9 rounded-full bg-surface-grouped flex items-center justify-center shrink-0">
+                <UserIcon className="w-4 h-4 text-fg-secondary" />
               </div>
               <div className="min-w-0">
-                <div className="font-medium text-gray-900 truncate">{u.name || u.email || u.id}</div>
-                <div className="text-xs text-gray-500 flex items-center gap-1 truncate">
+                <div className="font-medium text-fg-primary truncate">{u.name || u.email || u.id}</div>
+                <div className="text-xs text-fg-secondary flex items-center gap-1 truncate">
                   <Mail className="w-3 h-3" /> {u.email || '—'}
                 </div>
               </div>
@@ -141,7 +141,7 @@ export default function PendingUsersPanel() {
                 value={selectedRoles[u.id] || u.role || 'none'}
                 onChange={(event) => setSelectedRoles(current => ({ ...current, [u.id]: event.target.value }))}
                 disabled={busy === u.id}
-                className="border border-gray-300 rounded-md px-2 py-1.5 text-xs bg-white text-gray-800"
+                className="border border-separator rounded-md px-2 py-1.5 text-xs bg-white text-fg-primary"
               >
                 <option value="none">Seleccionar rol…</option>
                 <option value="superadmin">SuperAdmin</option>
