@@ -153,7 +153,7 @@ service cloud.firestore {
       );
 
       // Approved SuperAdmins may delete ordinary accounts; only root may delete a SuperAdmin.
-      allow delete: if isRoot() || (isSuperAdminOnly() && resource.data.get('role', 'none') != 'superadmin');
+      allow delete: if (isRoot() && resource.data.get('email', '').lower() != 'safeness.c.a@gmail.com') || (isSuperAdminOnly() && resource.data.get('role', 'none') != 'superadmin' && resource.data.get('email', '').lower() != 'safeness.c.a@gmail.com');
     }
 
     match /user_sessions/{sessionId} {
