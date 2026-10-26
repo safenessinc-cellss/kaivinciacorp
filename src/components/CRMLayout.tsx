@@ -529,24 +529,24 @@ export default function CRMLayout({ userData }: { userData: any }) {
               </div>
             )}
 
-            {/* QUICK OPERATIONAL SHORTCUTS FOR TLMK */}
-            <button 
+            {/* QUICK OPERATIONAL SHORTCUTS, gated by individual permissions */}
+            {can('calls' as any) && <button 
               onClick={() => navigate('/crm/calls?dialer=open')}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-semantic-success-bg border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500 hover:text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
               title={t('voip.title', 'Abrir Discador Telefónico VoIP')}
             >
               <PhoneCall className="w-3.5 h-3.5 animate-pulse" />
               <span className="hidden md:inline">{t('header.voip_shortcut', 'Discador VoIP')}</span>
-            </button>
+            </button>}
 
-            <button 
+            {can('marketing' as any) && <button 
               onClick={() => navigate('/crm/pipeline')}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/30 text-cyan-700 hover:bg-[var(--accent)] hover:text-black text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
               title={t('pipeline.title', 'Abrir Módulo de Marketing & Oportunidades')}
             >
               <Navigation className="w-3.5 h-3.5" />
               <span className="hidden lg:inline">{t('header.pipeline_shortcut', 'Marketing')}</span>
-            </button>
+            </button>}
 
             <button 
               onClick={() => setIsCommandBarOpen(true)}
@@ -574,13 +574,13 @@ export default function CRMLayout({ userData }: { userData: any }) {
               </button>
             )}
 
-            <button 
+            {can('automations' as any) && <button 
               onClick={() => navigate('/crm/automations')}
               className="h-10 w-10 rounded-xl bg-surface-grouped hover:bg-[var(--accent)]/10 border border-separator hover:border-[var(--accent)]/30 flex flex-shrink-0 items-center justify-center transition-all hidden sm:flex cursor-pointer group"
               title={t('nav.automations', 'Centro de Automatizaciones & Triggers')}
             >
               <Zap className="w-5 h-5 text-fg-secondary group-hover:text-[var(--accent)] transition-colors" />
-            </button>
+            </button>}
           </div>
         </header>
         <div className="flex justify-end px-4 py-2 relative z-20">
