@@ -20,7 +20,7 @@ function sendJson(res: any, status: number, body: Record<string, unknown>) {
 // Role/status remain authoritative in Firestore; permissions are intentionally not copied to claims.
 async function syncBaseRoleClaims(uid: string, roleValue: unknown, statusValue: unknown) {
   const roleRaw = String(roleValue || 'none').trim().toLowerCase();
-  const role = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[roleRaw] || roleRaw;
+  const role = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk', professor: 'tutor', mkt: 'tlmk', operador: 'agente' } as Record<string, string>)[roleRaw] || roleRaw;
   const status = normalizeStatus(statusValue);
   const user = await adminAuth.getUser(uid);
   await adminAuth.setCustomUserClaims(uid, { ...(user.customClaims || {}), role, status });
