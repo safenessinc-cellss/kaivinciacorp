@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
+@config "../tailwind.config.js";
 @import "./styles/tokens.css";
 @import "./styles/macos.css";
 @import "./styles/softphone.css";
@@ -42,6 +43,34 @@
   --color-cyber-dark: var(--bg-page);
   --color-cyber-glass: var(--bg-sidebar);
   --color-cyber-border: var(--separator);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-active: var(--accent-active);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-accent-light: var(--accent-light);
+  --color-accent-focus: var(--accent-focus);
+  --color-fg-primary: var(--fg-primary);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-tertiary: var(--fg-tertiary);
+  --color-fg-placeholder: var(--fg-placeholder);
+  --color-fg-link: var(--fg-link);
+  --color-fg-inverse: var(--fg-inverse);
+  --color-surface-page: var(--bg-page);
+  --color-surface-grouped: var(--bg-grouped);
+  --color-surface-elevated: var(--bg-elevated);
+  --color-surface-sidebar: var(--bg-sidebar);
+  --color-surface-toolbar: var(--bg-toolbar);
+  --color-surface-overlay: var(--bg-overlay);
+  --color-separator: var(--separator);
+  --color-separator-opaque: var(--separator-opaque);
+  --color-semantic-success: var(--success);
+  --color-semantic-warning: var(--warning);
+  --color-semantic-danger: var(--danger);
+  --color-semantic-info: var(--info);
+  --color-semantic-success-bg: var(--success-bg);
+  --color-semantic-warning-bg: var(--warning-bg);
+  --color-semantic-danger-bg: var(--danger-bg);
+  --color-semantic-info-bg: var(--info-bg);
 }
 
 @layer base {
