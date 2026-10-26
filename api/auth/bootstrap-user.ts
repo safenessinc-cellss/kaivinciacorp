@@ -7,6 +7,12 @@ const SUPERADMINS = (process.env.SUPERADMIN_EMAILS || ROOT_USER)
   .map((email) => email.trim().toLowerCase())
   .filter(Boolean);
 
+function normalizeStatus(value: unknown): string {
+  const status = String(value || 'pending').trim().toLowerCase();
+  if (status === 'active' || status === 'enabled') return 'approved';
+  return status;
+}
+
 function sendJson(res: any, status: number, body: Record<string, unknown>) {
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json');
@@ -17,7 +23,7 @@ function sendJson(res: any, status: number, body: Record<string, unknown>) {
 async function syncBaseRoleClaims(uid: string, roleValue: unknown, statusValue: unknown) {
   const roleRaw = String(roleValue || 'none').trim().toLowerCase();
   const role = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[roleRaw] || roleRaw;
-  const status = String(statusValue || 'pending').trim().toLowerCase();
+  const status = normalizeStatus(statusValue);
   const user = await adminAuth.getUser(uid);
   await adminAuth.setCustomUserClaims(uid, { ...(user.customClaims || {}), role, status });
 }
@@ -44,7 +50,7 @@ export default async function handler(req: any, res: any) {
   if (snap.exists) {
     const existing = snap.data() || {};
     const currentRole = String(existing.role || 'none').trim().toLowerCase();
-    const currentStatus = String(existing.status || '').trim().toLowerCase();
+    const currentStatus = normalizeStatus(existing.status);
 
     // Configured SuperAdmin emails are the trusted administrator allowlist.
     // Repair legacy profiles so login and RouteGuard use the canonical role/status.
@@ -76,7 +82,7 @@ export default async function handler(req: any, res: any) {
     }
 
     const role = currentRole;
-    const status = currentStatus || 'pending';
+    const status = currentStatus;
     await syncBaseRoleClaims(decoded.uid, role, status);
     await userRef.update({ lastLogin: FieldValue.serverTimestamp() }).catch(() => undefined);
     return sendJson(res, 200, { user: { ...existing, role, status } });
