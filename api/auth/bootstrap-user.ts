@@ -39,7 +39,7 @@ export default async function handler(req: any, res: any) {
 
     // Allowlist membership is not an approval mechanism. Never elevate or activate
     // an existing account from a login/bootstrap request.
-    if (SUPERADMINS.includes(email) && !(role === 'superadmin' && status === 'approved')) {
+    if (SUPERADMINS.includes(email) && !(['superadmin', 'admin'].includes(role) && status === 'approved')) {
       return sendJson(res, 403, {
         error: 'La cuenta administrativa requiere provisión y aprobación explícitas.',
         code: 'ADMIN_APPROVAL_REQUIRED',
