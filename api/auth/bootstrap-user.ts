@@ -84,7 +84,7 @@ export default async function handler(req: any, res: any) {
     const role = currentRole;
     const status = currentStatus;
     await syncBaseRoleClaims(decoded.uid, role, status);
-    await userRef.update({ lastLogin: FieldValue.serverTimestamp() }).catch(() => undefined);
+    await userRef.update({ status, lastLogin: FieldValue.serverTimestamp() }).catch(() => undefined);
     return sendJson(res, 200, { user: { ...existing, role, status } });
   }
 
