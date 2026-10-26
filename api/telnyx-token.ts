@@ -33,12 +33,17 @@ export default async function handler(req: any, res: any) {
     // Solo perfiles aprobados con un rol operativo pueden obtener credenciales Telnyx.
     const profileSnap = await db.collection('users').doc(authUser.uid).get();
     const profile = profileSnap.exists ? (profileSnap.data() || {}) : null;
-    const profileRole = String(profile?.role || '').trim().toLowerCase();
+    const rawProfileRole = String(profile?.role || '').trim().toLowerCase();
+    const profileRole = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[rawProfileRole] || rawProfileRole;
+    const customPermissions = profile?.permissions && typeof profile.permissions === 'object' ? profile.permissions : {};
+    const roleDefaultCanDial = ['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas'].includes(profileRole);
+    const canUseDialer = profileRole === 'superadmin' ||
+      (typeof customPermissions.calls === 'boolean' ? customPermissions.calls : roleDefaultCanDial);
     if (!profile || String(profile.status || '').trim().toLowerCase() !== 'approved' ||
-        !['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas', 'sales', 'ceo', 'gestor'].includes(profileRole)) {
+        !canUseDialer) {
       res.statusCode = 403;
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'Acceso a telefonía pendiente de aprobación o no autorizado.' }));
+      res.end(JSON.stringify({ error: 'Acceso al discador denegado. La cuenta debe estar aprobada y tener permiso de Discador.' }));
       return;
     }
 
