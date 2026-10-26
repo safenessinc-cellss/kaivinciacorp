@@ -7,54 +7,35 @@ interface RouteGuardProps {
   children: React.ReactNode;
 }
 
-const PRIVILEGED_ROLES = ['admin', 'superadmin', 'ceo', 'gestor', 'owner', 'supervisor'];
-
 export default function RouteGuard({ children }: RouteGuardProps) {
   const { user, userData, loading: authLoading } = useAuth();
   const location = useLocation();
 
-  // 1. Auth resolviendo
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
-        <div className="w-12 h-12 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
-        <p className="mt-4 text-xs font-mono text-gray-700 tracking-widest uppercase">
-          Verificando credenciales de acceso...
-        </p>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-surface-page text-fg-primary">
+        <div className="w-10 h-10 rounded-full border-2 border-accent border-t-transparent animate-spin" aria-label="Verificando acceso" />
+        <p className="mt-4 text-xs font-medium text-fg-secondary tracking-wide">Verificando autorización…</p>
       </div>
     );
   }
 
-  // 2. Sin autenticar
-  if (!user) {
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+
+  if (typeof sessionStorage === 'undefined' || sessionStorage.getItem('kaivincia_session_confirmed') !== 'true') {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // 3. Auth OK pero aún sin doc de perfil (bootstrap en curso)
-  if (userData === null) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
-        <div className="w-12 h-12 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
-        <p className="mt-4 text-xs font-mono text-gray-700 tracking-widest uppercase">
-          Cargando perfil...
-        </p>
-      </div>
-    );
-  }
+  // Missing profile, unknown role, and non-approved statuses always fail closed.
+  if (!userData) return <PendingApproval />;
 
-  // 4. Verificar aprobación.
-  //    Regla: si status está explícitamente en pending/rejected/suspended → bloquear.
-  //    Si status es undefined pero el rol es privilegiado → tratar como aprobado
-  //    (compatibilidad con admins existentes que no tienen el campo).
-  const status = String((userData as any)?.status || '').toLowerCase();
-  const role = String((userData as any)?.role || '').toLowerCase();
-  const isPrivileged = PRIVILEGED_ROLES.includes(role);
-
-  if (status === 'pending' || status === 'rejected' || status === 'suspended') {
-    return <PendingApproval />;
-  }
-
-  if (status !== 'approved' && !isPrivileged) {
+  const rawStatus = String(userData.status || '').trim().toLowerCase();
+  // Legacy ACTIVE/ENABLED values mean the account is approved, not pending.
+  const status = ({ active: 'approved', enabled: 'approved' } as Record<string, string>)[rawStatus] || rawStatus;
+  const rawRole = String(userData.role || 'none').trim().toLowerCase();
+  const role = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[rawRole] || rawRole;
+  const knownRoles = new Set(['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas', 'ceo', 'gestor', 'alumno', 'rrhh', 'collaborator', 'tutor', 'cliente', 'user']);
+  if (status !== 'approved' || !knownRoles.has(role) || role === 'none') {
     return <PendingApproval />;
   }
 

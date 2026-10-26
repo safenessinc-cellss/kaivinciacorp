@@ -53,7 +53,7 @@ export default function PipelineListView({
   if (leads.length === 0) {
     return (
       <div className="bg-[#0A0D14] border border-slate-800 rounded-3xl p-12 text-center">
-        <p className="text-slate-400 font-medium">No hay oportunidades que coincidan con los filtros actuales.</p>
+        <p className="text-fg-tertiary font-medium">No hay oportunidades que coincidan con los filtros actuales.</p>
       </div>
     );
   }
@@ -102,14 +102,14 @@ export default function PipelineListView({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => onCall(lead.phone)}
-                    className={`${size === 'lg' ? 'w-9 h-9' : 'w-7 h-7'} rounded-lg bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-black flex items-center justify-center transition-all cursor-pointer shadow-sm`}
+                    className={`${size === 'lg' ? 'w-9 h-9' : 'w-7 h-7'} rounded-lg bg-emerald-500/20 hover:bg-emerald-500 text-semantic-success hover:text-black flex items-center justify-center transition-all cursor-pointer shadow-sm`}
                     title="Llamar con Discador VoIP"
                   >
                     <Phone className={iconSizeClass} />
                   </button>
                   <div>
-                    <span className="text-[9px] font-mono uppercase text-slate-500 block leading-none">Teléfono</span>
-                    <span className={`${size === 'lg' ? 'text-sm' : 'text-xs'} font-mono font-bold text-emerald-400`}>
+                    <span className="text-[9px] font-mono uppercase text-fg-secondary block leading-none">Teléfono</span>
+                    <span className={`${size === 'lg' ? 'text-sm' : 'text-xs'} font-mono font-bold text-semantic-success`}>
                       {lead.phone}
                     </span>
                   </div>
@@ -117,7 +117,7 @@ export default function PipelineListView({
 
                 <button
                   onClick={() => onWhatsApp(lead.phone, lead.name)}
-                  className="px-2 py-1 rounded-lg bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/20 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                  className="px-2 py-1 rounded-lg bg-emerald-600/10 hover:bg-emerald-600 text-semantic-success hover:text-white border border-separator text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
                   title="Abrir WhatsApp"
                 >
                   <MessageSquare className="w-3 h-3" /> WhatsApp
@@ -128,7 +128,7 @@ export default function PipelineListView({
               <div className="md:col-span-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-slate-900/50 border border-slate-800/80 rounded-xl p-2.5">
                 <div className="flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="text-[10px] font-bold uppercase text-slate-400">TLMK:</span>
+                  <span className="text-[10px] font-bold uppercase text-fg-tertiary">TLMK:</span>
                   <select
                     value={lead.assignedTLMK || 'Sin Asignar'}
                     onChange={(e) => onReassignTLMK(lead.id, e.target.value)}
@@ -141,7 +141,7 @@ export default function PipelineListView({
                 </div>
 
                 {(lead.contractValue || lead.dealValue) && (
-                  <div className="flex items-center gap-1 text-xs font-mono font-bold text-emerald-400">
+                  <div className="flex items-center gap-1 text-xs font-mono font-bold text-semantic-success">
                     <DollarSign className="w-3.5 h-3.5" />
                     <span>{(lead.contractValue || lead.dealValue)?.toLocaleString()} USD</span>
                   </div>
@@ -153,7 +153,7 @@ export default function PipelineListView({
                 {/* Botón Cita (Agendar en Google Calendar) */}
                 <button
                   onClick={() => onOpenAppointment(lead)}
-                  className={`rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${actionButtonPadding}`}
+                  className={`rounded-xl bg-accent-subtle hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${actionButtonPadding}`}
                   title="Agendar o editar Cita (Google Calendar)"
                 >
                   <Calendar className={iconSizeClass} />
@@ -175,7 +175,7 @@ export default function PipelineListView({
                 {/* Botón GPS */}
                 <button
                   onClick={() => onOpenGps(lead)}
-                  className={`rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${actionButtonPadding}`}
+                  className={`rounded-xl bg-semantic-warning/10 hover:bg-semantic-warning/20 text-amber-400 border border-amber-500/30 font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${actionButtonPadding}`}
                   title="Verificación GPS y Feedback"
                 >
                   <Compass className={iconSizeClass} />
@@ -198,7 +198,7 @@ export default function PipelineListView({
                 <button
                   disabled={!canMovePrev}
                   onClick={() => onMove(lead.id, 'prev')}
-                  className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-black disabled:opacity-20 disabled:hover:bg-emerald-500/10 disabled:hover:text-emerald-400 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-black uppercase"
+                  className="p-2 rounded-xl bg-semantic-success-bg text-semantic-success hover:bg-emerald-500 hover:text-black disabled:opacity-20 disabled:hover:bg-semantic-success-bg disabled:hover:text-semantic-success transition-all cursor-pointer flex items-center gap-1 text-[10px] font-black uppercase"
                   title="Retroceder estado anterior"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -225,18 +225,18 @@ export default function PipelineListView({
                     <span>Cita: {lead.appointment.date} a las {lead.appointment.time} ({lead.appointment.type})</span>
                   </div>
 
-                  <span className="text-slate-600 hidden sm:inline">•</span>
+                  <span className="text-fg-secondary hidden sm:inline">•</span>
 
                   <div className="flex items-center gap-1.5 text-slate-300">
                     <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                     <span className="font-medium">
                       Dirección agendada: <strong className="text-white">{lead.appointment.address || 'Oficina'}</strong>
-                      {lead.appointment.direction && <span className="text-slate-400"> ({lead.appointment.direction})</span>}
+                      {lead.appointment.direction && <span className="text-fg-tertiary"> ({lead.appointment.direction})</span>}
                     </span>
                   </div>
 
                   {lead.appointment.gpsCoordinates && (
-                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-bold flex items-center gap-1">
+                    <span className="px-2 py-0.5 rounded-md bg-semantic-success-bg text-semantic-success border border-separator text-[10px] font-mono font-bold flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" />
                       GPS: {lead.appointment.gpsCoordinates.lat}°, {lead.appointment.gpsCoordinates.lng}°
                     </span>
@@ -249,7 +249,7 @@ export default function PipelineListView({
                       href={mapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold flex items-center gap-1 transition-all"
+                      className="px-2.5 py-1 rounded-lg bg-semantic-warning/10 hover:bg-semantic-warning/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold flex items-center gap-1 transition-all"
                     >
                       <ExternalLink className="w-3 h-3" /> Ver Dirección en Mapa
                     </a>

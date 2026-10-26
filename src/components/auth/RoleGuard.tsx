@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const DEFAULT_ALLOWED_ROLES = ['admin', 'superadmin', 'owner', 'supervisor'] as const;
+export const DEFAULT_ALLOWED_ROLES = ['admin', 'superadmin'] as const;
 
 interface RoleGuardProps {
   userRole?: string | null;
@@ -25,7 +25,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
 export function isPrivilegedRole(role?: string | null): boolean {
   if (!role) return false;
   const normalized = String(role).toLowerCase().trim();
-  return (DEFAULT_ALLOWED_ROLES as readonly string[]).includes(normalized);
+  return ['admin', 'superadmin'].includes(normalized);
 }
 
 export default RoleGuard;

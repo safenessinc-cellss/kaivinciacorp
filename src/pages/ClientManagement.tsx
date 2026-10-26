@@ -393,7 +393,7 @@ export default function ClientManagement() {
             <Building2 className="w-8 h-8 text-[#00F0FF]" />
              Gestión de Clientes
           </h2>
-          <p className="text-xs font-mono text-slate-500 mt-2 flex items-center gap-2">
+          <p className="text-xs font-mono text-fg-secondary mt-2 flex items-center gap-2">
             <span className="w-2 h-2 bg-[#00F0FF] rounded-full animate-pulse" />
             KAIVINCIA REVENUE OPS // AUDITORIA_CUMPLIDA
           </p>
@@ -420,23 +420,23 @@ export default function ClientManagement() {
                 </div>
                 <div>
                   <h3 className="text-xl font-black text-white uppercase tracking-tighter">Registrar Nuevo Cliente</h3>
-                  <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest font-mono">Apertura de Cartera B2B // KV-SYS-REGEN</p>
+                  <p className="text-[10px] text-fg-secondary mt-1 uppercase tracking-widest font-mono">Apertura de Cartera B2B // KV-SYS-REGEN</p>
                 </div>
               </div>
-              <button onClick={() => setIsNewClientModalOpen(false)} className="text-slate-500 hover:text-white transition-colors bg-slate-800/50 p-2 rounded-full border border-slate-700">
+              <button onClick={() => setIsNewClientModalOpen(false)} className="text-fg-secondary hover:text-white transition-colors bg-slate-800/50 p-2 rounded-full border border-slate-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form className="p-8 overflow-y-auto flex-1 space-y-8">
               {/* Initial Status Selector */}
               <div className="space-y-4">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest block">Estado Inicial del Cliente</label>
+                <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest block">Estado Inicial del Cliente</label>
                 <div className="grid grid-cols-5 gap-3">
                   {[
-                    { id: 'Lead', label: 'Lead', icon: Search, color: 'text-slate-400', activeColor: 'bg-slate-800/50', borderColor: 'border-slate-700' },
-                    { id: 'Activo', label: 'Activo', icon: CheckCircle2, color: 'text-emerald-500', activeColor: 'bg-emerald-500/10', borderColor: 'border-emerald-500/30' },
-                    { id: 'En Riesgo', label: 'Riesgo', icon: AlertTriangle, color: 'text-red-500', activeColor: 'bg-red-500/10', borderColor: 'border-red-500/30' },
-                    { id: 'Pausado', label: 'Pausado', icon: Clock, color: 'text-amber-500', activeColor: 'bg-amber-500/10', borderColor: 'border-amber-500/30' },
+                    { id: 'Lead', label: 'Lead', icon: Search, color: 'text-fg-tertiary', activeColor: 'bg-slate-800/50', borderColor: 'border-slate-700' },
+                    { id: 'Activo', label: 'Activo', icon: CheckCircle2, color: 'text-semantic-success', activeColor: 'bg-semantic-success-bg', borderColor: 'border-emerald-500/30' },
+                    { id: 'En Riesgo', label: 'Riesgo', icon: AlertTriangle, color: 'text-semantic-danger', activeColor: 'bg-semantic-danger/10', borderColor: 'border-red-500/30' },
+                    { id: 'Pausado', label: 'Pausado', icon: Clock, color: 'text-amber-500', activeColor: 'bg-semantic-warning/10', borderColor: 'border-amber-500/30' },
                     { id: 'Finalizado', label: 'Cerrado', icon: ShieldAlert, color: 'text-purple-500', activeColor: 'bg-purple-500/10', borderColor: 'border-purple-500/30' },
                   ].map((s) => {
                     const isActive = newClient.status === s.id;
@@ -448,11 +448,11 @@ export default function ClientManagement() {
                         className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border transition-all ${
                           isActive 
                             ? `${s.activeColor} ${s.borderColor} shadow-[0_0_15px_rgba(34,211,238,0.1)] ring-1 ring-[#00F0FF]/40` 
-                            : 'bg-slate-900 border-slate-800 text-slate-600 hover:border-slate-700'
+                            : 'bg-slate-900 border-slate-800 text-fg-secondary hover:border-slate-700'
                         }`}
                       >
-                        <s.icon className={`w-5 h-5 ${isActive ? s.color : 'text-slate-700'}`} />
-                        <span className={`text-[9px] font-black uppercase tracking-tight ${isActive ? 'text-white' : 'text-slate-600'}`}>{s.label}</span>
+                        <s.icon className={`w-5 h-5 ${isActive ? s.color : 'text-fg-secondary'}`} />
+                        <span className={`text-[9px] font-black uppercase tracking-tight ${isActive ? 'text-white' : 'text-fg-secondary'}`}>{s.label}</span>
                       </button>
                     );
                   })}
@@ -463,7 +463,7 @@ export default function ClientManagement() {
                 <h4 className="text-[10px] font-black text-[#00F0FF] uppercase tracking-[0.2em] border-b border-[#1E293B] pb-2">Información Corporativa</h4>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Empresa / Razón Social</label>
+                    <label className="text-xs font-black text-fg-secondary uppercase tracking-widest">Empresa / Razón Social</label>
                     <input 
                       type="text" 
                       value={newClient.companyName}
@@ -474,10 +474,10 @@ export default function ClientManagement() {
                       placeholder="Ej. TechCorp S.A."
                       className={`w-full bg-[#12161F] rounded-xl p-3 text-sm text-white focus:border-[#00F0FF] outline-none border transition-all ${formErrors.companyName ? 'border-red-500 bg-red-900/20' : 'border-[#1E293B]'}`}
                     />
-                    {formErrors.companyName && <p className="text-[10px] text-red-500 font-bold uppercase">{formErrors.companyName}</p>}
+                    {formErrors.companyName && <p className="text-[10px] text-semantic-danger font-bold uppercase">{formErrors.companyName}</p>}
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">NIT / Tax ID</label>
+                    <label className="text-xs font-black text-fg-secondary uppercase tracking-widest">NIT / Tax ID</label>
                     <input 
                       type="text" 
                       value={newClient.taxId}
@@ -487,23 +487,23 @@ export default function ClientManagement() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Industria / Nicho</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Industria / Nicho</label>
                     <input 
                       type="text" 
                       value={newClient.industry}
                       onChange={(e) => setNewClient({...newClient, industry: e.target.value})}
                       placeholder="Ej. SaaS B2B, Logística"
-                      className="w-full bg-white border border-gray-100 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none transition-all"
+                      className="w-full bg-white border border-separator rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none transition-all"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-50/50 p-6 rounded-3xl border border-gray-100 space-y-6">
-                <h4 className="text-[10px] font-black text-[#00F0FF] uppercase tracking-[0.2em] border-b border-gray-100 pb-2">Datos de Contacto</h4>
+              <div className="bg-surface-grouped p-6 rounded-3xl border border-separator space-y-6">
+                <h4 className="text-[10px] font-black text-[#00F0FF] uppercase tracking-[0.2em] border-b border-separator pb-2">Datos de Contacto</h4>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Contacto Principal</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Contacto Principal</label>
                     <input 
                       type="text" 
                       value={newClient.contactName}
@@ -512,16 +512,16 @@ export default function ClientManagement() {
                         if (formErrors.contactName) setFormErrors({...formErrors, contactName: ''});
                       }}
                       placeholder="Nombre del Stakeholder"
-                      className={`w-full bg-white rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all ${formErrors.contactName ? 'border-red-500 bg-red-50' : 'border-gray-100'}`}
+                      className={`w-full bg-white rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all ${formErrors.contactName ? 'border-red-500 bg-semantic-danger-bg' : 'border-separator'}`}
                     />
-                    {formErrors.contactName && <p className="text-[10px] text-red-500 font-bold uppercase">{formErrors.contactName}</p>}
+                    {formErrors.contactName && <p className="text-[10px] text-semantic-danger font-bold uppercase">{formErrors.contactName}</p>}
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Origen / Fuente</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Origen / Fuente</label>
                     <select 
                       value={newClient.source}
                       onChange={(e) => setNewClient({...newClient, source: e.target.value})}
-                      className="w-full bg-white border border-gray-100 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none transition-all"
+                      className="w-full bg-white border border-separator rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none transition-all"
                     >
                       <option value="">Seleccionar Origen</option>
                       <option value="LinkedIn">LinkedIn Outreach</option>
@@ -531,17 +531,17 @@ export default function ClientManagement() {
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Sitio Web</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Sitio Web</label>
                     <input 
                       type="url" 
                       value={newClient.website}
                       onChange={(e) => setNewClient({...newClient, website: e.target.value})}
                       placeholder="https://www.empresa.com"
-                      className="w-full bg-white border border-gray-100 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none transition-all"
+                      className="w-full bg-white border border-separator rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none transition-all"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Email de Contacto</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Email de Contacto</label>
                     <input 
                       type="email" 
                       value={newClient.email}
@@ -550,32 +550,32 @@ export default function ClientManagement() {
                         if (formErrors.email) setFormErrors({...formErrors, email: ''});
                       }}
                       placeholder="user@domain.com"
-                      className={`w-full bg-white rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all ${formErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-100'}`}
+                      className={`w-full bg-white rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all ${formErrors.email ? 'border-red-500 bg-semantic-danger-bg' : 'border-separator'}`}
                     />
-                    {formErrors.email && <p className="text-[10px] text-red-500 font-bold uppercase">{formErrors.email}</p>}
+                    {formErrors.email && <p className="text-[10px] text-semantic-danger font-bold uppercase">{formErrors.email}</p>}
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Teléfono de Contacto</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Teléfono de Contacto</label>
                     <input 
                       type="text" 
                       value={newClient.phone}
                       placeholder="+X XXX XXX XXXX"
                       onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
-                      className="w-full bg-white border-gray-100 border rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none transition-all"
+                      className="w-full bg-white border-separator border rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none transition-all"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-50/50 p-6 rounded-3xl border border-gray-100 space-y-6">
-                <h4 className="text-[10px] font-black text-[#00F0FF] uppercase tracking-[0.2em] border-b border-gray-100 pb-2">Configuración Estratégica</h4>
+              <div className="bg-surface-grouped p-6 rounded-3xl border border-separator space-y-6">
+                <h4 className="text-[10px] font-black text-[#00F0FF] uppercase tracking-[0.2em] border-b border-separator pb-2">Configuración Estratégica</h4>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Asignar Setter / SDR</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Asignar Setter / SDR</label>
                     <select 
                       value={newClient.setterId}
                       onChange={(e) => setNewClient({...newClient, setterId: e.target.value})}
-                      className="w-full bg-white border border-gray-100 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all"
+                      className="w-full bg-white border border-separator rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all"
                     >
                       <option value="">Seleccionar Responsable</option>
                       <option value="s1">Carlos Mendoza</option>
@@ -584,37 +584,37 @@ export default function ClientManagement() {
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Meta de ROI (%)</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Meta de ROI (%)</label>
                     <input 
                       type="number" 
                       value={newClient.roiGoal}
                       onChange={(e) => setNewClient({...newClient, roiGoal: parseInt(e.target.value)})}
-                      className="w-full bg-white border border-gray-100 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none transition-all"
+                      className="w-full bg-white border border-separator rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none transition-all"
                       placeholder="Ej: 300"
                     />
                   </div>
                   <div className="col-span-2 space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Ubicación Táctica (Coordenadas GPS)</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Ubicación Táctica (Coordenadas GPS)</label>
                     <input 
                       type="text" 
                       value={newClient.gpsLocation}
                       onChange={(e) => setNewClient({...newClient, gpsLocation: e.target.value})}
                       placeholder="Lat, Long (Opcional para servicios de campo)"
-                      className="w-full bg-white border border-gray-100 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none transition-all font-mono"
+                      className="w-full bg-white border border-separator rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none transition-all font-mono"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-50/50 p-6 rounded-3xl border border-gray-100 space-y-6">
-                <h4 className="text-[10px] font-black text-[#00F0FF] uppercase tracking-[0.2em] border-b border-gray-100 pb-2">Configuración Comercial</h4>
+              <div className="bg-surface-grouped p-6 rounded-3xl border border-separator space-y-6">
+                <h4 className="text-[10px] font-black text-[#00F0FF] uppercase tracking-[0.2em] border-b border-separator pb-2">Configuración Comercial</h4>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Servicio Contratado</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Servicio Contratado</label>
                     <select 
                       value={newClient.service}
                       onChange={(e) => setNewClient({...newClient, service: e.target.value})}
-                      className="w-full bg-white border border-gray-100 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all"
+                      className="w-full bg-white border border-separator rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all"
                     >
                       <option>Appointment Setting</option>
                       <option>Call Center Outbound</option>
@@ -624,11 +624,11 @@ export default function ClientManagement() {
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Modelo de Pago</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Modelo de Pago</label>
                     <select 
                       value={newClient.paymentModel}
                       onChange={(e) => setNewClient({...newClient, paymentModel: e.target.value as any})}
-                      className="w-full bg-white border border-gray-100 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all"
+                      className="w-full bg-white border border-separator rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all"
                     >
                       <option value="Fijo">Fijo (Recurrente)</option>
                       <option value="Cita">Por Cita (Variable ETL)</option>
@@ -636,7 +636,7 @@ export default function ClientManagement() {
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Valor de Contrato (USD/mes)</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Valor de Contrato (USD/mes)</label>
                     <input 
                       type="number" 
                       value={newClient.contractValue}
@@ -644,39 +644,39 @@ export default function ClientManagement() {
                         setNewClient({...newClient, contractValue: parseInt(e.target.value)});
                         if (formErrors.contractValue) setFormErrors({...formErrors, contractValue: ''});
                       }}
-                      className={`w-full bg-white rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all ${formErrors.contractValue ? 'border-red-500 bg-red-50' : 'border-gray-100'}`}
+                      className={`w-full bg-white rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all ${formErrors.contractValue ? 'border-red-500 bg-semantic-danger-bg' : 'border-separator'}`}
                     />
-                    {formErrors.contractValue && <p className="text-[10px] text-red-500 font-bold uppercase">{formErrors.contractValue}</p>}
+                    {formErrors.contractValue && <p className="text-[10px] text-semantic-danger font-bold uppercase">{formErrors.contractValue}</p>}
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Fecha Inicio</label>
+                    <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Fecha Inicio</label>
                     <input 
                       type="date" 
                       value={newClient.startDate}
                       onChange={(e) => setNewClient({...newClient, startDate: e.target.value})}
-                      className="w-full bg-white border border-gray-100 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all"
+                      className="w-full bg-white border border-separator rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#00F0FF] focus:border-transparent outline-none border transition-all"
                     />
                   </div>
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Notas Internas / Briefing</label>
+                <label className="text-xs font-black text-fg-tertiary uppercase tracking-widest">Notas Internas / Briefing</label>
                 <textarea 
                   value={newClient.notes}
                   onChange={(e) => setNewClient({...newClient, notes: e.target.value})}
                   rows={3}
                   placeholder="Contexto adicional sobre el cliente, retos detectados..."
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-[#00F0FF] outline-none transition-all placeholder:italic"
+                  className="w-full bg-surface-grouped border border-separator rounded-2xl p-4 text-sm focus:ring-2 focus:ring-[#00F0FF] outline-none transition-all placeholder:italic"
                 />
               </div>
             </form>
 
-            <div className="p-6 border-t border-gray-200 flex justify-end items-center gap-4 bg-gray-50/50 relative z-10">
+            <div className="p-6 border-t border-separator flex justify-end items-center gap-4 bg-surface-grouped relative z-10">
               <button 
                 type="button"
                 onClick={() => setIsNewClientModalOpen(false)}
-                className="px-6 py-3 text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors"
+                className="px-6 py-3 text-fg-tertiary font-bold text-xs uppercase tracking-widest hover:text-fg-primary transition-colors"
                 disabled={isSaving}
               >
                 Cancelar
@@ -695,8 +695,8 @@ export default function ClientManagement() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex-1 flex flex-col">
-        <div className="flex border-b border-gray-200 overflow-x-auto hide-scrollbar shrink-0">
+      <div className="bg-white rounded-xl shadow-sm border border-separator overflow-hidden flex-1 flex flex-col">
+        <div className="flex border-b border-separator overflow-x-auto hide-scrollbar shrink-0">
           {[
             { id: 'kpis', label: 'Dashboard KPIs', icon: BarChart3 },
             { id: 'perfil360', label: 'Perfil 360°', icon: Users },
@@ -709,7 +709,7 @@ export default function ClientManagement() {
               className={`flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.id 
                   ? 'border-b-2 border-[#00F0FF] text-[#00F0FF] bg-cyan-500/10/50' 
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  : 'text-fg-secondary hover:text-fg-secondary hover:bg-surface-grouped'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -718,26 +718,26 @@ export default function ClientManagement() {
           ))}
         </div>
 
-        <div className="p-6 flex-1 overflow-y-auto bg-gray-50/50">
+        <div className="p-6 flex-1 overflow-y-auto bg-surface-grouped">
           
           {/* DASHBOARD KPIS */}
           {activeTab === 'kpis' && (
             <div className="space-y-8 animate-in fade-in duration-300">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Health Score Promedio</p>
+                 <div className="bg-white p-6 rounded-2xl border border-separator shadow-sm">
+                    <p className="text-[10px] font-black text-fg-tertiary uppercase tracking-widest mb-2">Health Score Promedio</p>
                     <div className="flex items-end gap-3">
-                       <h3 className="text-4xl font-black text-gray-900 leading-none">88%</h3>
-                       <span className="text-emerald-500 font-bold text-xs mb-1 flex items-center gap-1"><ArrowUpRight className="w-3 h-3"/> +4.2</span>
+                       <h3 className="text-4xl font-black text-fg-primary leading-none">88%</h3>
+                       <span className="text-semantic-success font-bold text-xs mb-1 flex items-center gap-1"><ArrowUpRight className="w-3 h-3"/> +4.2</span>
                     </div>
-                    <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="mt-4 h-2 bg-surface-grouped rounded-full overflow-hidden">
                        <div className="h-full bg-gradient-to-r from-[#00F0FF] to-[#00BFFF] w-[88%] rounded-full shadow-[0_0_10px_rgba(181,154,69,0.3)]" />
                     </div>
                  </div>
-                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Churn Risk Velocity</p>
-                    <h3 className="text-4xl font-black text-gray-900 leading-none">Low</h3>
-                    <p className="text-[10px] text-emerald-500 font-bold mt-2 uppercase tracking-tighter">Stable Portfolio</p>
+                 <div className="bg-white p-6 rounded-2xl border border-separator shadow-sm">
+                    <p className="text-[10px] font-black text-fg-tertiary uppercase tracking-widest mb-2">Churn Risk Velocity</p>
+                    <h3 className="text-4xl font-black text-fg-primary leading-none">Low</h3>
+                    <p className="text-[10px] text-semantic-success font-bold mt-2 uppercase tracking-tighter">Stable Portfolio</p>
                  </div>
                  <div className="bg-[#0B0E14] p-6 rounded-2xl border border-[#00F0FF]/30 shadow-xl group">
                     <p className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest mb-2">Meta Global ROI</p>
@@ -746,20 +746,20 @@ export default function ClientManagement() {
                  </div>
               </div>
 
-              <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
+              <div className="bg-white border border-separator rounded-3xl p-8 shadow-sm">
                 <div className="flex justify-between items-center mb-8">
                    <div>
-                     <h3 className="text-lg font-black text-gray-900 uppercase tracking-tighter">Inversión vs Retorno (ROI)</h3>
-                     <p className="text-xs text-gray-500">Métricas específicas por cliente - Ciclo Q1 2026</p>
+                     <h3 className="text-lg font-black text-fg-primary uppercase tracking-tighter">Inversión vs Retorno (ROI)</h3>
+                     <p className="text-xs text-fg-secondary">Métricas específicas por cliente - Ciclo Q1 2026</p>
                    </div>
                    <div className="flex gap-4">
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-gray-200" />
-                        <span className="text-[10px] font-bold text-gray-400 uppercase">Inversión</span>
+                        <span className="text-[10px] font-bold text-fg-tertiary uppercase">Inversión</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-[#00F0FF]" />
-                        <span className="text-[10px] font-bold text-gray-400 uppercase">Retorno</span>
+                        <span className="text-[10px] font-bold text-fg-tertiary uppercase">Retorno</span>
                       </div>
                    </div>
                 </div>
@@ -767,7 +767,7 @@ export default function ClientManagement() {
                 <div className="space-y-8">
                   {clients.slice(0, 5).map((c, i) => (
                     <div key={c.id} className="space-y-2">
-                       <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-gray-700">
+                       <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-fg-secondary">
                           <span>{c.companyName}</span>
                           <span className="text-[#00F0FF]">ROI: {((c.contractValue * 3.5) / (c.contractValue || 1) * 100).toFixed(0)}%</span>
                        </div>
@@ -775,7 +775,7 @@ export default function ClientManagement() {
                           <motion.div 
                             initial={{ width: 0 }} 
                             animate={{ width: '25%' }}
-                            className="bg-gray-100 border-r border-white" 
+                            className="bg-surface-grouped border-r border-white" 
                           />
                           <motion.div 
                             initial={{ width: 0 }} 
@@ -805,9 +805,9 @@ export default function ClientManagement() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                    {clientProjects.map(project => (
-                     <div key={project.id} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow group">
+                     <div key={project.id} className="bg-white border border-separator rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow group">
                         <div className="flex justify-between items-start mb-4">
-                           <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 group-hover:bg-[#00F0FF]/10">
+                           <div className="w-10 h-10 bg-surface-grouped rounded-xl flex items-center justify-center border border-separator group-hover:bg-[#00F0FF]/10">
                               <LayoutDashboard className="w-5 h-5 text-[#00F0FF]" />
                            </div>
                            <select 
@@ -830,8 +830,8 @@ export default function ClientManagement() {
                              }}
                              className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border outline-none cursor-pointer ${
                                project.status === 'Completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
-                               project.status === 'Active' ? 'bg-blue-50 text-blue-600 border-blue-200' :
-                               'bg-gray-50 text-gray-600 border-gray-200'
+                               project.status === 'Active' ? 'bg-blue-50 text-accent border-blue-200' :
+                               'bg-surface-grouped text-fg-secondary border-separator'
                              }`}
                            >
                               <option value="Active">Activo</option>
@@ -839,11 +839,11 @@ export default function ClientManagement() {
                               <option value="Completed">Completado</option>
                            </select>
                         </div>
-                        <h4 className="font-black text-gray-900 uppercase tracking-tighter text-sm mb-1">{project.name}</h4>
-                        <p className="text-xs text-gray-500 line-clamp-2 mb-4">{project.description}</p>
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                           <span className="text-[10px] font-bold text-gray-400 uppercase">Progreso AI</span>
-                           <span className="text-xs font-mono font-bold text-gray-900">{project.progress || 0}%</span>
+                        <h4 className="font-black text-fg-primary uppercase tracking-tighter text-sm mb-1">{project.name}</h4>
+                        <p className="text-xs text-fg-secondary line-clamp-2 mb-4">{project.description}</p>
+                        <div className="flex items-center justify-between pt-4 border-t border-separator">
+                           <span className="text-[10px] font-bold text-fg-tertiary uppercase">Progreso AI</span>
+                           <span className="text-xs font-mono font-bold text-fg-primary">{project.progress || 0}%</span>
                         </div>
                      </div>
                    ))}
@@ -855,22 +855,22 @@ export default function ClientManagement() {
           {activeTab === 'perfil360' && (
             <div className="flex flex-col lg:flex-row gap-6 h-full">
               {/* Client List (Sidebar) */}
-              <div className="w-full lg:w-80 bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col shrink-0">
-                <div className="p-4 border-b border-gray-200">
+              <div className="w-full lg:w-80 bg-white border border-separator rounded-xl shadow-sm flex flex-col shrink-0">
+                <div className="p-4 border-b border-separator">
                   <div className="relative flex items-center gap-2">
                       <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-tertiary w-4 h-4" />
                         <input 
                           type="text" 
                           placeholder="Buscar cliente (Ej: TechCorp)..." 
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-[#00F0FF] focus:border-[#00F0FF] bg-white text-gray-900"
+                          className="w-full pl-9 pr-4 py-2 text-sm border border-separator rounded-lg focus:ring-[#00F0FF] focus:border-[#00F0FF] bg-white text-fg-primary"
                         />
                       </div>
                     <button 
                       onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-                      className="p-2 border border-gray-300 rounded-lg text-gray-500 hover:text-gray-900 transition-colors bg-white relative"
+                      className="p-2 border border-separator rounded-lg text-fg-secondary hover:text-fg-primary transition-colors bg-white relative"
                     >
                       <Filter className="w-5 h-5" />
                       {(filterStatus !== 'Todos' || filterService !== 'Todos') && (
@@ -879,13 +879,13 @@ export default function ClientManagement() {
                     </button>
                   </div>
                   {isFilterMenuOpen && (
-                    <div className="mt-3 p-3 bg-gray-50 border border-gray-100 rounded-lg space-y-3">
+                    <div className="mt-3 p-3 bg-surface-grouped border border-separator rounded-lg space-y-3">
                        <div>
-                         <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Estado</label>
+                         <label className="text-[10px] font-bold text-fg-secondary uppercase tracking-widest mb-1.5 block">Estado</label>
                          <select 
                            value={filterStatus}
                            onChange={(e) => setFilterStatus(e.target.value)}
-                           className="w-full text-xs p-1.5 rounded-md border border-gray-200 outline-none"
+                           className="w-full text-xs p-1.5 rounded-md border border-separator outline-none"
                          >
                             <option value="Todos">Todos</option>
                             <option value="Activo">Activo</option>
@@ -896,11 +896,11 @@ export default function ClientManagement() {
                          </select>
                        </div>
                        <div>
-                         <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Servicio</label>
+                         <label className="text-[10px] font-bold text-fg-secondary uppercase tracking-widest mb-1.5 block">Servicio</label>
                          <select 
                            value={filterService}
                            onChange={(e) => setFilterService(e.target.value)}
-                           className="w-full text-xs p-1.5 rounded-md border border-gray-200 outline-none"
+                           className="w-full text-xs p-1.5 rounded-md border border-separator outline-none"
                          >
                             <option value="Todos">Todos</option>
                             <option value="Appointment Setting">Appointment Setting</option>
@@ -919,59 +919,59 @@ export default function ClientManagement() {
                       key={client.id}
                       onClick={() => setSelectedClientId(client.id)}
                       className={`w-full text-left p-3 rounded-xl transition-all flex items-center gap-3 border shadow-sm ${
-                        selectedClientId === client.id ? 'bg-[#00F0FF]/5 border-[#00F0FF] ring-2 ring-[#00F0FF]/10' : 'bg-white border-gray-100 hover:border-gray-300'
+                        selectedClientId === client.id ? 'bg-[#00F0FF]/5 border-[#00F0FF] ring-2 ring-[#00F0FF]/10' : 'bg-white border-separator hover:border-separator'
                       }`}
                     >
-                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shrink-0 border border-gray-200">
-                         <Building2 className={`w-5 h-5 ${selectedClientId === client.id ? 'text-[#00F0FF]' : 'text-gray-400'}`} />
+                      <div className="w-10 h-10 bg-surface-grouped rounded-lg flex items-center justify-center shrink-0 border border-separator">
+                         <Building2 className={`w-5 h-5 ${selectedClientId === client.id ? 'text-[#00F0FF]' : 'text-fg-tertiary'}`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-black text-gray-900 text-xs uppercase tracking-tight truncate">{client.companyName}</p>
+                        <p className="font-black text-fg-primary text-xs uppercase tracking-tight truncate">{client.companyName}</p>
                         <div className="flex items-center gap-2 mt-0.5">
-                           <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
+                           <div className="flex-1 h-1 bg-surface-grouped rounded-full overflow-hidden">
                               <div 
-                                className={`h-full rounded-full ${client.healthScore > 70 ? 'bg-emerald-500' : client.healthScore > 40 ? 'bg-amber-500' : 'bg-red-500'}`}
+                                className={`h-full rounded-full ${client.healthScore > 70 ? 'bg-emerald-500' : client.healthScore > 40 ? 'bg-semantic-warning' : 'bg-semantic-danger'}`}
                                 style={{ width: `${client.healthScore}%` }}
                               />
                            </div>
-                           <span className="text-[9px] font-mono text-gray-500">{client.healthScore}%</span>
+                           <span className="text-[9px] font-mono text-fg-secondary">{client.healthScore}%</span>
                         </div>
                       </div>
-                      <div className={`w-2 h-2 rounded-full shrink-0 ${client.status === 'Activo' ? 'bg-green-500 animate-pulse' : client.status === 'En Riesgo' ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                      <div className={`w-2 h-2 rounded-full shrink-0 ${client.status === 'Activo' ? 'bg-semantic-success animate-pulse' : client.status === 'En Riesgo' ? 'bg-semantic-danger' : 'bg-gray-300'}`}></div>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Client Details (Main) */}
-              <div className="flex-1 bg-white border border-gray-200 rounded-xl shadow-sm overflow-y-auto">
+              <div className="flex-1 bg-white border border-separator rounded-xl shadow-sm overflow-y-auto">
                 {!selectedClient ? (
                   <div className="h-full flex flex-col items-center justify-center p-12 text-center">
                     <Building2 className="w-16 h-16 text-gray-100 mb-4" />
-                    <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">Selecciona un cliente para ver su perfil</p>
+                    <p className="text-fg-tertiary font-bold uppercase tracking-widest text-sm">Selecciona un cliente para ver su perfil</p>
                   </div>
                 ) : (
                   <>
-                    <div className="p-8 border-b border-gray-200">
+                    <div className="p-8 border-b border-separator">
                       <div className="flex justify-between items-start mb-6">
                         <div className="flex items-center gap-5">
-                          <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center border border-gray-200 shadow-sm transition-transform hover:scale-105">
+                          <div className="w-20 h-20 bg-surface-grouped rounded-2xl flex items-center justify-center border border-separator shadow-sm transition-transform hover:scale-105">
                             <Building2 className="w-10 h-10 text-[#00F0FF]" />
                           </div>
                           <div>
-                            <h3 className="text-2xl font-bold text-gray-900">{selectedClient.companyName}</h3>
-                            <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                              <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-gray-400" /> {selectedClient.contactName}</span>
-                              <span className="flex items-center gap-1.5"><Phone className="w-4 h-4 text-gray-400" /> {selectedClient.phone}</span>
-                              <span className="flex items-center gap-1.5"><Mail className="w-4 h-4 text-gray-400" /> {selectedClient.email}</span>
+                            <h3 className="text-2xl font-bold text-fg-primary">{selectedClient.companyName}</h3>
+                            <div className="flex items-center gap-4 mt-2 text-sm text-fg-secondary">
+                              <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-fg-tertiary" /> {selectedClient.contactName}</span>
+                              <span className="flex items-center gap-1.5"><Phone className="w-4 h-4 text-fg-tertiary" /> {selectedClient.phone}</span>
+                              <span className="flex items-center gap-1.5"><Mail className="w-4 h-4 text-fg-tertiary" /> {selectedClient.email}</span>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
                           <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm border ${
                             selectedClient.status === 'Activo' ? 'bg-green-50 text-green-700 border-green-200' : 
-                            selectedClient.status === 'En Riesgo' ? 'bg-red-50 text-red-700 border-red-200' :
-                            'bg-gray-50 text-gray-700 border-gray-200'
+                            selectedClient.status === 'En Riesgo' ? 'bg-semantic-danger-bg text-red-700 border-red-200' :
+                            'bg-surface-grouped text-fg-secondary border-separator'
                           }`}>
                             {selectedClient.status}
                           </span>
@@ -985,40 +985,40 @@ export default function ClientManagement() {
                         </div>
                       </div>
 
-                      <div className="flex border-b border-gray-100 mb-8 overflow-x-auto hide-scrollbar">
+                      <div className="flex border-b border-separator mb-8 overflow-x-auto hide-scrollbar">
                         <button 
                           onClick={() => setSubTab360('info')}
-                          className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab360 === 'info' ? 'border-[#00F0FF] text-[#00F0FF]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                          className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab360 === 'info' ? 'border-[#00F0FF] text-[#00F0FF]' : 'border-transparent text-fg-tertiary hover:text-fg-secondary'}`}
                         >
                           Visión General
                         </button>
                         <button 
                           onClick={() => setSubTab360('comms')}
-                          className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab360 === 'comms' ? 'border-[#00F0FF] text-[#00F0FF]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                          className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab360 === 'comms' ? 'border-[#00F0FF] text-[#00F0FF]' : 'border-transparent text-fg-tertiary hover:text-fg-secondary'}`}
                         >
                           Comunicaciones
                         </button>
                         <button 
                           onClick={() => setSubTab360('interactions')}
-                          className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab360 === 'interactions' ? 'border-[#00F0FF] text-[#00F0FF]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                          className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab360 === 'interactions' ? 'border-[#00F0FF] text-[#00F0FF]' : 'border-transparent text-fg-tertiary hover:text-fg-secondary'}`}
                         >
                           Interacciones
                         </button>
                         <button 
                           onClick={() => setSubTab360('tasks')}
-                          className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab360 === 'tasks' ? 'border-[#00F0FF] text-[#00F0FF]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                          className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab360 === 'tasks' ? 'border-[#00F0FF] text-[#00F0FF]' : 'border-transparent text-fg-tertiary hover:text-fg-secondary'}`}
                         >
                           Tareas Activas
                         </button>
                         <button 
                           onClick={() => setSubTab360('projects')}
-                          className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab360 === 'projects' ? 'border-[#00F0FF] text-[#00F0FF]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                          className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab360 === 'projects' ? 'border-[#00F0FF] text-[#00F0FF]' : 'border-transparent text-fg-tertiary hover:text-fg-secondary'}`}
                         >
                           Progreso
                         </button>
                         <button 
                           onClick={() => setSubTab360('time_logs')}
-                          className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab360 === 'time_logs' ? 'border-[#00F0FF] text-[#00F0FF]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                          className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab360 === 'time_logs' ? 'border-[#00F0FF] text-[#00F0FF]' : 'border-transparent text-fg-tertiary hover:text-fg-secondary'}`}
                         >
                           Tiempo
                         </button>
@@ -1027,43 +1027,43 @@ export default function ClientManagement() {
                       {subTab360 === 'info' && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 shadow-sm">
-                              <p className="text-[9px] font-black text-gray-400 mb-1 uppercase tracking-[0.15em]">Servicio</p>
-                              <p className="font-bold text-gray-900 text-sm">{selectedClient.service || 'Appointment Setting'}</p>
+                            <div className="p-4 bg-surface-grouped rounded-xl border border-separator shadow-sm">
+                              <p className="text-[9px] font-black text-fg-tertiary mb-1 uppercase tracking-[0.15em]">Servicio</p>
+                              <p className="font-bold text-fg-primary text-sm">{selectedClient.service || 'Appointment Setting'}</p>
                             </div>
-                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 shadow-sm">
-                              <p className="text-[9px] font-black text-gray-400 mb-1 uppercase tracking-[0.15em]">Meta ROI</p>
+                            <div className="p-4 bg-surface-grouped rounded-xl border border-separator shadow-sm">
+                              <p className="text-[9px] font-black text-fg-tertiary mb-1 uppercase tracking-[0.15em]">Meta ROI</p>
                               <p className="font-bold text-[#00F0FF] text-sm">{selectedClient.roiGoal || '0'}% Target</p>
                             </div>
                             <div className={`p-4 rounded-xl border shadow-sm ${
                               calculatedHealthScore >= 80 ? 'bg-green-50 border-green-200' :
                               calculatedHealthScore >= 50 ? 'bg-amber-50 border-amber-200' :
-                              'bg-red-50 border-red-200'
+                              'bg-semantic-danger-bg border-red-200'
                             }`}>
-                              <p className="text-[9px] font-black text-gray-500 mb-1 uppercase tracking-[0.15em]">Health Score</p>
+                              <p className="text-[9px] font-black text-fg-secondary mb-1 uppercase tracking-[0.15em]">Health Score</p>
                               <div className="flex items-end gap-2">
                                 <p className={`font-bold text-2xl leading-none ${
                                   calculatedHealthScore >= 80 ? 'text-green-600' :
                                   calculatedHealthScore >= 50 ? 'text-amber-600' :
-                                  'text-red-600'
+                                  'text-semantic-danger'
                                 }`}>
                                   {calculatedHealthScore}/100
                                 </p>
                               </div>
                             </div>
-                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 shadow-sm">
-                              <p className="text-[9px] font-black text-gray-400 mb-1 uppercase tracking-[0.15em]">Modelo Pago</p>
-                              <p className="font-bold text-gray-900 text-sm">{selectedClient.paymentModel}</p>
+                            <div className="p-4 bg-surface-grouped rounded-xl border border-separator shadow-sm">
+                              <p className="text-[9px] font-black text-fg-tertiary mb-1 uppercase tracking-[0.15em]">Modelo Pago</p>
+                              <p className="font-bold text-fg-primary text-sm">{selectedClient.paymentModel}</p>
                             </div>
-                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 shadow-sm">
-                              <p className="text-[9px] font-black text-gray-400 mb-1 uppercase tracking-[0.15em]">MRR Contrato</p>
+                            <div className="p-4 bg-surface-grouped rounded-xl border border-separator shadow-sm">
+                              <p className="text-[9px] font-black text-fg-tertiary mb-1 uppercase tracking-[0.15em]">MRR Contrato</p>
                               <p className="font-bold text-emerald-600 text-sm flex items-center gap-1"><DollarSign className="w-3.5 h-3.5"/> ${selectedClient.contractValue?.toLocaleString() || '0'}</p>
                             </div>
                           </div>
 
                           {/* 360° Timeline Feed */}
                           <div className="space-y-4">
-                            <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                            <h4 className="text-[10px] font-black text-fg-primary uppercase tracking-widest flex items-center gap-2">
                               <Activity className="w-4 h-4 text-[#00F0FF]" /> Timeline de Eventos 360°
                             </h4>
                             <div className="relative pl-8 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-gray-200">
@@ -1071,40 +1071,40 @@ export default function ClientManagement() {
                                   <div className="absolute -left-8 top-1 w-6 h-6 bg-emerald-100 border border-emerald-200 rounded-full flex items-center justify-center">
                                      <MapPin className="w-3 h-3 text-emerald-600" />
                                   </div>
-                                  <div className="bg-white border border-gray-100 p-3 rounded-xl shadow-sm">
-                                     <p className="text-[10px] font-mono text-gray-400 mb-1">HOY - 09:30 AM</p>
-                                     <p className="text-xs text-gray-700 font-bold">Visita Táctica Realizada</p>
-                                     <p className="text-[10px] text-gray-500 mt-0.5">El agente Ana S. completó el check-in GPS en la sede central.</p>
+                                  <div className="bg-white border border-separator p-3 rounded-xl shadow-sm">
+                                     <p className="text-[10px] font-mono text-fg-tertiary mb-1">HOY - 09:30 AM</p>
+                                     <p className="text-xs text-fg-secondary font-bold">Visita Táctica Realizada</p>
+                                     <p className="text-[10px] text-fg-secondary mt-0.5">El agente Ana S. completó el check-in GPS en la sede central.</p>
                                   </div>
                                </div>
                                <div className="relative">
-                                  <div className="absolute -left-8 top-1 w-6 h-6 bg-blue-100 border border-blue-200 rounded-full flex items-center justify-center">
-                                     <CheckCircle2 className="w-3 h-3 text-blue-600" />
+                                  <div className="absolute -left-8 top-1 w-6 h-6 bg-accent-subtle border border-blue-200 rounded-full flex items-center justify-center">
+                                     <CheckCircle2 className="w-3 h-3 text-accent" />
                                   </div>
-                                  <div className="bg-white border border-gray-100 p-3 rounded-xl shadow-sm">
-                                     <p className="text-[10px] font-mono text-gray-400 mb-1">AYER - 04:15 PM</p>
-                                     <p className="text-xs text-gray-700 font-bold">Ticket Resuelto (TKT-003)</p>
-                                     <p className="text-[10px] text-gray-500 mt-0.5">Ajuste de integración de API completado satisfactoriamente.</p>
+                                  <div className="bg-white border border-separator p-3 rounded-xl shadow-sm">
+                                     <p className="text-[10px] font-mono text-fg-tertiary mb-1">AYER - 04:15 PM</p>
+                                     <p className="text-xs text-fg-secondary font-bold">Ticket Resuelto (TKT-003)</p>
+                                     <p className="text-[10px] text-fg-secondary mt-0.5">Ajuste de integración de API completado satisfactoriamente.</p>
                                   </div>
                                </div>
                                <div className="relative">
                                   <div className="absolute -left-8 top-1 w-6 h-6 bg-purple-100 border border-purple-200 rounded-full flex items-center justify-center">
                                      <Zap className="w-3 h-3 text-purple-600" />
                                   </div>
-                                  <div className="bg-white border border-gray-100 p-3 rounded-xl shadow-sm">
-                                     <p className="text-[10px] font-mono text-gray-400 mb-1">2 DÍAS ATRÁS</p>
-                                     <p className="text-xs text-gray-700 font-bold">Health Score inicial generado</p>
-                                     <p className="text-[10px] text-gray-500 mt-0.5">Sistema Nervioso detectó alta afinidad estratégica al 100%.</p>
+                                  <div className="bg-white border border-separator p-3 rounded-xl shadow-sm">
+                                     <p className="text-[10px] font-mono text-fg-tertiary mb-1">2 DÍAS ATRÁS</p>
+                                     <p className="text-xs text-fg-secondary font-bold">Health Score inicial generado</p>
+                                     <p className="text-[10px] text-fg-secondary mt-0.5">Sistema Nervioso detectó alta afinidad estratégica al 100%.</p>
                                   </div>
                                </div>
                             </div>
                           </div>
 
                           {selectedClient.status === 'En Riesgo' && (
-                            <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-3 animate-pulse">
-                              <ShieldAlert className="w-6 h-6 text-red-500" />
+                            <div className="mt-6 p-4 bg-semantic-danger/10 border border-red-500/30 rounded-2xl flex items-center gap-3 animate-pulse">
+                              <ShieldAlert className="w-6 h-6 text-semantic-danger" />
                               <div>
-                                <p className="font-bold text-red-500 uppercase tracking-tighter">ALERTA DE RETENCIÓN</p>
+                                <p className="font-bold text-semantic-danger uppercase tracking-tighter">ALERTA DE RETENCIÓN</p>
                                 <p className="text-[10px] text-red-400 font-mono">Este cliente ha bajado su actividad en el radar. Requiere intervención inmediata.</p>
                               </div>
                               <button 
@@ -1117,7 +1117,7 @@ export default function ClientManagement() {
                           )}
 
                           <div className="mt-8">
-                            <h4 className="text-[10px] font-black text-slate-500 mb-4 tracking-widest uppercase">Acciones del Gestor</h4>
+                            <h4 className="text-[10px] font-black text-fg-secondary mb-4 tracking-widest uppercase">Acciones del Gestor</h4>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                               <button 
                                 onClick={() => setIsContractScannerOpen(true)}
@@ -1154,7 +1154,7 @@ export default function ClientManagement() {
                       {subTab360 === 'projects' && (
                         <div className="space-y-4">
                           <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest">Pipeline de Proyectos del Cliente</h4>
+                            <h4 className="text-sm font-black text-fg-primary uppercase tracking-widest">Pipeline de Proyectos del Cliente</h4>
                             <button className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest hover:underline">Nuevo Registro +</button>
                           </div>
                           <div className="grid grid-cols-1 gap-4">
@@ -1163,20 +1163,20 @@ export default function ClientManagement() {
                               { name: 'Setup de CRM & Voip', status: 'En Proceso', progress: 75 },
                               { name: 'Campaña Outbound Q2', status: 'En Proceso', progress: 30 },
                             ].map((p, i) => (
-                              <div key={i} className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center justify-between group hover:bg-white hover:shadow-sm transition-all">
+                              <div key={i} className="bg-surface-grouped p-4 rounded-2xl border border-separator flex items-center justify-between group hover:bg-white hover:shadow-sm transition-all">
                                 <div className="flex items-center gap-4">
-                                  <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center border border-gray-100">
+                                  <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center border border-separator">
                                     <FolderKanban className={`w-5 h-5 ${p.status === 'Completo' ? 'text-green-500' : 'text-[#00F0FF]'}`} />
                                   </div>
                                   <div>
-                                    <p className="text-xs font-black text-gray-900 uppercase">{p.name}</p>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase">{p.status}</p>
+                                    <p className="text-xs font-black text-fg-primary uppercase">{p.name}</p>
+                                    <p className="text-[10px] text-fg-tertiary font-bold uppercase">{p.status}</p>
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-[10px] font-black text-gray-900 mb-1">{p.progress}%</p>
+                                  <p className="text-[10px] font-black text-fg-primary mb-1">{p.progress}%</p>
                                   <div className="w-24 bg-gray-200 h-1 rounded-full overflow-hidden">
-                                    <div className={`h-full ${p.status === 'Completo' ? 'bg-green-500' : 'bg-[#00F0FF]'}`} style={{ width: `${p.progress}%` }} />
+                                    <div className={`h-full ${p.status === 'Completo' ? 'bg-semantic-success' : 'bg-[#00F0FF]'}`} style={{ width: `${p.progress}%` }} />
                                   </div>
                                 </div>
                               </div>
@@ -1188,27 +1188,27 @@ export default function ClientManagement() {
                       {subTab360 === 'comms' && (
                         <div className="space-y-4">
                           <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest">Historial de Comunicaciones</h4>
+                            <h4 className="text-sm font-black text-fg-primary uppercase tracking-widest">Historial de Comunicaciones</h4>
                             <button className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest hover:underline">Registrar Llamada +</button>
                           </div>
                           <div className="space-y-3">
                             {[
-                              { type: 'Reunión', date: '2026-04-20', subject: 'Revisión mensual de resultados', author: 'Ana Gómez', icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-50' },
-                              { type: 'Llamada', date: '2026-04-15', subject: 'Discusión sobre escalamiento de campaña', author: 'Carlos Ruiz', icon: Phone, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+                              { type: 'Reunión', date: '2026-04-20', subject: 'Revisión mensual de resultados', author: 'Ana Gómez', icon: Calendar, color: 'text-accent', bg: 'bg-blue-50' },
+                              { type: 'Llamada', date: '2026-04-15', subject: 'Discusión sobre escalamiento de campaña', author: 'Carlos Ruiz', icon: Phone, color: 'text-semantic-success', bg: 'bg-emerald-50' },
                               { type: 'Email', date: '2026-04-10', subject: 'Envío de facturación correspondiente', author: 'Sistema', icon: Mail, color: 'text-[#00F0FF]', bg: 'bg-[#00F0FF]/10' },
                             ].map((c, i) => (
-                              <div key={i} className="bg-white p-4 rounded-xl border border-gray-100 flex gap-4 items-start shadow-sm">
+                              <div key={i} className="bg-white p-4 rounded-xl border border-separator flex gap-4 items-start shadow-sm">
                                 <div className={`p-2 rounded-lg ${c.bg} shrink-0`}>
                                   <c.icon className={`w-5 h-5 ${c.color}`} />
                                 </div>
                                 <div className="flex-1">
                                   <div className="flex justify-between items-start">
-                                    <p className="text-sm font-bold text-gray-900">{c.subject}</p>
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{c.date}</span>
+                                    <p className="text-sm font-bold text-fg-primary">{c.subject}</p>
+                                    <span className="text-[10px] font-black text-fg-tertiary uppercase tracking-widest">{c.date}</span>
                                   </div>
-                                  <p className="text-xs text-gray-500 mt-1">Por: <span className="font-medium text-gray-700">{c.author}</span></p>
+                                  <p className="text-xs text-fg-secondary mt-1">Por: <span className="font-medium text-fg-secondary">{c.author}</span></p>
                                   <div className="mt-3 flex items-center gap-2">
-                                    <span className="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{c.type}</span>
+                                    <span className="text-[10px] uppercase font-bold text-fg-secondary bg-surface-grouped px-2 py-0.5 rounded-full">{c.type}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1220,7 +1220,7 @@ export default function ClientManagement() {
                       {subTab360 === 'tasks' && (
                         <div className="space-y-4">
                           <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest">Tareas Activas</h4>
+                            <h4 className="text-sm font-black text-fg-primary uppercase tracking-widest">Tareas Activas</h4>
                             <button className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest hover:underline">Nueva Tarea +</button>
                           </div>
                           <div className="space-y-3">
@@ -1229,20 +1229,20 @@ export default function ClientManagement() {
                               { title: 'Agendar reunión de seguimiento técnico', status: 'En Progreso', priority: 'Alta', dueDate: 'Hoy' },
                               { title: 'Revisión de plantilla de correos', status: 'Completada', priority: 'Baja', dueDate: 'Hace 2 días' },
                             ].map((t, i) => (
-                              <div key={i} className={`p-4 rounded-xl border flex justify-between items-center ${t.status === 'Completada' ? 'bg-gray-50 border-gray-100 opacity-70' : 'bg-white border-gray-200 shadow-sm'}`}>
+                              <div key={i} className={`p-4 rounded-xl border flex justify-between items-center ${t.status === 'Completada' ? 'bg-surface-grouped border-separator opacity-70' : 'bg-white border-separator shadow-sm'}`}>
                                 <div className="flex items-center gap-3">
-                                  <div className={`w-5 h-5 rounded-md border flex items-center justify-center ${t.status === 'Completada' ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300'}`}>
+                                  <div className={`w-5 h-5 rounded-md border flex items-center justify-center ${t.status === 'Completada' ? 'bg-semantic-success border-green-500 text-white' : 'border-separator'}`}>
                                     {t.status === 'Completada' && <CheckCircle2 className="w-3 h-3" />}
                                   </div>
                                   <div>
-                                    <p className={`text-sm font-bold ${t.status === 'Completada' ? 'text-gray-500 line-through' : 'text-gray-900'}`}>{t.title}</p>
-                                    <p className="text-[10px] mt-0.5 uppercase font-bold text-gray-400">Vence: {t.dueDate}</p>
+                                    <p className={`text-sm font-bold ${t.status === 'Completada' ? 'text-fg-secondary line-through' : 'text-fg-primary'}`}>{t.title}</p>
+                                    <p className="text-[10px] mt-0.5 uppercase font-bold text-fg-tertiary">Vence: {t.dueDate}</p>
                                   </div>
                                 </div>
                                 <span className={`px-2 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg ${
-                                  t.priority === 'Alta' ? 'bg-red-50 text-red-600' :
+                                  t.priority === 'Alta' ? 'bg-semantic-danger-bg text-semantic-danger' :
                                   t.priority === 'Media' ? 'bg-cyan-500/10 text-yellow-600' :
-                                  'bg-blue-50 text-blue-600'
+                                  'bg-blue-50 text-accent'
                                 }`}>
                                   {t.priority}
                                 </span>
@@ -1254,39 +1254,39 @@ export default function ClientManagement() {
 
                       {subTab360 === 'interactions' && (
                         <div className="space-y-6">
-                           <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6">
+                           <div className="bg-surface-grouped border border-separator rounded-2xl p-6">
                               <div className="flex justify-between items-center mb-4">
-                                <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-[0.2em]">Nueva Interacción</h4>
+                                <h4 className="text-[10px] font-black text-fg-primary uppercase tracking-[0.2em]">Nueva Interacción</h4>
                                 <button onClick={handleQuickFollowUp} className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest hover:underline">+ Quick Follow-up</button>
                               </div>
                               <form onSubmit={handleAddInteraction} className="flex gap-4">
-                                 <select name="type" className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 outline-none w-1/4">
+                                 <select name="type" className="bg-white border border-separator rounded-xl px-4 py-2 text-sm font-bold text-fg-secondary outline-none w-1/4">
                                     <option value="Llamada">Llamada</option>
                                     <option value="Reunión">Reunión presencial</option>
                                     <option value="Email">Email</option>
                                     <option value="Nota Interna">Nota interna</option>
                                     <option value="Follow-up">Follow-up</option>
                                  </select>
-                                 <input name="note" type="text" placeholder="Ej. El cliente solicita más capacidad de leads para Q3..." className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-800 outline-none flex-1 focus:ring-2 focus:ring-[#00F0FF]" />
+                                 <input name="note" type="text" placeholder="Ej. El cliente solicita más capacidad de leads para Q3..." className="bg-white border border-separator rounded-xl px-4 py-2 text-sm text-fg-primary outline-none flex-1 focus:ring-2 focus:ring-[#00F0FF]" />
                                  <button type="submit" className="bg-gray-900 text-white rounded-xl px-6 font-black uppercase text-xs tracking-widest hover:bg-black transition-colors">Guardar</button>
                               </form>
                            </div>
                            <div className="space-y-4">
-                              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Historial Cronológico</h4>
+                              <h4 className="text-[10px] font-black text-fg-tertiary uppercase tracking-[0.2em]">Historial Cronológico</h4>
                               {clientInteractions.map((interact, i) => (
-                                 <div key={i} className="bg-white border border-gray-100 p-4 rounded-xl flex gap-4">
+                                 <div key={i} className="bg-white border border-separator p-4 rounded-xl flex gap-4">
                                     <div className="flex-1">
                                        <div className="flex items-center gap-2 mb-1">
-                                          <span className="text-[10px] font-black uppercase bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">{interact.type}</span>
-                                          <span className="text-[10px] text-gray-400 font-bold">{new Date(interact.timestamp).toLocaleString()}</span>
+                                          <span className="text-[10px] font-black uppercase bg-surface-grouped text-fg-secondary px-2 py-0.5 rounded-md">{interact.type}</span>
+                                          <span className="text-[10px] text-fg-tertiary font-bold">{new Date(interact.timestamp).toLocaleString()}</span>
                                        </div>
-                                       <p className="text-sm font-medium text-gray-800">{interact.note}</p>
-                                       <p className="text-[10px] text-gray-400 mt-2">Por: {interact.assignedUser}</p>
+                                       <p className="text-sm font-medium text-fg-primary">{interact.note}</p>
+                                       <p className="text-[10px] text-fg-tertiary mt-2">Por: {interact.assignedUser}</p>
                                     </div>
                                  </div>
                               ))}
                               {clientInteractions.length === 0 && (
-                                <p className="text-gray-400 text-xs italic">No hay interacciones registradas aún.</p>
+                                <p className="text-fg-tertiary text-xs italic">No hay interacciones registradas aún.</p>
                               )}
                            </div>
                         </div>
@@ -1294,29 +1294,29 @@ export default function ClientManagement() {
 
                       {subTab360 === 'time_logs' && (
                         <div className="space-y-6">
-                           <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6">
-                              <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-[0.2em] mb-4">Registrar Tiempo</h4>
+                           <div className="bg-surface-grouped border border-separator rounded-2xl p-6">
+                              <h4 className="text-[10px] font-black text-fg-primary uppercase tracking-[0.2em] mb-4">Registrar Tiempo</h4>
                               <form onSubmit={handleAddTimeLog} className="flex gap-4">
-                                 <input name="hours" type="number" step="0.25" placeholder="Horas (ej. 1.5)" className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-800 outline-none w-1/4 focus:ring-2 focus:ring-[#00F0FF]" />
-                                 <input name="description" type="text" placeholder="Descripción de la tarea ejecutada..." className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-800 outline-none flex-1 focus:ring-2 focus:ring-[#00F0FF]" />
+                                 <input name="hours" type="number" step="0.25" placeholder="Horas (ej. 1.5)" className="bg-white border border-separator rounded-xl px-4 py-2 text-sm text-fg-primary outline-none w-1/4 focus:ring-2 focus:ring-[#00F0FF]" />
+                                 <input name="description" type="text" placeholder="Descripción de la tarea ejecutada..." className="bg-white border border-separator rounded-xl px-4 py-2 text-sm text-fg-primary outline-none flex-1 focus:ring-2 focus:ring-[#00F0FF]" />
                                  <button type="submit" className="bg-gray-900 text-white rounded-xl px-6 font-black uppercase text-xs tracking-widest hover:bg-black transition-colors">Registrar</button>
                               </form>
                            </div>
                            <div className="space-y-4">
-                              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Registros</h4>
+                              <h4 className="text-[10px] font-black text-fg-tertiary uppercase tracking-[0.2em]">Registros</h4>
                               {clientTimeLogs.map((log, i) => (
-                                 <div key={i} className="bg-white border border-gray-100 p-4 rounded-xl flex items-center justify-between">
+                                 <div key={i} className="bg-white border border-separator p-4 rounded-xl flex items-center justify-between">
                                     <div>
-                                       <p className="text-sm font-medium text-gray-800">{log.description}</p>
-                                       <p className="text-[10px] text-gray-400 mt-1">Por: {log.userName} | Fecha: {log.date}</p>
+                                       <p className="text-sm font-medium text-fg-primary">{log.description}</p>
+                                       <p className="text-[10px] text-fg-tertiary mt-1">Por: {log.userName} | Fecha: {log.date}</p>
                                     </div>
-                                    <div className="bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
-                                       <span className="text-xs font-black text-gray-900">{log.hours} h</span>
+                                    <div className="bg-surface-grouped px-3 py-1.5 rounded-lg border border-separator">
+                                       <span className="text-xs font-black text-fg-primary">{log.hours} h</span>
                                     </div>
                                  </div>
                               ))}
                               {clientTimeLogs.length === 0 && (
-                                <p className="text-gray-400 text-xs italic">No hay registros de tiempo aún.</p>
+                                <p className="text-fg-tertiary text-xs italic">No hay registros de tiempo aún.</p>
                               )}
                            </div>
                         </div>
@@ -1331,22 +1331,22 @@ export default function ClientManagement() {
 
           {/* PROYECTOS ACTIVOS */}
           {activeTab === 'proyectos' && (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 h-full flex flex-col overflow-hidden">
+            <div className="bg-white border border-separator rounded-xl shadow-sm p-6 h-full flex flex-col overflow-hidden">
                <div className="flex justify-between items-center mb-8">
                   <div>
-                    <h3 className="text-xl font-black text-gray-900 tracking-tighter uppercase">Gestión de Proyectos Operativos</h3>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Visualización de Entregables y Roadmap</p>
+                    <h3 className="text-xl font-black text-fg-primary tracking-tighter uppercase">Gestión de Proyectos Operativos</h3>
+                    <p className="text-[10px] text-fg-tertiary font-bold uppercase tracking-widest">Visualización de Entregables y Roadmap</p>
                   </div>
-                  <div className="flex bg-gray-100 p-1 rounded-2xl">
+                  <div className="flex bg-surface-grouped p-1 rounded-2xl">
                     <button 
                       onClick={() => setProjectViewMode('list')}
-                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all ${projectViewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all ${projectViewMode === 'list' ? 'bg-white text-fg-primary shadow-sm' : 'text-fg-tertiary hover:text-fg-secondary'}`}
                     >
                       <LayoutList className="w-4 h-4" /> Detalle
                     </button>
                     <button 
                       onClick={() => setProjectViewMode('kanban')}
-                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all ${projectViewMode === 'kanban' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all ${projectViewMode === 'kanban' ? 'bg-white text-fg-primary shadow-sm' : 'text-fg-tertiary hover:text-fg-secondary'}`}
                     >
                       <LayoutDashboard className="w-4 h-4" /> Tablero
                     </button>
@@ -1354,40 +1354,40 @@ export default function ClientManagement() {
                </div>
 
                {!selectedClient ? (
-                <div className="text-center py-12 text-gray-400 font-bold uppercase tracking-widest">
+                <div className="text-center py-12 text-fg-tertiary font-bold uppercase tracking-widest">
                   Selecciona un cliente para ver sus proyectos
                 </div>
                ) : projectViewMode === 'list' ? (
                  <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                     {clientProjects.length === 0 ? (
-                      <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-gray-100 italic text-gray-400">
+                      <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-separator italic text-fg-tertiary">
                         No hay proyectos registrados para este cliente.
                       </div>
                     ) : clientProjects.map((p, i) => (
-                      <div key={p.id || i} className="group p-5 bg-gray-50 border border-gray-100 rounded-[2rem] hover:bg-white hover:shadow-xl hover:border-[#00F0FF]/20 transition-all flex items-center justify-between">
+                      <div key={p.id || i} className="group p-5 bg-surface-grouped border border-separator rounded-[2rem] hover:bg-white hover:shadow-xl hover:border-[#00F0FF]/20 transition-all flex items-center justify-between">
                         <div className="flex items-center gap-6">
-                          <div className={`h-12 w-12 rounded-2xl flex items-center justify-center border shadow-sm ${p.status === 'Finalizado' ? 'bg-green-50 border-green-100 text-green-600' : 'bg-white border-gray-100 text-[#00F0FF]'}`}>
+                          <div className={`h-12 w-12 rounded-2xl flex items-center justify-center border shadow-sm ${p.status === 'Finalizado' ? 'bg-green-50 border-green-100 text-green-600' : 'bg-white border-separator text-[#00F0FF]'}`}>
                             <FolderKanban className="w-6 h-6" />
                           </div>
                           <div>
                             <div className="flex items-center gap-3 mb-1">
-                              <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight">{p.name}</h4>
+                              <h4 className="text-sm font-black text-fg-primary uppercase tracking-tight">{p.name}</h4>
                               <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter ${
-                                p.status === 'En riesgo' ? 'bg-red-100 text-red-600' : 
-                                p.status === 'En ejecución' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+                                p.status === 'En riesgo' ? 'bg-red-100 text-semantic-danger' : 
+                                p.status === 'En ejecución' ? 'bg-accent-subtle text-accent' : 'bg-surface-grouped text-fg-secondary'
                               }`}>{p.status}</span>
                             </div>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{selectedClient.companyName} • {p.description || 'Hito Operativo'}</p>
+                            <p className="text-[10px] text-fg-tertiary font-bold uppercase tracking-widest">{selectedClient.companyName} • {p.description || 'Hito Operativo'}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-8">
                           <div className="text-right">
-                            <p className="text-xs font-black text-gray-900 mb-1">{p.progress || 0}%</p>
+                            <p className="text-xs font-black text-fg-primary mb-1">{p.progress || 0}%</p>
                             <div className="w-32 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                              <div className={`h-full transition-all duration-1000 ${p.status === 'Finalizado' ? 'bg-green-500' : 'bg-[#00F0FF]'}`} style={{ width: `${p.progress || 0}%` }}></div>
+                              <div className={`h-full transition-all duration-1000 ${p.status === 'Finalizado' ? 'bg-semantic-success' : 'bg-[#00F0FF]'}`} style={{ width: `${p.progress || 0}%` }}></div>
                             </div>
                           </div>
-                          <button className="bg-white border border-gray-200 p-2 rounded-xl text-gray-400 group-hover:text-gray-900 hover:border-gray-900 transition-all">
+                          <button className="bg-white border border-separator p-2 rounded-xl text-fg-tertiary group-hover:text-fg-primary hover:border-gray-900 transition-all">
                             <ExternalLink className="w-4 h-4" />
                           </button>
                         </div>
@@ -1404,8 +1404,8 @@ export default function ClientManagement() {
                             key={status} 
                             onDragOver={handleDragOver}
                             onDrop={() => handleDrop(status)}
-                            className={`flex-1 min-w-[280px] bg-gray-50/50 rounded-[2.5rem] p-5 flex flex-col border transition-all ${
-                              draggedProject ? 'border-dashed border-[#00F0FF]/20 bg-cyan-500/10/30' : 'border-gray-100'
+                            className={`flex-1 min-w-[280px] bg-surface-grouped rounded-[2.5rem] p-5 flex flex-col border transition-all ${
+                              draggedProject ? 'border-dashed border-[#00F0FF]/20 bg-cyan-500/10/30' : 'border-separator'
                             }`}
                           >
                             <div className="flex items-center justify-between mb-6 px-2">
@@ -1413,11 +1413,11 @@ export default function ClientManagement() {
                                  <div className={`w-2 h-2 rounded-full ${
                                    status === 'Planificación' ? 'bg-blue-400' : 
                                    status === 'En ejecución' ? 'bg-[#00F0FF]' : 
-                                   status === 'Finalizado' ? 'bg-green-500' : 'bg-red-500'
+                                   status === 'Finalizado' ? 'bg-semantic-success' : 'bg-semantic-danger'
                                  }`} />
-                                 <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest">{status}</h4>
+                                 <h4 className="text-xs font-black text-fg-primary uppercase tracking-widest">{status}</h4>
                                </div>
-                               <span className="text-[10px] font-black text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-100 shadow-sm">
+                               <span className="text-[10px] font-black text-fg-tertiary bg-white px-2 py-0.5 rounded-full border border-separator shadow-sm">
                                  {projectsInStatus.length}
                                </span>
                             </div>
@@ -1428,50 +1428,50 @@ export default function ClientManagement() {
                                    key={p.id}
                                    draggable
                                    onDragStart={() => handleDragStart(p)}
-                                   className={`bg-white p-5 rounded-3xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-xl hover:border-[#00F0FF]/20 transition-all cursor-grab active:cursor-grabbing group select-none relative ${
+                                   className={`bg-white p-5 rounded-3xl border border-separator shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-xl hover:border-[#00F0FF]/20 transition-all cursor-grab active:cursor-grabbing group select-none relative ${
                                      draggedProject?.id === p.id ? 'opacity-40 grayscale scale-95' : 'opacity-100'
                                    }`}
                                  >
                                    <div className="flex justify-between items-start mb-3">
                                       <div className="flex flex-col gap-1">
                                          <span className="text-[8px] font-black text-[#00F0FF] uppercase tracking-widest bg-cyan-500/10 px-2 py-0.5 rounded-md self-start">PROYECTO</span>
-                                         <h5 className="text-[11px] font-black text-gray-900 uppercase leading-tight pr-4">{p.name}</h5>
+                                         <h5 className="text-[11px] font-black text-fg-primary uppercase leading-tight pr-4">{p.name}</h5>
                                       </div>
                                       <FolderKanban className="w-3.5 h-3.5 text-gray-200 group-hover:text-[#00F0FF] transition-colors shrink-0" />
                                    </div>
                                    
                                    <div className="space-y-2">
-                                      <div className="flex justify-between text-[9px] font-bold text-gray-400 uppercase">
+                                      <div className="flex justify-between text-[9px] font-bold text-fg-tertiary uppercase">
                                          <span>Progreso</span>
-                                         <span className="text-gray-900">{p.progress || 0}%</span>
+                                         <span className="text-fg-primary">{p.progress || 0}%</span>
                                       </div>
-                                      <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+                                      <div className="w-full h-1 bg-surface-grouped rounded-full overflow-hidden">
                                          <div 
-                                           className={`h-full transition-all duration-700 ${status === 'Finalizado' ? 'bg-green-500' : 'bg-[#00F0FF]'}`}
+                                           className={`h-full transition-all duration-700 ${status === 'Finalizado' ? 'bg-semantic-success' : 'bg-[#00F0FF]'}`}
                                            style={{ width: `${p.progress || 0}%` }}
                                          />
                                       </div>
                                    </div>
 
                                    {p.description && (
-                                     <p className="mt-4 text-[10px] text-gray-400 line-clamp-2 leading-relaxed italic border-t border-gray-50 pt-2 group-hover:text-gray-600 transition-colors">
+                                     <p className="mt-4 text-[10px] text-fg-tertiary line-clamp-2 leading-relaxed italic border-t border-separator pt-2 group-hover:text-fg-secondary transition-colors">
                                        "{p.description}"
                                      </p>
                                    )}
 
-                                   <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
-                                      <div className="flex items-center gap-1.5 text-[9px] font-black text-gray-400 uppercase">
+                                   <div className="mt-4 pt-3 border-t border-separator flex items-center justify-between">
+                                      <div className="flex items-center gap-1.5 text-[9px] font-black text-fg-tertiary uppercase">
                                          <Clock className="w-3 h-3" /> {p.endDate || 'Planificado'}
                                       </div>
-                                      <button className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-gray-900 transition-all">
+                                      <button className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-surface-grouped rounded-lg text-fg-tertiary hover:text-fg-primary transition-all">
                                          <ArrowRight className="w-3 h-3" />
                                       </button>
                                    </div>
                                  </div>
                                ))}
                                {projectsInStatus.length === 0 && !draggedProject && (
-                                 <div className="flex-1 flex flex-col items-center justify-center py-12 border-2 border-dashed border-gray-100 rounded-[2.5rem] bg-white/30 group hover:bg-white/50 transition-all">
-                                    <div className="h-10 w-10 bg-gray-50 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                 <div className="flex-1 flex flex-col items-center justify-center py-12 border-2 border-dashed border-separator rounded-[2.5rem] bg-white/30 group hover:bg-white/50 transition-all">
+                                    <div className="h-10 w-10 bg-surface-grouped rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                                        <Plus className="w-4 h-4 text-gray-300" />
                                     </div>
                                     <p className="text-[9px] font-black text-gray-300 uppercase tracking-[0.2em]">Soltar aquí</p>
@@ -1490,34 +1490,34 @@ export default function ClientManagement() {
           {/* RETENCIÓN Y ESCALAMIENTO */}
           {activeTab === 'retencion' && (
             <div className="space-y-6">
-              <div className="bg-white border border-gray-200 rounded-3xl shadow-sm p-8">
-                <h3 className="text-lg font-black text-gray-900 mb-6 tracking-tighter uppercase flex items-center gap-3">
+              <div className="bg-white border border-separator rounded-3xl shadow-sm p-8">
+                <h3 className="text-lg font-black text-fg-primary mb-6 tracking-tighter uppercase flex items-center gap-3">
                   <TrendingUp className="w-6 h-6 text-[#00F0FF]" /> Inteligencia de Crecimiento
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {clients.map(client => (
                     <div key={client.id} className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col justify-between group ${
-                      client.healthScore < 50 ? 'bg-red-50 border-red-100 hover:bg-red-100' : 'bg-white border-gray-50 hover:border-[#00F0FF]'
+                      client.healthScore < 50 ? 'bg-semantic-danger-bg border-red-100 hover:bg-red-100' : 'bg-white border-separator hover:border-[#00F0FF]'
                     }`}>
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-4">
                           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner ${
-                            client.healthScore < 50 ? 'bg-white text-red-600' : 'bg-gray-900 text-white'
+                            client.healthScore < 50 ? 'bg-white text-semantic-danger' : 'bg-gray-900 text-white'
                           }`}>
                             {client.healthScore}
                           </div>
                           <div>
-                            <h4 className="font-black text-gray-900 uppercase tracking-widest text-sm">{client.companyName}</h4>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase">Engagement Radar</p>
+                            <h4 className="font-black text-fg-primary uppercase tracking-widest text-sm">{client.companyName}</h4>
+                            <p className="text-[10px] text-fg-tertiary font-bold uppercase">Engagement Radar</p>
                           </div>
                         </div>
-                        {client.healthScore < 50 && <AlertTriangle className="w-5 h-5 text-red-500 animate-pulse" />}
+                        {client.healthScore < 50 && <AlertTriangle className="w-5 h-5 text-semantic-danger animate-pulse" />}
                       </div>
                       
-                      <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100/50">
+                      <div className="flex justify-between items-center mt-4 pt-4 border-t border-separator/50">
                         <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full ${
-                          client.healthScore < 50 ? 'bg-red-200 text-red-800' : 'bg-gray-100 text-gray-600'
+                          client.healthScore < 50 ? 'bg-red-200 text-red-800' : 'bg-surface-grouped text-fg-secondary'
                         }`}>
                           {client.healthScore < 50 ? 'Intervención Requerida' : 'Estable'}
                         </span>
@@ -1539,7 +1539,7 @@ export default function ClientManagement() {
                 </div>
                 <div className="relative z-10 max-w-2xl">
                   <h3 className="text-3xl font-black mb-4 tracking-tighter uppercase">Oportunidades de Escalamiento</h3>
-                  <p className="text-gray-400 font-medium text-sm leading-relaxed mb-8">
+                  <p className="text-fg-tertiary font-medium text-sm leading-relaxed mb-8">
                     Nuestro motor de IA analiza patrones de consumo y éxito académico para detectar clientes listos para escalar a servicios de Agencia Premium o consultorías estratégicas personalizadas.
                   </p>
                   <button className="bg-[#00F0FF] text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-[#00BFFF] transition-all flex items-center gap-3 shadow-xl hover:shadow-yellow-100">
@@ -1553,28 +1553,28 @@ export default function ClientManagement() {
           {/* CONTRACT SCANNER MODAL */}
           {isContractScannerOpen && (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-md">
-              <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden border border-gray-200 animate-in zoom-in-95 duration-200">
-                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden border border-separator animate-in zoom-in-95 duration-200">
+                <div className="p-8 border-b border-separator flex justify-between items-center bg-surface-grouped">
                    <div className="flex items-center gap-4">
                      <div className="h-12 w-12 bg-gray-900 rounded-2xl flex items-center justify-center">
                         <FileText className="w-6 h-6 text-[#00F0FF]" />
                      </div>
                      <div>
-                       <h3 className="text-xl font-black text-gray-900 tracking-tighter uppercase">Expediente Legal</h3>
-                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Contratos y Anexos</p>
+                       <h3 className="text-xl font-black text-fg-primary tracking-tighter uppercase">Expediente Legal</h3>
+                       <p className="text-[10px] text-fg-tertiary font-bold uppercase tracking-widest">Contratos y Anexos</p>
                      </div>
                    </div>
-                   <button onClick={() => setIsContractScannerOpen(false)} className="bg-white border border-gray-200 p-2 rounded-xl text-gray-400 hover:text-gray-900">
+                   <button onClick={() => setIsContractScannerOpen(false)} className="bg-white border border-separator p-2 rounded-xl text-fg-tertiary hover:text-fg-primary">
                      <X className="w-5 h-5" />
                    </button>
                 </div>
                 <div className="p-8 space-y-4">
                   <div className="relative mb-6">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-fg-tertiary w-4 h-4" />
                     <input 
                       type="text" 
                       placeholder="Buscar contrato por ID o fecha..." 
-                      className="w-full bg-gray-50 border-gray-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-medium outline-none border focus:border-[#00F0FF] transition-all"
+                      className="w-full bg-surface-grouped border-separator rounded-2xl pl-12 pr-6 py-4 text-sm font-medium outline-none border focus:border-[#00F0FF] transition-all"
                     />
                   </div>
                   <div className="space-y-3">
@@ -1583,26 +1583,26 @@ export default function ClientManagement() {
                       { name: 'Anexo de Privacidad & Datos', date: '16 Jan 2026', size: '1.1 MB' },
                       { name: 'Propuesta Económica Firmada', date: '20 Feb 2026', size: '4.5 MB' }
                     ].map((doc, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl group hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all cursor-pointer">
+                      <div key={i} className="flex items-center justify-between p-4 bg-surface-grouped rounded-2xl group hover:bg-white hover:shadow-sm border border-transparent hover:border-separator transition-all cursor-pointer">
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center border border-gray-100">
-                            <FileText className="w-5 h-5 text-gray-400 group-hover:text-[#00F0FF]" />
+                          <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center border border-separator">
+                            <FileText className="w-5 h-5 text-fg-tertiary group-hover:text-[#00F0FF]" />
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">{doc.name}</p>
-                            <p className="text-[10px] text-gray-400">{doc.date} • {doc.size}</p>
+                            <p className="text-sm font-bold text-fg-primary uppercase tracking-tight">{doc.name}</p>
+                            <p className="text-[10px] text-fg-tertiary">{doc.date} • {doc.size}</p>
                           </div>
                         </div>
-                        <button className="bg-white p-2 rounded-lg border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <ExternalLink className="w-4 h-4 text-gray-400" />
+                        <button className="bg-white p-2 rounded-lg border border-separator opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ExternalLink className="w-4 h-4 text-fg-tertiary" />
                         </button>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="p-8 bg-gray-50/50 border-t border-gray-100 flex gap-4">
+                <div className="p-8 bg-surface-grouped border-t border-separator flex gap-4">
                   <button className="flex-1 bg-gray-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-black transition-all">Subir Nuevo</button>
-                  <button className="flex-1 bg-white border border-gray-200 text-gray-900 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-gray-50 transition-all">Firmar Digital</button>
+                  <button className="flex-1 bg-white border border-separator text-fg-primary py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-surface-grouped transition-all">Firmar Digital</button>
                 </div>
               </div>
             </div>
@@ -1611,18 +1611,18 @@ export default function ClientManagement() {
           {/* CHAT INTERNO MODAL */}
           {isChatModalOpen && selectedClient && (
             <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4 backdrop-blur-md">
-              <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden border border-gray-100">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden border border-separator">
+                <div className="p-6 border-b border-separator flex justify-between items-center bg-surface-grouped">
                   <div className="flex items-center gap-4">
                     <div className="h-10 w-10 bg-gray-900 rounded-xl flex items-center justify-center">
                       <MessageCircle className="w-5 h-5 text-[#00F0FF]" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-black text-gray-900 uppercase tracking-tighter">Chat Interno: {selectedClient.companyName}</h3>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Canal Privado de Seguimiento</p>
+                      <h3 className="text-lg font-black text-fg-primary uppercase tracking-tighter">Chat Interno: {selectedClient.companyName}</h3>
+                      <p className="text-[10px] text-fg-tertiary font-bold uppercase tracking-widest">Canal Privado de Seguimiento</p>
                     </div>
                   </div>
-                  <button onClick={() => setIsChatModalOpen(false)} className="bg-white border border-gray-200 p-2 rounded-xl text-gray-400 hover:text-gray-900">
+                  <button onClick={() => setIsChatModalOpen(false)} className="bg-white border border-separator p-2 rounded-xl text-fg-tertiary hover:text-fg-primary">
                     <X className="w-5 h-5" />
                   </button>
                 </div>

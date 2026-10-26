@@ -90,6 +90,7 @@ export default function SoftphoneDialer({
   const { clients = [] } = useGlobalContext();
 
   const isFloating = mode === 'floating';
+  const softphoneRootRef = useRef<HTMLDivElement>(null);
 
   // Detección responsive para móvil vs tablet/desktop
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
@@ -201,10 +202,16 @@ export default function SoftphoneDialer({
       try {
         await new Promise(resolve => setTimeout(resolve, 1500));
         if (cancelled) return;
-        const token = telnyxWebRTCService.getLoginToken();
+        let token = telnyxWebRTCService.getLoginToken();
         if (!token) {
-          console.log('[SoftphoneDialer] No hay JWT configurado aún. Usa "Configurar JWT" para inicializar Telnyx.');
-          return;
+          console.log('[SoftphoneDialer] Solicitando JWT de Telnyx al backend autorizado...');
+          const tokenResult = await telnyxWebRTCService.fetchFreshTokenFromBackend();
+          if (cancelled) return;
+          if (!tokenResult.success || !tokenResult.token) {
+            console.warn('[SoftphoneDialer] No se pudo obtener el JWT de Telnyx:', tokenResult.message);
+            return;
+          }
+          token = tokenResult.token;
         }
         console.log('[SoftphoneDialer] Inicializando cliente Telnyx automáticamente...');
         const result = await telnyxWebRTCService.initClient(token);
@@ -294,6 +301,8 @@ export default function SoftphoneDialer({
     try {
       const res = await telnyxWebRTCService.fetchFreshTokenFromBackend();
       if (res.success && res.token) {
+        const initResult = await telnyxWebRTCService.initClient(res.token);
+        if (!initResult.success) throw new Error(initResult.message);
         showToast('Nuevo login_token generado vía API de Telnyx');
         setSipLogs(prev => [
           `[${new Date().toLocaleTimeString()}] Telnyx WebRTC -> Nuevo login_token generado vía API (${res.token.slice(0, 10)}...${res.token.slice(-6)})`,
@@ -845,6 +854,22 @@ export default function SoftphoneDialer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [callStatus, phoneNumber, isFloating, handleClose, copyPhoneNumber, pastePhoneNumber, handleHangup]);
 
+  // Etiquetas accesibles para botones heredados que aún no declaran aria-label.
+  useEffect(() => {
+    const root = softphoneRootRef.current;
+    if (!root) return;
+    const labelButtons = () => {
+      root.querySelectorAll<HTMLButtonElement>('button:not([aria-label])').forEach((button) => {
+        const label = button.getAttribute('title') || button.innerText?.replace(/\s+/g, ' ').trim() || 'Control del teléfono';
+        button.setAttribute('aria-label', label);
+      });
+    };
+    labelButtons();
+    const observer = new MutationObserver(labelButtons);
+    observer.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['title'] });
+    return () => observer.disconnect();
+  }, [isMinimized, activeTab, callStatus, isFloating, isFloatingExpanded]);
+
   // Limpieza al desmontar
   useEffect(() => {
     return () => {
@@ -870,6 +895,7 @@ export default function SoftphoneDialer({
 
   return (
     <motion.div
+      ref={softphoneRootRef}
       drag={isFloating && !isMobile}
       dragMomentum={false}
       dragElastic={0.06}
@@ -886,7 +912,7 @@ export default function SoftphoneDialer({
           } catch {}
         }
       }}
-      className={`bg-slate-950/95 backdrop-blur-xl text-white border border-slate-800 shadow-2xl transition-all ${
+      className={`ios-softphone bg-white/75 backdrop-blur-xl text-black border border-white/70 shadow-2xl transition-all ${
         isFloating
           ? isMobile
             ? 'fixed bottom-0 left-0 right-0 w-full rounded-t-3xl rounded-b-none border-b-0 border-x-0 border-t border-slate-800 p-4 z-50 shadow-[0_-10px_35px_rgba(0,0,0,0.85)]'
@@ -910,7 +936,7 @@ export default function SoftphoneDialer({
       </AnimatePresence>
 
       {isMinimized ? (
-        <div className="flex items-center justify-between gap-2">
+        <div className="ios-softphone-pill flex items-center justify-between gap-2">
           {isFloating && !isMobile && (
             <div onDoubleClick={resetPosition} className="cursor-move text-slate-500 hover:text-cyan-400 p-1 transition-colors rounded" title="Arrastrar barra del discador">
               <GripHorizontal className="w-4 h-4" />
@@ -946,11 +972,11 @@ export default function SoftphoneDialer({
             )}
           </div>
           {callStatus === 'idle' ? (
-            <button type="button" onClick={() => handleStartCall()} disabled={!phoneNumber.trim()} className="p-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black disabled:opacity-40 transition-all cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.3)] active:scale-95 shrink-0" title="Llamar">
+            <button type="button" onClick={() => handleStartCall()} aria-label="Llamar" disabled={!phoneNumber.trim()} className="p-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black disabled:opacity-40 transition-all cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.3)] active:scale-95 shrink-0" title="Llamar">
               <Phone className="w-3.5 h-3.5 fill-current" />
             </button>
           ) : (
-            <button type="button" onClick={handleHangup} className="p-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white transition-all cursor-pointer shadow-[0_0_12px_rgba(244,63,94,0.3)] active:scale-95 shrink-0" title="Colgar">
+            <button type="button" onClick={handleHangup} aria-label="Colgar" className="p-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white transition-all cursor-pointer shadow-[0_0_12px_rgba(244,63,94,0.3)] active:scale-95 shrink-0" title="Colgar">
               <PhoneOff className="w-3.5 h-3.5 fill-current" />
             </button>
           )}
@@ -1040,6 +1066,23 @@ export default function SoftphoneDialer({
             <SoftphoneTabs activeTab={activeTab} onTabChange={setActiveTab} selectedCarrierName={activeCarrierObj?.name} hasValidSip={hasValidSipCredentials} authorizedCallerId={selectedCallerId} isFloating={isFloating} />
           )}
 
+          {callStatus !== 'idle' && callStatus !== 'ended' && (
+            <section className="ios-call-active flex items-center gap-4 px-4 py-5 my-3 rounded-2xl" aria-live="polite" aria-label="Estado de llamada activa">
+              <div className="ios-call-avatar flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-xl font-semibold" aria-hidden="true">
+                {(selectedClientName || 'KC').trim().split(/\s+/).slice(0, 2).map((part: string) => part[0]).join('').toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1 text-center sm:text-left">
+                <div className="text-base font-semibold truncate">{selectedClientName || 'Contacto'}</div>
+                <div className="text-sm ios-softphone-muted truncate">{phoneNumber}</div>
+                <div className="text-xs ios-softphone-muted mt-1">
+                  {callStatus === 'calling' ? 'Llamando…' : callStatus === 'on_hold' ? 'En espera' : 'Conectada'}
+                </div>
+                <div className="text-xl font-medium tracking-tight mt-1" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatTimer(duration)}</div>
+              </div>
+              <span className={`ios-call-status-dot h-2.5 w-2.5 rounded-full shrink-0 ${callStatus === 'calling' ? 'is-calling' : callStatus === 'on_hold' ? 'is-hold' : 'is-connected'}`} aria-label={callStatus === 'calling' ? 'Llamada conectando' : callStatus === 'on_hold' ? 'Llamada en espera' : 'Llamada conectada'} />
+            </section>
+          )}
+
           <SoftphoneDisplay phoneNumber={phoneNumber} callerId={selectedCallerId} onPhoneNumberChange={setPhoneNumber} onBackspace={handleBackspace} onClear={handleClear} callStatus={callStatus} duration={duration} onForceConnect={handleForceConnectNow} compact={isFloating} onCopySuccess={showToast} onPasteSuccess={showToast} onDigitType={playDtmfTone} />
 
           {activeTab === 'dialer' ? (
@@ -1089,24 +1132,24 @@ export default function SoftphoneDialer({
             ) : (
               <div className="space-y-2">
                 <div className="grid grid-cols-4 gap-1.5">
-                  <button type="button" onClick={toggleMute} className={`py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold cursor-pointer ${isMuted ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'}`} title={isMuted ? 'Activar micrófono (M)' : 'Silenciar (M)'}>
+                  <button type="button" onClick={toggleMute} aria-label={isMuted ? "Activar micrófono" : "Silenciar micrófono"} className={`py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold cursor-pointer ${isMuted ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'}`} title={isMuted ? 'Activar micrófono (M)' : 'Silenciar (M)'}>
                     {isMuted ? <MicOff className="w-3.5 h-3.5 text-rose-400" /> : <Mic className="w-3.5 h-3.5" />}
                     <span>{isMuted ? 'Muted' : 'Mute'}</span>
                   </button>
-                  <button type="button" onClick={toggleHold} className={`py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold cursor-pointer ${isOnHold ? 'bg-amber-500/20 border-amber-500/40 text-amber-300' : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'}`} title={isOnHold ? 'Reanudar llamada (H)' : 'Poner en espera (H)'}>
+                  <button type="button" onClick={toggleHold} aria-label={isOnHold ? "Reanudar llamada" : "Poner en espera"} className={`py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold cursor-pointer ${isOnHold ? 'bg-amber-500/20 border-amber-500/40 text-amber-300' : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'}`} title={isOnHold ? 'Reanudar llamada (H)' : 'Poner en espera (H)'}>
                     {isOnHold ? <Play className="w-3.5 h-3.5 text-amber-400" /> : <Pause className="w-3.5 h-3.5" />}
                     <span>{isOnHold ? 'Reanudar' : 'Hold'}</span>
                   </button>
-                  <button type="button" onClick={toggleRecord} className={`py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold cursor-pointer ${isRecording ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 animate-pulse' : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'}`} title={isRecording ? 'Detener grabación' : 'Grabar llamada'}>
+                  <button type="button" onClick={toggleRecord} aria-label={isRecording ? "Detener grabación" : "Grabar llamada"} className={`py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold cursor-pointer ${isRecording ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 animate-pulse' : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'}`} title={isRecording ? 'Detener grabación' : 'Grabar llamada'}>
                     <Disc className={`w-3.5 h-3.5 ${isRecording ? 'text-rose-400' : 'text-slate-300'}`} />
                     <span>{isRecording ? 'REC' : 'Grabar'}</span>
                   </button>
-                  <button type="button" onClick={() => setIsSpeaker(!isSpeaker)} className={`py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold cursor-pointer ${isSpeaker ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300' : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800'}`} title="Altavoz">
+                  <button type="button" onClick={() => setIsSpeaker(!isSpeaker)} aria-label={isSpeaker ? "Desactivar altavoz" : "Activar altavoz"} className={`py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold cursor-pointer ${isSpeaker ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300' : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800'}`} title="Altavoz">
                     {isSpeaker ? <Volume2 className="w-3.5 h-3.5 text-cyan-400" /> : <VolumeX className="w-3.5 h-3.5" />}
                     <span>Audio</span>
                   </button>
                 </div>
-                <button type="button" onClick={handleHangup} className="w-full py-2.5 sm:py-3 bg-rose-500 hover:bg-rose-400 text-white font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all shadow-[0_0_15px_rgba(244,63,94,0.3)] flex items-center justify-center gap-2 cursor-pointer active:scale-98">
+                <button type="button" onClick={handleHangup} aria-label="Colgar llamada" className="w-full py-2.5 sm:py-3 bg-rose-500 hover:bg-rose-400 text-white font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all shadow-[0_0_15px_rgba(244,63,94,0.3)] flex items-center justify-center gap-2 cursor-pointer active:scale-98">
                   <PhoneOff className="w-4 h-4 fill-current" />
                   <span>{t('voip.hangup', 'Colgar (Esc)')}</span>
                 </button>

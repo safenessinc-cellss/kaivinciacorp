@@ -2,7 +2,7 @@ import { adminDb } from '../server/_lib/firebaseAdmin.js';
 import { TelnyxBackendService } from '../server/telnyxBackend.js';
 
 export default async function handler(req: any, res: any) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Same-origin endpoint; no wildcard CORS grant.
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
 
@@ -28,6 +28,25 @@ export default async function handler(req: any, res: any) {
     console.log('[telnyx-token] Usuario autenticado:', authUser.uid, authUser.email);
 
     const db = adminDb;
+
+    // La autenticación de Firebase por sí sola no concede acceso a telefonía.
+    // Solo perfiles aprobados con un rol operativo pueden obtener credenciales Telnyx.
+    const profileSnap = await db.collection('users').doc(authUser.uid).get();
+    const profile = profileSnap.exists ? (profileSnap.data() || {}) : null;
+    const rawProfileRole = String(profile?.role || '').trim().toLowerCase();
+    const profileRole = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[rawProfileRole] || rawProfileRole;
+    const customPermissions = profile?.permissions && typeof profile.permissions === 'object' ? profile.permissions : {};
+    const roleDefaultCanDial = ['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas'].includes(profileRole);
+    const canUseDialer = profileRole === 'superadmin' ||
+      (typeof customPermissions.calls === 'boolean' ? customPermissions.calls : roleDefaultCanDial);
+    if (!profile || String(profile.status || '').trim().toLowerCase() !== 'approved' ||
+        !canUseDialer) {
+      res.statusCode = 403;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Acceso al discador denegado. La cuenta debe estar aprobada y tener permiso de Discador.' }));
+      return;
+    }
+
     const operadorDoc = await db.collection('operadores').doc(authUser.uid).get();
 
     let operadorData: any;

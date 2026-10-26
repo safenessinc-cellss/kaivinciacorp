@@ -46,18 +46,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let unsubProfile: (() => void) | null = null;
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
+      // Firebase puede restaurar sesiones antiguas en navegadores donde persistía localmente.
+      // Sin confirmación explícita en esta pestaña, se cierra esa sesión.
+      const sessionConfirmed = typeof sessionStorage !== 'undefined'
+        && sessionStorage.getItem('kaivincia_session_confirmed') === 'true';
+      const loginInProgress = typeof sessionStorage !== 'undefined'
+        && sessionStorage.getItem('kaivincia_login_in_progress') === 'true';
+      if (currentUser && !sessionConfirmed && !loginInProgress) {
+        await fbSignOut(auth).catch(() => undefined);
+        setUser(null);
+        setUserData(null);
+        setLoading(false);
+        return;
+      }
 
+      setUser(currentUser);
       if (unsubProfile) { unsubProfile(); unsubProfile = null; }
 
       if (currentUser) {
         // Si el doc no existe, pedimos al backend que lo cree (role='none', status='pending')
         try {
           const token = await currentUser.getIdToken();
-          await fetch('/api/auth/bootstrap-user', {
+          const bootstrapResponse = await fetch('/api/auth/bootstrap-user', {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` },
           });
+          if (bootstrapResponse.ok) {
+            // Refresh once so server-synchronized base role/status claims are available to APIs.
+            await currentUser.getIdToken(true);
+          }
         } catch (e) {
           console.warn('bootstrap-user failed:', e);
         }
@@ -82,10 +99,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => { unsubscribe(); if (unsubProfile) unsubProfile(); };
   }, []);
 
+  // When an administrator changes role/status, re-sync the base custom claims without
+  // copying granular permissions into claims. Permissions remain live in Firestore.
+  useEffect(() => {
+    if (!user || !userData) return;
+    let active = true;
+    (async () => {
+      try {
+        const token = await user.getIdToken();
+        const response = await fetch('/api/auth/bootstrap-user', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (active && response.ok) await user.getIdToken(true);
+      } catch (error) {
+        console.warn('Role claim refresh deferred:', error);
+      }
+    })();
+    return () => { active = false; };
+  }, [user?.uid, userData?.role, userData?.status]);
+
   const handleSignOut = async () => {
     localStorage.removeItem('kaivincia_active_user');
     localStorage.removeItem('kaivincia_operator_session');
     localStorage.removeItem('kaivincia_guest');
+    sessionStorage.removeItem('kaivincia_session_confirmed');
+    sessionStorage.removeItem('kaivincia_login_in_progress');
     await fbSignOut(auth);
     setUser(null);
     setUserData(null);

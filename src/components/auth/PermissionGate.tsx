@@ -1,0 +1,5 @@
+import type { ReactNode } from 'react';
+import { Navigate } from 'react-router-dom';
+import { usePermissions, type PermissionKey } from '../../hooks/usePermissions';
+export function AccessDenied(){return <section className="mx-auto flex min-h-[45vh] max-w-xl flex-col items-center justify-center gap-3 p-8 text-center"><div className="rounded-2xl border border-semantic-danger/25 bg-semantic-danger-bg p-4 text-semantic-danger"><svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></svg></div><h1 className="text-xl font-bold text-fg-primary">Acceso denegado</h1><p className="max-w-md text-sm text-fg-secondary">Tu cuenta no tiene permiso para acceder a este módulo. Solicita autorización al SuperAdmin.</p></section>}
+export default function PermissionGate({module,children,fallback='/crm/access-denied',userData}:{module:PermissionKey;children:ReactNode;fallback?:string;userData?:{role?:unknown;permissions?:unknown}}){const {can}=usePermissions(userData);return can(module)?<>{children}</>:<Navigate to={fallback} replace/>}

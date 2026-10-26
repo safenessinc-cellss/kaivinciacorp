@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { motion } from 'motion/react';
 import { Zap } from 'lucide-react';
 
@@ -56,112 +56,76 @@ import CompanyAuth from './pages/b2b/CompanyAuth';
 import CompanyDashboard from './pages/b2b/CompanyDashboard';
 import CallCenterAdmin from './pages/CallCenterAdmin';
 import RouteGuard from "./components/RouteGuard";
+import PermissionGate, { AccessDenied } from "./components/auth/PermissionGate";
+import PermissionsManager from "./components/admin/PermissionsManager";
 export default function App() {
-  const [user, setUser] = useState<any>(() => {
-    try {
-      const saved = localStorage.getItem('kaivincia_active_user');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState<any>(null);
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
-    // Check if guest or operator mode was active
-    const guestStatus = localStorage.getItem('kaivincia_guest');
-    const operatorSession = localStorage.getItem('kaivincia_operator_session');
-    if (guestStatus === 'true' || operatorSession) {
-      setIsGuest(true);
-      if (operatorSession && !userData) {
-        try {
-          const parsed = JSON.parse(operatorSession);
-          setUser(parsed);
-          setUserData(parsed);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
+    // Guest mode is deliberately in-memory only; stored operator sessions are never restored.
+    localStorage.removeItem('kaivincia_operator_session');
+    localStorage.removeItem('kaivincia_active_user');
+    localStorage.removeItem('kaivincia_guest');
 
     let unsubUserDoc: (() => void) | null = null;
-
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       if (unsubUserDoc) {
         unsubUserDoc();
         unsubUserDoc = null;
       }
 
-      if (currentUser) {
-        try {
-          const userRef = doc(db, "users", currentUser.uid);
-          const userSnap = await getDoc(userRef);
-
-          const existingData = userSnap.exists() ? userSnap.data() : null;
-          const currentUserRole = existingData?.role ?? null;
-          const isSuperAdmin = currentUserRole === "superadmin" || currentUserRole === "admin";
-
-          let currentProfile: any = null;
-          if (!userSnap.exists()) {
-            const newUser = {
-              uid: currentUser.uid,
-              name: currentUser.displayName || "Agente TLMK",
-              email: currentUser.email,
-              role: isSuperAdmin ? "superadmin" : "tlmk",
-              status: "active",
-              avatarUrl: currentUser.photoURL || "",
-              createdAt: new Date().toISOString(),
-              lastLogin: new Date().toISOString()
-            };
-            await setDoc(userRef, newUser);
-            currentProfile = newUser;
-          } else {
-            const data = existingData!;
-            const updatedRole = data.role && data.role !== "none" ? data.role : (isSuperAdmin ? "superadmin" : "tlmk");
-            const updatedStatus = "active";
-
-            await setDoc(userRef, {
-              lastLogin: new Date().toISOString(),
-              status: updatedStatus,
-              role: updatedRole
-            }, { merge: true });
-
-            currentProfile = { ...data, status: updatedStatus, role: updatedRole };
-          }
-
-          setUserData(currentProfile);
-          setUser(currentUser);
-          localStorage.setItem("kaivincia_active_user", JSON.stringify({ uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName }));
-
-          unsubUserDoc = onSnapshot(userRef, (docSnap) => {
-            if (docSnap.exists()) {
-              const liveData = docSnap.data();
-              const stabilizedData = { ...liveData, status: liveData.status || "active" };
-              setUserData(stabilizedData);
-            }
-          }, (error) => {
-            console.warn("User data listener warning (handled):", error);
-          });
-        } catch (authErr) {
-          console.error("Error setting up user profile:", authErr);
-          const fallback = {
-            name: currentUser.displayName || "Agente TLMK",
-            email: currentUser.email,
-            role: "tlmk",
-            status: "active"
-          };
-          setUser(currentUser);
-          setUserData(fallback);
-        }
-      } else {
+      const sessionConfirmed = sessionStorage.getItem('kaivincia_session_confirmed') === 'true';
+      const loginInProgress = sessionStorage.getItem('kaivincia_login_in_progress') === 'true';
+      if (currentUser && !sessionConfirmed && !loginInProgress) {
+        await signOut(auth).catch(() => undefined);
         setUser(null);
         setUserData(null);
-        localStorage.removeItem('kaivincia_active_user');
-        localStorage.removeItem('kaivincia_user_data');
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      if (!currentUser) {
+        setUser(null);
+        setUserData(null);
+        setLoading(false);
+        return;
+      }
+
+      setUser(currentUser);
+      try {
+        // Provision/repair the authenticated profile on the trusted server before
+        // reading Firestore. This is required for allowlisted SuperAdmins whose
+        // legacy profile still has a pending or incorrect role/status.
+        const idToken = await currentUser.getIdToken();
+        const bootstrapResponse = await fetch('/api/auth/bootstrap-user', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+        if (!bootstrapResponse.ok) {
+          const bootstrapError = await bootstrapResponse.text().catch(() => '');
+          throw new Error(`User bootstrap failed (${bootstrapResponse.status}): ${bootstrapError.slice(0, 300)}`);
+        }
+
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          setUserData(userSnap.data());
+        } else {
+          setUserData(null);
+        }
+        unsubUserDoc = onSnapshot(userRef, (docSnap) => {
+          setUserData(docSnap.exists() ? docSnap.data() : null);
+        }, (error) => {
+          console.warn('User data listener warning (handled):', error);
+        });
+      } catch (authErr) {
+        console.error('Error loading user profile:', authErr);
+        setUserData(null);
+      } finally {
+        setLoading(false);
+      }
     });
 
     return () => {
@@ -172,7 +136,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#05070a] relative flex flex-col items-center justify-center overflow-hidden">
+      <div className="min-h-screen bg-[var(--bg-page)] relative flex flex-col items-center justify-center overflow-hidden">
         {/* Background stars */}
         <div className="absolute inset-0 z-0 opacity-50">
           {[...Array(20)].map((_, i) => (
@@ -207,26 +171,26 @@ export default function App() {
             {/* The Text being revealed/formed */}
             <div className="relative overflow-hidden flex items-center">
               <motion.div
-                className="absolute inset-y-0 right-0 bg-[#05070a] z-20 origin-right"
+                className="absolute inset-y-0 right-0 bg-[var(--bg-page)] z-20 origin-right"
                 initial={{ width: "100%" }}
                 animate={{ width: "0%" }}
                 transition={{ duration: 2.5, ease: "easeInOut", delay: 0.5 }}
               />
-              <h1 className="text-4xl md:text-6xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] via-white to-[#00F0FF] uppercase italic relative z-10">
+              <h1 className="text-4xl md:text-6xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-white to-[var(--accent)] uppercase italic relative z-10">
                 Kaivincia Corp
               </h1>
             </div>
 
             {/* Spaceship shooting */}
             <motion.div
-              className="absolute text-[#00F0FF] right-0 z-30"
+              className="absolute text-[var(--accent)] right-0 z-30"
               initial={{ right: "100%", x: "0%" }}
               animate={{ right: "0%", x: "100%" }}
               transition={{ duration: 2.5, ease: "easeInOut", delay: 0.5 }}
             >
               {/* Laser beam */}
               <motion.div 
-                className="absolute right-full top-1/2 -translate-y-1/2 h-0.5 bg-[#00F0FF] shadow-[0_0_10px_#00F0FF]"
+                className="absolute right-full top-1/2 -translate-y-1/2 h-0.5 bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]"
                 initial={{ width: 0 }}
                 animate={{ width: 40 }}
                 transition={{ duration: 0.2, repeat: Infinity, repeatType: "reverse" }}
@@ -244,26 +208,31 @@ export default function App() {
     );
   }
 
-  // Usuario logueado pero pendiente de aprobación → pantalla de espera (sin auto-activación)
-  if (user && userData && (userData.status === 'pending' || !userData.role || userData.role === 'none')) {
+  // Autorización explícita: normalizar espacios/mayúsculas y denegar por defecto.
+  const rawRole = String(userData?.role || 'none').trim().toLowerCase();
+  const normalizedRole = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[rawRole] || rawRole;
+  const rawStatus = String(userData?.status || '').trim().toLowerCase();
+  // Legacy profiles used ACTIVE for approved accounts. Canonicalize before gating routes.
+  const normalizedStatus = ({ active: 'approved', enabled: 'approved' } as Record<string, string>)[rawStatus] || rawStatus;
+  const validRoles = ['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas', 'ceo', 'gestor', 'alumno', 'rrhh', 'collaborator', 'tutor', 'cliente', 'user'];
+  const isManagementRole = ['superadmin', 'admin', 'supervisor'].includes(normalizedRole);
+  if (user && (normalizedStatus !== 'approved' || !validRoles.includes(normalizedRole))) {
     return <PendingApproval />;
   }
 
-  const effectiveUserData = userData || {
+  const effectiveUserData = userData ? { ...userData, uid: user?.uid || userData.uid } : {
     name: user?.displayName || 'Agente TLMK',
     email: user?.email || 'operador@kaivincia.com',
-    role: 'tlmk',
-    status: 'active'
+    role: normalizedRole,
+    status: normalizedStatus || 'pending',
+    uid: user?.uid
   };
-
-  const hasAccess = Boolean(user || isGuest);
 
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage onGuestMode={() => {
-          localStorage.setItem('kaivincia_guest', 'true');
-          setIsGuest(true);
+          // La vista de invitado no otorga acceso al CRM ni crea una sesión autenticada.
         }} />} />
         <Route path="/apply" element={<Apply />} />
         <Route path="/guest-academy" element={<AcademyExternal />} />
@@ -285,49 +254,51 @@ export default function App() {
             </RouteGuard>
           }
         >
-          <Route index element={<Navigate to={effectiveUserData?.role === 'alumno' ? "/crm/academy-internal" : (effectiveUserData?.role === 'tlmk' ? "/crm/pipeline" : "/crm/dashboard")} />} />
-          <Route path="dashboard" element={userData?.role === 'alumno' ? <Navigate to="/crm/academy-internal" /> : <Dashboard />} />
-          <Route path="dashboard/customize" element={<DashboardCustomizer />} />
-          <Route path="strategic-report" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <StrategicReport />} />
-          <Route path="clients" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Clients />} />
-          <Route path="pipeline" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Pipeline />} />
-          <Route path="tasks" element={<Tasks />} />
-          <Route path="calendar" element={<CalendarView />} />
-          <Route path="chat" element={<Chat />} />
-          <Route path="cobranza" element={<Cobranza />} />
-          <Route path="call-center" element={userData?.role !== "superadmin" && userData?.role !== "admin" ? <Navigate to="/crm/dashboard" /> : <CallCenterAdmin />} />
+          <Route index element={<Navigate to={normalizedRole === 'alumno' ? "/crm/academy-internal" : (normalizedRole === 'tlmk' || normalizedRole === 'ventas' ? "/crm/pipeline" : "/crm/dashboard")} />} />
+          <Route path="dashboard" element={<PermissionGate module="dashboard" userData={effectiveUserData}><Dashboard /></PermissionGate>} />
+          <Route path="dashboard/customize" element={<PermissionGate module="dashboard" userData={effectiveUserData}><DashboardCustomizer /></PermissionGate>} />
+          <Route path="strategic-report" element={<PermissionGate module="strategicReport" userData={effectiveUserData}><StrategicReport /></PermissionGate>} />
+          <Route path="clients" element={<PermissionGate module="clients" userData={effectiveUserData}><Clients /></PermissionGate>} />
+          <Route path="pipeline" element={<PermissionGate module="marketing" userData={effectiveUserData}><Pipeline /></PermissionGate>} />
+          <Route path="tasks" element={<PermissionGate module="tasks" userData={effectiveUserData}><Tasks /></PermissionGate>} />
+          <Route path="calendar" element={<PermissionGate module="calendar" userData={effectiveUserData}><CalendarView /></PermissionGate>} />
+          <Route path="chat" element={<PermissionGate module="chat" userData={effectiveUserData}><Chat /></PermissionGate>} />
+          <Route path="cobranza" element={<PermissionGate module="cobranza" userData={effectiveUserData}><Cobranza /></PermissionGate>} />
+          <Route path="call-center" element={normalizedRole !== 'superadmin' && normalizedRole !== 'admin' ? <Navigate to="/crm/access-denied" replace /> : <PermissionGate module="calls" userData={effectiveUserData}><CallCenterAdmin /></PermissionGate>} />
           
           {/* New Modules */}
-          <Route path="superadmin" element={userData?.role !== 'superadmin' ? <Navigate to="/crm/dashboard" /> : <SuperAdmin />} />
-          <Route path="appearance" element={userData?.role !== 'superadmin' && userData?.role !== 'admin' ? <Navigate to="/crm/dashboard" /> : <AppearancePanel />} />
-          <Route path="automations" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Automations />} />
-          <Route path="form-templates" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <FormTemplates />} />
-          <Route path="integrations" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Integrations />} />
-          <Route path="academy-internal" element={<AcademyInternal />} />
+          <Route path="superadmin" element={normalizedRole !== 'superadmin' ? <Navigate to="/crm/access-denied" replace /> : <SuperAdmin />} />
+          <Route path="permissions" element={normalizedRole !== 'superadmin' ? <Navigate to="/crm/access-denied" replace /> : <PermissionsManager userData={effectiveUserData} />} />
+          <Route path="access-denied" element={<AccessDenied />} />
+          <Route path="appearance" element={<PermissionGate module="appearance" userData={effectiveUserData}><AppearancePanel /></PermissionGate>} />
+          <Route path="automations" element={<PermissionGate module="automations" userData={effectiveUserData}><Automations /></PermissionGate>} />
+          <Route path="form-templates" element={<PermissionGate module="formTemplates" userData={effectiveUserData}><FormTemplates /></PermissionGate>} />
+          <Route path="integrations" element={<PermissionGate module="integrations" userData={effectiveUserData}><Integrations /></PermissionGate>} />
+          <Route path="academy-internal" element={<PermissionGate module="academy" userData={effectiveUserData}><AcademyInternal /></PermissionGate>} />
           <Route path="academy-external" element={<AcademyExternal />} />
-          <Route path="digital-products" element={<DigitalProducts />} />
-          <Route path="calls" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <CallSystem />} />
+          <Route path="digital-products" element={<PermissionGate module="academy" userData={effectiveUserData}><DigitalProducts /></PermissionGate>} />
+          <Route path="calls" element={<PermissionGate module="calls" userData={effectiveUserData}><CallSystem /></PermissionGate>} />
           
           {/* Administrativo */}
-          <Route path="recruitment" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Recruitment />} />
-          <Route path="team" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <TeamManagement />} />
-          <Route path="payroll" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Payroll />} />
-          <Route path="accounting" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Accounting />} />
-          <Route path="client-management" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <ClientManagement />} />
-          <Route path="billing" element={<Billing />} />
-          <Route path="operations" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Operations />} />
-          <Route path="marketing" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Marketing />} />
-          <Route path="projects" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Projects />} />
-          <Route path="reports" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Reports />} />
-          <Route path="commissions" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Commissions />} />
-          <Route path="tactical" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <TacticalDeployment />} />
-          <Route path="manuales" element={<SOPManuals />} />
-          <Route path="turs" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <MasterForms />} />
-          <Route path="helpdesk" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Helpdesk />} />
-          <Route path="drive" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <DocumentDrive />} />
-          <Route path="audits" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <AuditsSGI />} />
-          <Route path="security" element={userData?.role !== 'superadmin' ? <Navigate to="/crm/dashboard" /> : <SecurityCenter />} />
-          <Route path="nervous" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <NervousSystem />} />
+          <Route path="recruitment" element={<PermissionGate module="recruitment" userData={effectiveUserData}><Recruitment /></PermissionGate>} />
+          <Route path="team" element={<PermissionGate module="team" userData={effectiveUserData}><TeamManagement /></PermissionGate>} />
+          <Route path="payroll" element={<PermissionGate module="payroll" userData={effectiveUserData}><Payroll /></PermissionGate>} />
+          <Route path="accounting" element={<PermissionGate module="accounting" userData={effectiveUserData}><Accounting /></PermissionGate>} />
+          <Route path="client-management" element={<PermissionGate module="clients" userData={effectiveUserData}><ClientManagement /></PermissionGate>} />
+          <Route path="billing" element={<PermissionGate module="billing" userData={effectiveUserData}><Billing /></PermissionGate>} />
+          <Route path="operations" element={<PermissionGate module="operations" userData={effectiveUserData}><Operations /></PermissionGate>} />
+          <Route path="marketing" element={<PermissionGate module="marketing" userData={effectiveUserData}><Marketing /></PermissionGate>} />
+          <Route path="projects" element={<PermissionGate module="projects" userData={effectiveUserData}><Projects /></PermissionGate>} />
+          <Route path="reports" element={<PermissionGate module="reports" userData={effectiveUserData}><Reports /></PermissionGate>} />
+          <Route path="commissions" element={<PermissionGate module="reports" userData={effectiveUserData}><Commissions /></PermissionGate>} />
+          <Route path="tactical" element={<PermissionGate module="operations" userData={effectiveUserData}><TacticalDeployment /></PermissionGate>} />
+          <Route path="manuales" element={<PermissionGate module="academy" userData={effectiveUserData}><SOPManuals /></PermissionGate>} />
+          <Route path="turs" element={<PermissionGate module="formTemplates" userData={effectiveUserData}><MasterForms /></PermissionGate>} />
+          <Route path="helpdesk" element={<PermissionGate module="helpdesk" userData={effectiveUserData}><Helpdesk /></PermissionGate>} />
+          <Route path="drive" element={<PermissionGate module="drive" userData={effectiveUserData}><DocumentDrive /></PermissionGate>} />
+          <Route path="audits" element={<PermissionGate module="reports" userData={effectiveUserData}><AuditsSGI /></PermissionGate>} />
+          <Route path="security" element={<PermissionGate module="security" userData={effectiveUserData}><SecurityCenter /></PermissionGate>} />
+          <Route path="nervous" element={<PermissionGate module="dashboard" userData={effectiveUserData}><NervousSystem /></PermissionGate>} />
           <Route path="strategy-blog" element={<StrategyBlog />} />
           
           {/* Portales */}

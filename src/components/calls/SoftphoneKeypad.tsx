@@ -34,14 +34,14 @@ export default function SoftphoneKeypad({
           type="button"
           disabled={disabled}
           onClick={() => onDigitPress(btn.key)}
-          className={`group bg-slate-900/80 hover:bg-cyan-500/10 active:bg-cyan-500/20 border border-slate-800 hover:border-cyan-500/40 rounded-xl flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 disabled:opacity-40 disabled:pointer-events-none select-none ${
-            compact ? 'py-1.5 px-1' : 'py-2 px-1.5'
+          className={`group bg-[#D1D1D6]/60 hover:bg-white active:bg-white border border-white/60 hover:border-[#34C759]/40 rounded-full flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 disabled:opacity-40 disabled:pointer-events-none select-none ${
+            compact ? 'w-14 h-14 py-1.5 px-1' : 'w-[72px] h-[72px] py-2 px-1.5'
           }`}
         >
-          <span className="text-base sm:text-lg font-mono font-bold text-white group-hover:text-cyan-400 transition-colors leading-tight">
+          <span className="text-2xl font-medium text-black group-hover:text-[#248A3D] transition-colors leading-tight">
             {btn.key}
           </span>
-          <span className="text-[8px] font-mono text-slate-500 group-hover:text-cyan-300/70 tracking-wider uppercase leading-none mt-0.5">
+          <span className="text-[9px] font-medium text-[#3C3C43]/60 group-hover:text-[#248A3D] tracking-wider uppercase leading-none mt-0.5">
             {btn.sub}
           </span>
         </button>

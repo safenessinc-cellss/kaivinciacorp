@@ -14,7 +14,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-[#0B0E14] border-r border-white/10 flex flex-col h-screen sticky top-0">
+    <aside className="w-64 bg-[var(--bg-page)] border-r border-white/10 flex flex-col h-screen sticky top-0">
       {/* LOGO NO MENU LATERAL */}
       <div className="flex items-center gap-3 px-6 py-8 border-b border-white/10">
         <div className="h-10 w-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center overflow-hidden">
@@ -35,8 +35,8 @@ export default function Sidebar() {
             to={item.path}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium ${
               location.pathname === item.path
-                ? 'bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/20'
-                : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                ? 'bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20'
+                : 'text-fg-tertiary hover:bg-white/5 hover:text-white'
             }`}
           >
             {item.icon}
@@ -47,7 +47,7 @@ export default function Sidebar() {
 
       {/* FOOTER DO MENU */}
       <div className="p-4 border-t border-white/10">
-        <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all text-sm font-medium">
+        <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-fg-tertiary hover:bg-white/5 hover:text-white transition-all text-sm font-medium">
           <LogOut className="w-5 h-5" />
           <span>Cerrar Sesión</span>
         </button>
