@@ -4,8 +4,7 @@
  * Documentación oficial: https://developers.telnyx.com/docs/webrtc
  */
 
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { auth } from '../firebase';
 import { TelnyxRTC } from '@telnyx/webrtc';
 
 // Token JWT por defecto para inicialización del SDK de Telnyx WebRTC
@@ -33,28 +32,8 @@ class TelnyxWebRTCService {
   private listeners: Array<(state: TelnyxWebRTCState) => void> = [];
 
   constructor() {
-    this.initTokenSync();
-  }
-
-  /**
-   * Sincroniza el login_token (JWT) desde Firestore (settings/telnyx_config)
-   */
-  private initTokenSync() {
-    try {
-      onSnapshot(doc(db, 'settings', 'telnyx_config'), (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          const token = (data.login_token || data.webrtcJwt || '').trim();
-          if (token && token !== this.state.loginToken) {
-            this.setLoginToken(token, false);
-          }
-        }
-      }, (err) => {
-        console.warn('[TelnyxWebRTC] No se pudo sincronizar login_token desde Firestore:', err);
-      });
-    } catch (err) {
-      console.warn('[TelnyxWebRTC] Error al inicializar listener de Firestore:', err);
-    }
+    // No leer JWT de Telnyx desde Firestore: el token se obtiene del backend
+    // después de validar la sesión y los permisos del operador.
   }
 
   /**
@@ -66,18 +45,9 @@ class TelnyxWebRTCService {
     this.state.loginToken = cleanToken;
     this.notify();
 
-    if (persistToFirestore && cleanToken) {
-      try {
-        await setDoc(doc(db, 'settings', 'telnyx_config'), {
-          login_token: cleanToken,
-          webrtcJwt: cleanToken,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-        console.log('[TelnyxWebRTC] login_token actualizado y persistido en Firestore (settings/telnyx_config).');
-      } catch (err) {
-        console.error('[TelnyxWebRTC] Error guardando login_token en Firestore:', err);
-      }
-    }
+    // JWTs son credenciales sensibles: no se almacenan en Firestore desde el cliente.
+    // El parámetro se conserva por compatibilidad con llamadas existentes.
+    void persistToFirestore;
   }
 
   /**
