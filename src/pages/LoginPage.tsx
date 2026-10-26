@@ -49,7 +49,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center px-4 py-12 relative overflow-hidden" style={{ background: 'radial-gradient(ellipse at top, #dbeafe 0%, #f5f5f7 55%, #e5e7eb 100%)' }}>
+    <div className="min-h-screen flex flex-col justify-center px-4 py-12 relative overflow-hidden" style={{ background: 'radial-gradient(ellipse at top, var(--accent-subtle) 0%, var(--bg-grouped) 56%, var(--bg-page) 100%)' }}>
       <div className="mx-auto w-full max-w-md relative z-10">
         <div className="flex justify-center mb-5">
           <img src={LOGO_FULL} alt="Kaivincia Corp" className="h-14 object-contain" referrerPolicy="no-referrer" />
@@ -61,7 +61,7 @@ export default function LoginPage() {
             <span className="w-[42px]" aria-hidden="true" />
           </div>
           <div className="text-center mb-7">
-            <div className="mx-auto mb-3 w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--mac-accent) 12%, white)', color: 'var(--mac-accent)' }}>
+            <div className="mx-auto mb-3 w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
               <ShieldCheck className="w-6 h-6" strokeWidth={1.75} />
             </div>
             <h1 className="text-2xl font-semibold tracking-tight" style={{ color: 'var(--mac-text-primary)' }}>Kaivincia Corp</h1>
@@ -69,7 +69,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div role="alert" className="mb-5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-800">
+            <div role="alert" className="mb-5 rounded-lg border border-semantic-danger/30 bg-semantic-danger-bg px-3.5 py-3 text-sm text-semantic-danger">
               {error}
             </div>
           )}
@@ -78,8 +78,8 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 py-3 px-4 border rounded-lg shadow-sm text-sm font-medium bg-white hover:bg-gray-50 disabled:opacity-60 transition-colors"
-            style={{ borderColor: 'var(--mac-border)', color: '#1d1d1f' }}
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-separator rounded-xl shadow-sm text-sm font-medium bg-surface-elevated hover:bg-surface-grouped text-fg-primary disabled:opacity-60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            style={{ borderColor: 'var(--separator)' }}
           >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" className="h-4 w-4" />
             {loading ? 'Verificando identidad…' : 'Continuar con Google'}
@@ -89,7 +89,7 @@ export default function LoginPage() {
             Las cuentas nuevas quedan pendientes hasta que un administrador autorizado las apruebe. No hay acceso operativo directo ni autologin.
           </p>
         </div>
-        <p className="text-[11px] text-center mt-4 text-gray-500">Acceso protegido · Kaivincia Corp</p>
+        <p className="text-[11px] text-center mt-4 text-fg-tertiary">Acceso protegido · Kaivincia Corp</p>
       </div>
     </div>
   );
