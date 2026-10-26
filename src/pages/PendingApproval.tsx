@@ -5,7 +5,7 @@ import { Clock, LogOut, ShieldAlert, Mail, ShieldCheck, Ban } from 'lucide-react
 export default function PendingApproval() {
   const { userData, signOut, user } = useAuth();
   const status = String((userData as any)?.status || 'pending').trim().toLowerCase();
-  const rejectionReason = String((userData as any)?.rejectionReason || '').trim();
+  const rejectionReason = String((userData as any)?.rejectionReason || (userData as any)?.blockReason || '').trim();
   const blocked = ['blocked', 'disabled', 'suspended'].includes(status);
   const rejected = status === 'rejected';
   const approvedButInvalidRole = status === 'approved' && ['none', ''].includes(String((userData as any)?.role || '').trim().toLowerCase());
