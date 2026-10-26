@@ -190,10 +190,10 @@ service cloud.firestore {
     }
 
     match /client_interactions/{interactionId} {
-      allow read:   if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated();
-      allow delete: if isAdmin();
+      allow read: if hasModulePermission('clients', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']);
+      allow create: if hasModulePermission('clientsCreate', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']);
+      allow update: if hasModulePermission('clientsEdit', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']);
+      allow delete: if hasModulePermission('clientsDelete', ['admin']);
     }
 
     match /tasks/{taskId} {
@@ -225,11 +225,11 @@ service cloud.firestore {
     // Omnicanal & VoIP
     // ===============================================================
     match /omnichannel_threads/{threadId} {
-      allow read, create, update: if isAuthenticated();
+      allow read, create, update: if hasModulePermission('chat', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']);
       allow delete: if isAdmin();
 
       match /messages/{messageId} {
-        allow read, create, update: if isAuthenticated();
+        allow read, create, update: if hasModulePermission('chat', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']);
         allow delete: if isAdmin();
       }
     }
@@ -271,7 +271,7 @@ service cloud.firestore {
     }
 
     match /shared_whatsapp_chats/{chatId} {
-      allow read, create, update: if isAuthenticated();
+      allow read, create, update: if hasModulePermission('chat', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']);
       allow delete: if isAdmin();
     }
 
@@ -428,7 +428,8 @@ service cloud.firestore {
     }
 
     match /automation_workflows/{workflowId} {
-      allow read, write: if isAdmin();
+      allow read: if hasModulePermission('automations', ['admin']);
+      allow write: if hasModulePermission('automationsManage', ['admin']);
     }
 
     match /system_events/{eventId} {
@@ -450,14 +451,14 @@ service cloud.firestore {
       allow read: if hasModulePermission('payroll', ['admin', 'supervisor']) ||
                        (isAuthenticated() && (existing().get('userId', '') == request.auth.uid || existing().get('userUid', '') == request.auth.uid));
       allow create: if isAuthenticated() && (incoming().get('userId', '') == request.auth.uid || incoming().get('userUid', '') == request.auth.uid);
-      allow update, delete: if isAdmin();
+      allow update, delete: if hasModulePermission('payrollWrite', ['admin']);
     }
 
     match /absence_requests/{requestId} {
-      allow read:   if isAdmin() ||
+      allow read: if hasModulePermission('payroll', ['admin', 'supervisor']) ||
                        (isAuthenticated() && (existing().get('userId', '') == request.auth.uid || existing().get('userUid', '') == request.auth.uid));
       allow create: if isAuthenticated() && (incoming().get('userId', '') == request.auth.uid || incoming().get('userUid', '') == request.auth.uid);
-      allow update, delete: if isAdmin();
+      allow update, delete: if hasModulePermission('payrollWrite', ['admin']);
     }
 
     match /notifications/{notificationId} {
