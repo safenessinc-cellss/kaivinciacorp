@@ -99,6 +99,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => { unsubscribe(); if (unsubProfile) unsubProfile(); };
   }, []);
 
+  // When an administrator changes role/status, re-sync the base custom claims without
+  // copying granular permissions into claims. Permissions remain live in Firestore.
+  useEffect(() => {
+    if (!user || !userData) return;
+    let active = true;
+    (async () => {
+      try {
+        const token = await user.getIdToken();
+        const response = await fetch('/api/auth/bootstrap-user', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (active && response.ok) await user.getIdToken(true);
+      } catch (error) {
+        console.warn('Role claim refresh deferred:', error);
+      }
+    })();
+    return () => { active = false; };
+  }, [user?.uid, userData?.role, userData?.status]);
+
   const handleSignOut = async () => {
     localStorage.removeItem('kaivincia_active_user');
     localStorage.removeItem('kaivincia_operator_session');
