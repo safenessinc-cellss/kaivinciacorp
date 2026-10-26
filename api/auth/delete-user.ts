@@ -1,6 +1,6 @@
 import { adminAuth, adminDb } from '../../server/_lib/firebaseAdmin.js';
 
-const ROOT_USER = 'safeness.c.a@gmail.com'; // ROOT_USER: cuenta única autorizada para eliminar usuarios.
+const ROOT_USER = 'safeness.c.a@gmail.com';
 
 function sendJson(res: any, status: number, body: Record<string, unknown>) {
   res.statusCode = status;
@@ -23,9 +23,14 @@ export default async function handler(req: any, res: any) {
     return sendJson(res, 401, { error: 'Invalid token' });
   }
 
-  // ROOT_USER: cuenta única autorizada para eliminar usuarios.
-  if (String(decoded.email || '').toLowerCase() !== ROOT_USER) {
-    return sendJson(res, 403, { error: 'Solo la cuenta root puede eliminar usuarios' });
+  const callerEmail = String(decoded.email || '').trim().toLowerCase();
+  const callerRef = adminDb.collection('users').doc(String(decoded.uid));
+  const callerSnap = await callerRef.get();
+  const callerProfile = callerSnap.data() || {};
+  const isRoot = callerEmail === ROOT_USER;
+  const isApprovedSuperAdmin = String(callerProfile.role || '').trim().toLowerCase() === 'superadmin' && String(callerProfile.status || '').trim().toLowerCase() === 'approved';
+  if (!isRoot && !isApprovedSuperAdmin) {
+    return sendJson(res, 403, { error: 'Solo una cuenta SuperAdmin aprobada puede eliminar usuarios' });
   }
 
   const targetUid = String(req.body?.userId || '').trim();
@@ -35,8 +40,13 @@ export default async function handler(req: any, res: any) {
   const targetRef = adminDb.collection('users').doc(targetUid);
   const targetSnap = await targetRef.get();
   if (!targetSnap.exists) return sendJson(res, 404, { error: 'El usuario no existe' });
-  if (String(targetSnap.data()?.email || '').toLowerCase() === ROOT_USER) {
+  const targetProfile = targetSnap.data() || {};
+  const targetIsSuperAdmin = String(targetProfile.role || '').trim().toLowerCase() === 'superadmin';
+  if (String(targetProfile.email || '').trim().toLowerCase() === ROOT_USER) {
     return sendJson(res, 403, { error: 'La cuenta root está protegida y no puede eliminarse' });
+  }
+  if (targetIsSuperAdmin && !isRoot) {
+    return sendJson(res, 403, { error: 'Solo safeness.c.a@gmail.com puede eliminar una cuenta SuperAdmin' });
   }
 
   try {
