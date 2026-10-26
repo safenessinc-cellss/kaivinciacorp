@@ -155,7 +155,7 @@ export default function CommandBar({ isOpen, onClose }: { isOpen: boolean, onClo
                   <div className="w-1 h-1 bg-cyan-500 rounded-full animate-pulse" />
                 </div>
               </div>
-              <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-md transition-colors text-slate-500 hover:text-white">
+              <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-md transition-colors text-fg-secondary hover:text-white">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -163,7 +163,7 @@ export default function CommandBar({ isOpen, onClose }: { isOpen: boolean, onClo
             {/* Search Input */}
             <form onSubmit={handleNaturalLanguage} className="relative group">
               <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
-                <Search className={`w-5 h-5 transition-colors ${query ? 'text-cyan-400' : 'text-slate-500'}`} />
+                <Search className={`w-5 h-5 transition-colors ${query ? 'text-cyan-400' : 'text-fg-secondary'}`} />
               </div>
               <input
                 ref={inputRef}
@@ -173,7 +173,7 @@ export default function CommandBar({ isOpen, onClose }: { isOpen: boolean, onClo
                   setQuery(e.target.value);
                   setAiResult(null);
                 }}
-                className="w-full h-16 pl-14 pr-32 bg-transparent border-b border-cyan-500/10 text-white placeholder:text-slate-600 focus:outline-none text-lg font-medium"
+                className="w-full h-16 pl-14 pr-32 bg-transparent border-b border-cyan-500/10 text-white placeholder:text-fg-secondary focus:outline-none text-lg font-medium"
                 placeholder="Escribe un comando o petición neural..."
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -205,7 +205,7 @@ export default function CommandBar({ isOpen, onClose }: { isOpen: boolean, onClo
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs font-black uppercase tracking-widest text-cyan-400 animate-pulse">Sincronizando Red Neuronal</p>
-                      <p className="text-[10px] text-slate-500 uppercase font-mono">Interpretando intención táctica...</p>
+                      <p className="text-[10px] text-fg-secondary uppercase font-mono">Interpretando intención táctica...</p>
                     </div>
                   </motion.div>
                 ) : aiResult ? (
@@ -231,7 +231,7 @@ export default function CommandBar({ isOpen, onClose }: { isOpen: boolean, onClo
                       <ArrowRight className="w-5 h-5 text-purple-400/40 group-hover:translate-x-1 transition-all" />
                     </button>
                     <div className="mt-4 pt-4 border-t border-cyan-500/5">
-                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 italic">Resultados Relacionados</div>
+                      <div className="text-[10px] font-bold text-fg-secondary uppercase tracking-widest px-3 mb-2 italic">Resultados Relacionados</div>
                     </div>
                   </motion.div>
                 ) : null}
@@ -241,7 +241,7 @@ export default function CommandBar({ isOpen, onClose }: { isOpen: boolean, onClo
                     {filteredResults.length > 0 ? (
                       <>
                         {!query && !aiResult && (
-                          <div className="flex items-center gap-2 px-3 py-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                          <div className="flex items-center gap-2 px-3 py-2 text-[10px] font-black text-fg-secondary uppercase tracking-widest">
                             <Navigation className="w-3 h-3" /> Accesos Rápidos Tácticos
                           </div>
                         )}
@@ -261,28 +261,28 @@ export default function CommandBar({ isOpen, onClose }: { isOpen: boolean, onClo
                             <div className="flex items-center gap-4 min-w-0">
                               <div className={`w-10 h-10 rounded-lg flex items-center justify-center border transition-all ${
                                 result.type === 'command' ? 'bg-slate-800 text-slate-300 border-slate-700 group-hover:border-cyan-400 group-hover:text-cyan-400' :
-                                result.type === 'client' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 
-                                'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                result.type === 'client' ? 'bg-accent-subtle text-blue-400 border-separator' : 
+                                'bg-semantic-success-bg text-semantic-success border-separator'
                               }`}>
                                 <result.icon className="w-5 h-5" />
                               </div>
                               <div className="min-w-0">
                                 <p className="font-bold text-slate-200 group-hover:text-white transition-colors truncate uppercase tracking-tight">{result.title}</p>
-                                <p className="text-[10px] text-slate-500 font-mono mt-0.5 truncate uppercase tracking-widest">{result.subtitle}</p>
+                                <p className="text-[10px] text-fg-secondary font-mono mt-0.5 truncate uppercase tracking-widest">{result.subtitle}</p>
                               </div>
                             </div>
-                            <ArrowRight className="w-4 h-4 text-slate-700 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+                            <ArrowRight className="w-4 h-4 text-fg-secondary group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
                           </button>
                         ))}
                       </>
                     ) : !aiResult && (
                       <div className="py-20 text-center flex flex-col items-center justify-center gap-4 px-6">
-                        <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center text-slate-500">
+                        <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center text-fg-secondary">
                           <X className="w-6 h-6" />
                         </div>
                         <div className="space-y-1">
                           <p className="text-slate-300 font-bold uppercase tracking-tight">Sin resultados exactos para "{query}"</p>
-                          <p className="text-xs text-slate-500">Usa el botón de arriba para procesar con Inteligencia Artificial.</p>
+                          <p className="text-xs text-fg-secondary">Usa el botón de arriba para procesar con Inteligencia Artificial.</p>
                         </div>
                         <button 
                           onClick={handleNaturalLanguage}
@@ -303,8 +303,8 @@ export default function CommandBar({ isOpen, onClose }: { isOpen: boolean, onClo
                 <BrainCircuit className="w-3 h-3" /> Kaivincia AI Link v4.1 - Active
               </div>
               <div className="flex gap-4">
-                <span className="flex items-center gap-1.5 text-slate-500"><kbd className="bg-slate-800 text-slate-300 px-1 py-0.5 rounded border border-slate-700 min-w-[20px] text-center">↵</kbd> AI Proc</span>
-                <span className="flex items-center gap-1.5 text-slate-500"><kbd className="bg-slate-800 text-slate-300 px-1 py-0.5 rounded border border-slate-700 min-w-[20px] text-center">ESC</kbd> Close</span>
+                <span className="flex items-center gap-1.5 text-fg-secondary"><kbd className="bg-slate-800 text-slate-300 px-1 py-0.5 rounded border border-slate-700 min-w-[20px] text-center">↵</kbd> AI Proc</span>
+                <span className="flex items-center gap-1.5 text-fg-secondary"><kbd className="bg-slate-800 text-slate-300 px-1 py-0.5 rounded border border-slate-700 min-w-[20px] text-center">ESC</kbd> Close</span>
               </div>
             </div>
           </motion.div>
