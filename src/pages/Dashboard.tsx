@@ -127,7 +127,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0B0E14] text-gray-400 font-sans p-6 lg:p-10 pb-20">
+    <div className="min-h-screen bg-[#0B0E14] text-fg-tertiary font-sans p-6 lg:p-10 pb-20">
       
       {/* HEADER: DYNAMIC STATUS BAR */}
       <div className="flex flex-col lg:flex-row justify-between items-center mb-6 gap-6">
@@ -138,10 +138,10 @@ export default function Dashboard() {
           <div>
             <h1 className="text-3xl font-black text-white uppercase tracking-tighter italic">Nervous System</h1>
             <div className="flex items-center gap-3 mt-1">
-              <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+              <span className="flex items-center gap-1.5 text-[10px] font-bold text-semantic-success uppercase tracking-widest">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> Synapse: Active
               </span>
-              <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest border-l border-white/10 pl-3">
+              <span className="text-[10px] font-bold text-fg-secondary uppercase tracking-widest border-l border-white/10 pl-3">
                 Kaivincia Architecture v5.0
               </span>
             </div>
@@ -189,10 +189,10 @@ export default function Dashboard() {
           </button>
           <div className="flex items-center gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-xl">
              <div className="text-right">
-                <p className="text-[8px] font-black uppercase text-gray-500">Security Pulse</p>
+                <p className="text-[8px] font-black uppercase text-fg-secondary">Security Pulse</p>
                 <p className="text-xs font-black text-white">99.8% Encrypted</p>
              </div>
-             <ShieldAlert className="w-5 h-5 text-emerald-500" />
+             <ShieldAlert className="w-5 h-5 text-semantic-success" />
           </div>
         </div>
       </div>
@@ -228,7 +228,7 @@ export default function Dashboard() {
                   <ShieldCheck className="w-24 h-24 text-amber-600" />
                </div>
                <div className="flex items-center gap-6 relative z-10">
-                  <div className="h-14 w-14 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-xl animate-pulse">
+                  <div className="h-14 w-14 bg-semantic-warning rounded-2xl flex items-center justify-center text-white shadow-xl animate-pulse">
                      <Users className="w-8 h-8" />
                   </div>
                   <div>
@@ -279,7 +279,7 @@ export default function Dashboard() {
                   <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none mb-6">
                      Predicciones <br/> Algorítmicas
                   </h2>
-                  <p className="text-xs text-gray-500 font-medium leading-relaxed max-w-sm mb-8">
+                  <p className="text-xs text-fg-secondary font-medium leading-relaxed max-w-sm mb-8">
                      Nuestro motor RAG analiza el Banco de Datos y flujos de sentimiento para anticipar cuellos de botella operativos antes de que ocurran.
                   </p>
                   <button 
@@ -318,11 +318,11 @@ export default function Dashboard() {
                        <div className={`h-12 w-12 rounded-2xl bg-${insight.color}-500/10 text-${insight.color}-500 flex items-center justify-center mb-6 group-hover/card:scale-110 transition-transform`}>
                           {insight.icon}
                        </div>
-                       <p className="text-[9px] font-black uppercase text-gray-500 tracking-widest mb-2">{insight.title}</p>
+                       <p className="text-[9px] font-black uppercase text-fg-secondary tracking-widest mb-2">{insight.title}</p>
                        <p className="text-xs font-bold text-gray-300 leading-relaxed mb-4">{insight.desc}</p>
                        <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
                           <span className={`text-xl font-black italic tracking-tighter text-${insight.color}-500`}>{insight.val}</span>
-                          <ChevronRight className="w-4 h-4 text-gray-700" />
+                          <ChevronRight className="w-4 h-4 text-fg-secondary" />
                        </div>
                     </div>
                   ))}
@@ -358,7 +358,7 @@ export default function Dashboard() {
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none" />
               <div className="flex justify-between items-start mb-4">
                  <div>
-                    <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Global System Pulse</h4>
+                    <h4 className="text-[10px] font-black text-fg-secondary uppercase tracking-widest">Global System Pulse</h4>
                     <p className="text-xl font-black text-white italic tracking-tighter uppercase mt-1">Operational Health</p>
                  </div>
                  <Activity className="w-5 h-5 text-cyan-500 animate-pulse" />
@@ -371,7 +371,7 @@ export default function Dashboard() {
                    { label: 'Latencia de Nodo', value: '14ms', color: 'bg-[#A855F7]' }
                  ].map(stat => (
                    <div key={stat.label} className="flex flex-col gap-1.5">
-                      <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-gray-500">
+                      <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-fg-secondary">
                          <span>{stat.label}</span>
                          <span className="text-white">{stat.value}</span>
                       </div>
@@ -395,10 +395,10 @@ export default function Dashboard() {
           >
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
-                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-1 italic">I. Cash Flow Analytics</h3>
-                <p className="text-4xl font-black text-white italic tracking-tighter">${(mrr > 0 ? mrr/1000 : 57.2).toFixed(1)}K <span className="text-xs text-emerald-500 font-bold tracking-widest uppercase ml-2">+12.4%</span></p>
+                <h3 className="text-xs font-black text-fg-secondary uppercase tracking-[0.3em] mb-1 italic">I. Cash Flow Analytics</h3>
+                <p className="text-4xl font-black text-white italic tracking-tighter">${(mrr > 0 ? mrr/1000 : 57.2).toFixed(1)}K <span className="text-xs text-semantic-success font-bold tracking-widest uppercase ml-2">+12.4%</span></p>
               </div>
-              <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl border border-emerald-500/20">
+              <div className="p-3 bg-semantic-success-bg text-semantic-success rounded-2xl border border-separator">
                 <Wallet className="w-5 h-5" />
               </div>
             </div>
@@ -419,9 +419,9 @@ export default function Dashboard() {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-6 flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-gray-500">
+            <div className="mt-6 flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-fg-secondary">
                <span>Operativo: $45,200</span>
-               <span className="text-emerald-500">Neto: +$12,400</span>
+               <span className="text-semantic-success">Neto: +$12,400</span>
             </div>
           </motion.div>
 
@@ -433,10 +433,10 @@ export default function Dashboard() {
           >
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
-                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-1 italic">II. Customer Nervous Health</h3>
+                <h3 className="text-xs font-black text-fg-secondary uppercase tracking-[0.3em] mb-1 italic">II. Customer Nervous Health</h3>
                 <p className="text-4xl font-black text-white italic tracking-tighter">{avgHealth}% <span className="text-xs text-amber-500 font-bold tracking-widest uppercase ml-2">-2% Risk</span></p>
               </div>
-              <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl border border-amber-500/20">
+              <div className="p-3 bg-semantic-warning/10 text-amber-500 rounded-2xl border border-amber-500/20">
                 <Activity className="w-5 h-5" />
               </div>
             </div>
@@ -477,10 +477,10 @@ export default function Dashboard() {
           >
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
-                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-1 italic">III. Performance Node Score</h3>
-                <p className="text-4xl font-black text-white italic tracking-tighter">{teamROI}% <span className="text-xs text-emerald-500 font-bold tracking-widest uppercase ml-2">+15% Efficient</span></p>
+                <h3 className="text-xs font-black text-fg-secondary uppercase tracking-[0.3em] mb-1 italic">III. Performance Node Score</h3>
+                <p className="text-4xl font-black text-white italic tracking-tighter">{teamROI}% <span className="text-xs text-semantic-success font-bold tracking-widest uppercase ml-2">+15% Efficient</span></p>
               </div>
-              <div className="p-3 bg-blue-500/10 text-blue-500 rounded-2xl border border-blue-500/20">
+              <div className="p-3 bg-accent-subtle text-accent rounded-2xl border border-separator">
                 <Users className="w-5 h-5" />
               </div>
             </div>
@@ -497,7 +497,7 @@ export default function Dashboard() {
                     <div className="flex-1">
                       <div className="flex justify-between items-center mb-1">
                          <span className="text-[10px] font-bold text-white uppercase">{member.name}</span>
-                         <span className="text-[9px] font-black text-emerald-500">{member.roi}% ROI</span>
+                         <span className="text-[9px] font-black text-semantic-success">{member.roi}% ROI</span>
                       </div>
                       <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                         <div className="h-full bg-[#10B981]" style={{ width: `${(member.roi/2.1)}%` }} />
@@ -507,7 +507,7 @@ export default function Dashboard() {
                ))}
             </div>
 
-            <button onClick={() => navigate('/crm/team')} className="mt-6 w-full text-center text-[9px] font-black uppercase tracking-widest text-gray-600 hover:text-white transition-colors">Audit Leaderboard →</button>
+            <button onClick={() => navigate('/crm/team')} className="mt-6 w-full text-center text-[9px] font-black uppercase tracking-widest text-fg-secondary hover:text-white transition-colors">Audit Leaderboard →</button>
           </motion.div>
 
           {/* D. INTEL GROWTH HUB (ACADEMIA/SALES) */}
@@ -518,8 +518,8 @@ export default function Dashboard() {
           >
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
-                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-1 italic">IV. Growth Systemic Expansion</h3>
-                <p className="text-4xl font-black text-white italic tracking-tighter">+{academyGrowth}% <span className="text-xs text-blue-500 font-bold tracking-widest uppercase ml-2">Scale Active</span></p>
+                <h3 className="text-xs font-black text-fg-secondary uppercase tracking-[0.3em] mb-1 italic">IV. Growth Systemic Expansion</h3>
+                <p className="text-4xl font-black text-white italic tracking-tighter">+{academyGrowth}% <span className="text-xs text-accent font-bold tracking-widest uppercase ml-2">Scale Active</span></p>
               </div>
               <div className="p-3 bg-purple-500/10 text-purple-500 rounded-2xl border border-purple-500/20">
                 <BarChart3 className="w-5 h-5" />
@@ -530,12 +530,12 @@ export default function Dashboard() {
                <div className="p-5 bg-white/5 border border-white/5 rounded-3xl text-center">
                   <BookOpen className="w-6 h-6 text-purple-400 mx-auto mb-3" />
                   <p className="text-2xl font-black text-white tracking-widest">42</p>
-                  <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Certificaciones Mes</p>
+                  <p className="text-[8px] font-black text-fg-secondary uppercase tracking-widest">Certificaciones Mes</p>
                </div>
                <div className="p-5 bg-white/5 border border-white/5 rounded-3xl text-center">
-                  <TrendingUp className="w-6 h-6 text-emerald-400 mx-auto mb-3" />
+                  <TrendingUp className="w-6 h-6 text-semantic-success mx-auto mb-3" />
                   <p className="text-2xl font-black text-white tracking-widest">12</p>
-                  <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Nuevos Leads (High Q)</p>
+                  <p className="text-[8px] font-black text-fg-secondary uppercase tracking-widest">Nuevos Leads (High Q)</p>
                </div>
             </div>
 
@@ -573,17 +573,17 @@ export default function Dashboard() {
                   >
                     <div className={`absolute left-0 top-0 bottom-0 w-1 ${
                       event.type === 'success' ? 'bg-emerald-500' : 
-                      event.type === 'warning' ? 'bg-amber-500' : 'bg-[#EF4444]'
+                      event.type === 'warning' ? 'bg-semantic-warning' : 'bg-[#EF4444]'
                     }`} />
                     
                     <div className="flex justify-between items-start mb-2">
                       <span className={`text-[7px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border ${
-                        event.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 
-                        event.type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-[#EF4444]/10 border-red-500/20 text-red-500'
+                        event.type === 'success' ? 'bg-semantic-success-bg border-separator text-semantic-success' : 
+                        event.type === 'warning' ? 'bg-semantic-warning/10 border-amber-500/20 text-amber-500' : 'bg-[#EF4444]/10 border-red-500/20 text-semantic-danger'
                       }`}>
                         {event.module}
                       </span>
-                      <span className="text-[7px] font-black text-gray-600 font-mono italic">
+                      <span className="text-[7px] font-black text-fg-secondary font-mono italic">
                         {format(event.timestamp, 'HH:mm:ss')}
                       </span>
                     </div>
@@ -593,7 +593,7 @@ export default function Dashboard() {
                     </p>
                     
                     <div className="flex items-center gap-2">
-                       <Layers className="w-3 h-3 text-gray-700" />
+                       <Layers className="w-3 h-3 text-fg-secondary" />
                        <span className={`text-[9px] font-black uppercase tracking-widest ${
                          event.type === 'error' ? 'text-red-400' : 'text-[#F59E0B]'
                        }`}>
@@ -610,7 +610,7 @@ export default function Dashboard() {
                   <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative z-10 flex flex-col items-center gap-4">
                      <Network className="w-8 h-8 text-white opacity-20" />
-                     <p className="text-[9px] font-black uppercase tracking-widest text-center text-gray-500 leading-relaxed">
+                     <p className="text-[9px] font-black uppercase tracking-widest text-center text-fg-secondary leading-relaxed">
                         Red Neuronal Kaivincia <br/> <span className="text-white">Active Node: Austin-Cluster-01</span>
                      </p>
                   </div>
@@ -625,13 +625,13 @@ export default function Dashboard() {
       {/* GLOBAL FOOTER METRICS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pb-10">
          {[
-           { label: 'Cloud Load', val: '14.2%', color: 'text-emerald-500' },
-           { label: 'User Synapses', val: '1,242/s', color: 'text-blue-500' },
-           { label: 'Integrity', val: '100.00%', color: 'text-emerald-500' },
-           { label: 'Latency', val: '12ms', color: 'text-blue-500' }
+           { label: 'Cloud Load', val: '14.2%', color: 'text-semantic-success' },
+           { label: 'User Synapses', val: '1,242/s', color: 'text-accent' },
+           { label: 'Integrity', val: '100.00%', color: 'text-semantic-success' },
+           { label: 'Latency', val: '12ms', color: 'text-accent' }
          ].map((stat, i) => (
            <div key={i} className="bg-white/5 border border-white/5 px-6 py-4 rounded-2xl flex justify-between items-center transition-all hover:bg-white/10">
-              <span className="text-[8px] font-black uppercase tracking-widest text-gray-600">{stat.label}</span>
+              <span className="text-[8px] font-black uppercase tracking-widest text-fg-secondary">{stat.label}</span>
               <span className={`text-[10px] font-black ${stat.color} font-mono tracking-tighter`}>{stat.val}</span>
            </div>
          ))}
