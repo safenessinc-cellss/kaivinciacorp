@@ -121,7 +121,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#05070a] relative flex flex-col items-center justify-center overflow-hidden">
+      <div className="min-h-screen bg-[var(--bg-page)] relative flex flex-col items-center justify-center overflow-hidden">
         {/* Background stars */}
         <div className="absolute inset-0 z-0 opacity-50">
           {[...Array(20)].map((_, i) => (
@@ -156,26 +156,26 @@ export default function App() {
             {/* The Text being revealed/formed */}
             <div className="relative overflow-hidden flex items-center">
               <motion.div
-                className="absolute inset-y-0 right-0 bg-[#05070a] z-20 origin-right"
+                className="absolute inset-y-0 right-0 bg-[var(--bg-page)] z-20 origin-right"
                 initial={{ width: "100%" }}
                 animate={{ width: "0%" }}
                 transition={{ duration: 2.5, ease: "easeInOut", delay: 0.5 }}
               />
-              <h1 className="text-4xl md:text-6xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] via-white to-[#00F0FF] uppercase italic relative z-10">
+              <h1 className="text-4xl md:text-6xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-white to-[var(--accent)] uppercase italic relative z-10">
                 Kaivincia Corp
               </h1>
             </div>
 
             {/* Spaceship shooting */}
             <motion.div
-              className="absolute text-[#00F0FF] right-0 z-30"
+              className="absolute text-[var(--accent)] right-0 z-30"
               initial={{ right: "100%", x: "0%" }}
               animate={{ right: "0%", x: "100%" }}
               transition={{ duration: 2.5, ease: "easeInOut", delay: 0.5 }}
             >
               {/* Laser beam */}
               <motion.div 
-                className="absolute right-full top-1/2 -translate-y-1/2 h-0.5 bg-[#00F0FF] shadow-[0_0_10px_#00F0FF]"
+                className="absolute right-full top-1/2 -translate-y-1/2 h-0.5 bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]"
                 initial={{ width: 0 }}
                 animate={{ width: 40 }}
                 transition={{ duration: 0.2, repeat: Infinity, repeatType: "reverse" }}
