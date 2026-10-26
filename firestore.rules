@@ -83,9 +83,9 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("role", "") in ["superadmin", "admin"];
     }
 
-    // Only the root identity can approve/reject users or change their base role.
+    // Any explicitly approved SuperAdmin may approve/reject accounts and assign base roles.
     function canApproveUsers() {
-      return isRoot();
+      return isSuperAdminOnly();
     }
 
     function isUser(userId) {
@@ -142,11 +142,6 @@ service cloud.firestore {
         canApproveUsers()
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['status', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason', 'blockedBy', 'blockedAt', 'blockReason', 'role'])
-        && (
-          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
-          || isSuperAdminOnly()
-          || request.resource.data.get('role', '') in ['tlmk', 'sales', 'agente', 'rrhh', 'collaborator', 'tutor', 'alumno', 'cliente', 'user']
-        )
       ) || (
         isAdmin()
         && !request.resource.data.diff(resource.data).affectedKeys()
@@ -157,7 +152,8 @@ service cloud.firestore {
           .hasAny(['role', 'status', 'permissions', 'permissionsUpdatedAt', 'permissionsUpdatedBy', 'uid', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason', 'blockedBy', 'blockedAt', 'blockReason'])
       );
 
-      allow delete: if isRoot();
+      // Approved SuperAdmins may delete ordinary accounts; only root may delete a SuperAdmin.
+      allow delete: if isRoot() || (isSuperAdminOnly() && resource.data.get('role', 'none') != 'superadmin');
     }
 
     match /user_sessions/{sessionId} {
