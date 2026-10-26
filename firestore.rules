@@ -195,8 +195,8 @@ service cloud.firestore {
     }
 
     match /tasks/{taskId} {
-      allow read, create, update: if isAuthenticated();
-      allow delete: if isAuthenticated();
+      allow read, create, update: if hasModulePermission('tasks', ['admin', 'supervisor', 'agente', 'tlmk', 'ventas']);
+      allow delete: if isAdmin();
     }
 
     match /chat_messages/{messageId} {
@@ -239,8 +239,8 @@ service cloud.firestore {
     }
 
     match /voip_providers/{providerId} {
-      allow read, create, update: if isAuthenticated();
-      allow delete: if isAdmin();
+      allow read: if hasModulePermission('calls', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']);
+      allow create, update, delete: if isAdmin();
     }
 
     match /telnyx_phone_numbers/{numberId} {
@@ -254,7 +254,7 @@ service cloud.firestore {
     }
 
     match /telnyx_sip_credentials/{sipId} {
-      allow read: if isAdmin() || (isApproved() && existing().get('assignedTo', '') == request.auth.uid);
+      allow read: if isAdmin() || (hasModulePermission('calls', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']) && existing().get('assignedTo', '') == request.auth.uid);
       allow create: if isAdmin() && incoming().get('assignedTo', null) == null;
       allow update: if isAdmin() && (
         existing().get('assignedTo', null) == null ||
@@ -284,7 +284,7 @@ service cloud.firestore {
     }
 
     match /appointments/{appointmentId} {
-      allow read, create, update: if isAuthenticated();
+      allow read, create, update: if hasModulePermission('calendar', ['admin', 'supervisor', 'tlmk', 'ventas', 'agente']);
       allow delete: if isAdmin();
     }
 
@@ -352,8 +352,8 @@ service cloud.firestore {
     // Integraciones
     // ===============================================================
     match /integrations/{integrationId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated();
+      allow read: if hasModulePermission('integrations', ['admin']);
+      allow create, update: if hasModulePermission('integrations', ['admin']);
       allow delete: if isAdmin();
     }
 
@@ -380,8 +380,8 @@ service cloud.firestore {
     }
 
     match /automation_rules/{ruleId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated();
+      allow read: if hasModulePermission('automations', ['admin']);
+      allow create, update: if hasModulePermission('automations', ['admin']);
       allow delete: if isAdmin();
     }
 
@@ -421,7 +421,7 @@ service cloud.firestore {
     }
 
     match /time_logs/{logId} {
-      allow read:   if isAuthenticated();
+      allow read: if hasModulePermission('payroll', ['admin', 'supervisor']) || (isAuthenticated() && (existing().get('userUid', '') == request.auth.uid || existing().get('userId', '') == request.auth.uid));
       allow create: if isAuthenticated() && isValidTimeLog(incoming());
       allow update: if isAuthenticated() &&
                        (isAdmin() ||
@@ -449,7 +449,7 @@ service cloud.firestore {
     // Asistencia & permisos
     // ===============================================================
     match /attendance_logs/{logId} {
-      allow read:   if isAdmin() ||
+      allow read: if hasModulePermission('payroll', ['admin', 'supervisor']) ||
                        (isAuthenticated() && (existing().get('userId', '') == request.auth.uid || existing().get('userUid', '') == request.auth.uid));
       allow create: if isAuthenticated() && (incoming().get('userId', '') == request.auth.uid || incoming().get('userUid', '') == request.auth.uid);
       allow update, delete: if isAdmin();
@@ -479,8 +479,7 @@ service cloud.firestore {
     }
 
     match /settings/telnyx_config {
-      allow read:  if isAuthenticated();
-      allow write: if isAdmin();
+      allow read, write: if isAdmin();
     }
 
     // ===============================================================
