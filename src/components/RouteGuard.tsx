@@ -33,7 +33,7 @@ export default function RouteGuard({ children }: RouteGuardProps) {
   // values are not approval and must remain blocked until the root approver confirms.
   const status = String(userData.status || '').trim().toLowerCase();
   const rawRole = String(userData.role || 'none').trim().toLowerCase();
-  const role = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[rawRole] || rawRole;
+  const role = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk', professor: 'tutor', mkt: 'tlmk', operador: 'agente' } as Record<string, string>)[rawRole] || rawRole;
   const knownRoles = new Set(['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas', 'ceo', 'gestor', 'alumno', 'rrhh', 'collaborator', 'tutor', 'cliente', 'user']);
   if (status !== 'approved' || !knownRoles.has(role) || role === 'none') {
     return <PendingApproval />;
