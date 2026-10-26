@@ -30,8 +30,9 @@ export default function RouteGuard({ children }: RouteGuardProps) {
   if (!userData) return <PendingApproval />;
 
   const status = String(userData.status || '').trim().toLowerCase();
-  const role = String(userData.role || 'none').trim().toLowerCase();
-  const knownRoles = new Set(['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas', 'ceo', 'gestor', 'alumno']);
+  const rawRole = String(userData.role || 'none').trim().toLowerCase();
+  const role = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[rawRole] || rawRole;
+  const knownRoles = new Set(['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas', 'ceo', 'gestor', 'alumno', 'rrhh', 'collaborator', 'tutor', 'cliente', 'user']);
   if (status !== 'approved' || !knownRoles.has(role) || role === 'none') {
     return <PendingApproval />;
   }
