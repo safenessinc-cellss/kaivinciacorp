@@ -34,7 +34,7 @@
   --color-gray: var(--mac-gray);
   --gray-1: #8E8E93; --gray-2: #AEAEB2; --gray-3: #C7C7CC; --gray-4: #D1D1D6; --gray-5: #E5E5EA; --gray-6: #F2F2F7;
   --fg-primary: #000000; --fg-secondary: #545459; --fg-tertiary: #6E6E73; --fg-placeholder: #6E6E73;
-  --fg-link: #0066CC; --fg-inverse: #FFFFFF;
+  --fg-link: #0066CC; --fg-inverse: #000000;
   --bg-page: #FFFFFF; --bg-grouped: #F2F2F7; --bg-elevated: #FFFFFF;
   --bg-sidebar: rgba(246,246,246,.85); --bg-toolbar: rgba(236,236,236,.88); --bg-overlay: rgba(0,0,0,.60);
   --separator: #8E8E93; --separator-opaque: #8E8E93;
