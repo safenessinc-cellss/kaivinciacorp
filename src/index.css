@@ -29,19 +29,19 @@
   --font-sans: var(--font-family), "Rajdhani", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Orbitron", ui-serif, Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --color-primary: var(--color-primary);
-  --color-secondary: var(--color-secondary);
-  --color-background: var(--color-background);
-  --color-surface: var(--color-surface);
-  --color-text-primary: var(--color-text-primary);
-  --color-text-secondary: var(--color-text-secondary);
-  --color-sidebar-bg: var(--color-sidebar-bg);
-  --color-sidebar-text: var(--color-sidebar-text);
-  --color-sidebar-active: var(--color-sidebar-active);
-  --color-header-bg: var(--color-header-bg);
-  --color-cyber-dark: var(--color-background);
-  --color-cyber-glass: rgba(5, 7, 10, 0.85);
-  --color-cyber-border: rgba(0, 240, 255, 0.2);
+  --color-primary: var(--accent);
+  --color-secondary: var(--fg-secondary);
+  --color-background: var(--bg-page);
+  --color-surface: var(--bg-elevated);
+  --color-text-primary: var(--fg-primary);
+  --color-text-secondary: var(--fg-secondary);
+  --color-sidebar-bg: var(--bg-sidebar);
+  --color-sidebar-text: var(--fg-primary);
+  --color-sidebar-active: var(--accent);
+  --color-header-bg: var(--bg-toolbar);
+  --color-cyber-dark: var(--bg-page);
+  --color-cyber-glass: var(--bg-sidebar);
+  --color-cyber-border: var(--separator);
 }
 
 @layer base {
