@@ -237,14 +237,14 @@ export default function App() {
         >
           <Route index element={<Navigate to={normalizedRole === 'alumno' ? "/crm/academy-internal" : (normalizedRole === 'tlmk' || normalizedRole === 'ventas' ? "/crm/pipeline" : "/crm/dashboard")} />} />
           <Route path="dashboard" element={normalizedRole === 'alumno' ? <Navigate to="/crm/academy-internal" /> : <Dashboard />} />
-          <Route path="dashboard/customize" element={<DashboardCustomizer />} />
+          <Route path="dashboard/customize" element={isManagementRole ? <DashboardCustomizer /> : <Navigate to="/crm/dashboard" />} />
           <Route path="strategic-report" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <StrategicReport />} />
           <Route path="clients" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Clients />} />
           <Route path="pipeline" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Pipeline />} />
           <Route path="tasks" element={<Tasks />} />
           <Route path="calendar" element={<CalendarView />} />
           <Route path="chat" element={<Chat />} />
-          <Route path="cobranza" element={<Cobranza />} />
+          <Route path="cobranza" element={isManagementRole ? <Cobranza /> : <Navigate to="/crm/dashboard" />} />
           <Route path="call-center" element={normalizedRole !== 'superadmin' && normalizedRole !== 'admin' ? <Navigate to="/crm/dashboard" /> : <CallCenterAdmin />} />
           
           {/* New Modules */}
@@ -264,7 +264,7 @@ export default function App() {
           <Route path="payroll" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Payroll />} />
           <Route path="accounting" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Accounting />} />
           <Route path="client-management" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <ClientManagement />} />
-          <Route path="billing" element={<Billing />} />
+          <Route path="billing" element={isManagementRole ? <Billing /> : <Navigate to="/crm/dashboard" />} />
           <Route path="operations" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Operations />} />
           <Route path="marketing" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Marketing />} />
           <Route path="projects" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <Projects />} />
