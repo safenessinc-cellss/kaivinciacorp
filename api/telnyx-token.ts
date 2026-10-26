@@ -2,7 +2,7 @@ import { adminDb } from '../server/_lib/firebaseAdmin.js';
 import { TelnyxBackendService } from '../server/telnyxBackend.js';
 
 export default async function handler(req: any, res: any) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Same-origin endpoint; no wildcard CORS grant.
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
 
@@ -35,7 +35,7 @@ export default async function handler(req: any, res: any) {
     const profile = profileSnap.exists ? (profileSnap.data() || {}) : null;
     const profileRole = String(profile?.role || '').trim().toLowerCase();
     if (!profile || String(profile.status || '').trim().toLowerCase() !== 'approved' ||
-        !['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ceo', 'gestor'].includes(profileRole)) {
+        !['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas', 'ceo', 'gestor'].includes(profileRole)) {
       res.statusCode = 403;
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({ error: 'Acceso a telefonía pendiente de aprobación o no autorizado.' }));
