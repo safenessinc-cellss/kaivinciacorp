@@ -205,11 +205,12 @@ export default function App() {
     return <PendingApproval />;
   }
 
-  const effectiveUserData = userData || {
+  const effectiveUserData = userData ? { ...userData, uid: user?.uid || userData.uid } : {
     name: user?.displayName || 'Agente TLMK',
     email: user?.email || 'operador@kaivincia.com',
     role: normalizedRole,
-    status: normalizedStatus || 'pending'
+    status: normalizedStatus || 'pending',
+    uid: user?.uid
   };
 
   return (
@@ -240,7 +241,7 @@ export default function App() {
         >
           <Route index element={<Navigate to={normalizedRole === 'alumno' ? "/crm/academy-internal" : (normalizedRole === 'tlmk' || normalizedRole === 'ventas' ? "/crm/pipeline" : "/crm/dashboard")} />} />
           <Route path="dashboard" element={<PermissionGate module="dashboard" userData={effectiveUserData}><Dashboard /></PermissionGate>} />
-          <Route path="dashboard/customize" element={isManagementRole ? <DashboardCustomizer /> : <Navigate to="/crm/dashboard" />} />
+          <Route path="dashboard/customize" element={<PermissionGate module="dashboard" userData={effectiveUserData}><DashboardCustomizer /></PermissionGate>} />
           <Route path="strategic-report" element={<PermissionGate module="strategicReport" userData={effectiveUserData}><StrategicReport /></PermissionGate>} />
           <Route path="clients" element={<PermissionGate module="clients" userData={effectiveUserData}><Clients /></PermissionGate>} />
           <Route path="pipeline" element={<PermissionGate module="marketing" userData={effectiveUserData}><Pipeline /></PermissionGate>} />
@@ -248,11 +249,11 @@ export default function App() {
           <Route path="calendar" element={<PermissionGate module="calendar" userData={effectiveUserData}><CalendarView /></PermissionGate>} />
           <Route path="chat" element={<PermissionGate module="chat" userData={effectiveUserData}><Chat /></PermissionGate>} />
           <Route path="cobranza" element={<PermissionGate module="cobranza" userData={effectiveUserData}><Cobranza /></PermissionGate>} />
-          <Route path="call-center" element={normalizedRole !== 'superadmin' && normalizedRole !== 'admin' ? <Navigate to="/crm/dashboard" /> : <CallCenterAdmin />} />
+          <Route path="call-center" element={normalizedRole !== 'superadmin' && normalizedRole !== 'admin' ? <Navigate to="/crm/access-denied" replace /> : <PermissionGate module="calls" userData={effectiveUserData}><CallCenterAdmin /></PermissionGate>} />
           
           {/* New Modules */}
           <Route path="superadmin" element={normalizedRole !== 'superadmin' ? <Navigate to="/crm/access-denied" replace /> : <SuperAdmin />} />
-          <Route path="permissions" element={normalizedRole !== 'superadmin' ? <Navigate to="/crm/access-denied" replace /> : <PermissionsManager />} />
+          <Route path="permissions" element={normalizedRole !== 'superadmin' ? <Navigate to="/crm/access-denied" replace /> : <PermissionsManager userData={effectiveUserData} />} />
           <Route path="access-denied" element={<AccessDenied />} />
           <Route path="appearance" element={<PermissionGate module="appearance" userData={effectiveUserData}><AppearancePanel /></PermissionGate>} />
           <Route path="automations" element={<PermissionGate module="automations" userData={effectiveUserData}><Automations /></PermissionGate>} />
@@ -260,7 +261,7 @@ export default function App() {
           <Route path="integrations" element={<PermissionGate module="integrations" userData={effectiveUserData}><Integrations /></PermissionGate>} />
           <Route path="academy-internal" element={<PermissionGate module="academy" userData={effectiveUserData}><AcademyInternal /></PermissionGate>} />
           <Route path="academy-external" element={<AcademyExternal />} />
-          <Route path="digital-products" element={<DigitalProducts />} />
+          <Route path="digital-products" element={<PermissionGate module="academy" userData={effectiveUserData}><DigitalProducts /></PermissionGate>} />
           <Route path="calls" element={<PermissionGate module="calls" userData={effectiveUserData}><CallSystem /></PermissionGate>} />
           
           {/* Administrativo */}
@@ -275,14 +276,14 @@ export default function App() {
           <Route path="projects" element={<PermissionGate module="projects" userData={effectiveUserData}><Projects /></PermissionGate>} />
           <Route path="reports" element={<PermissionGate module="reports" userData={effectiveUserData}><Reports /></PermissionGate>} />
           <Route path="commissions" element={<PermissionGate module="reports" userData={effectiveUserData}><Commissions /></PermissionGate>} />
-          <Route path="tactical" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <TacticalDeployment />} />
+          <Route path="tactical" element={<PermissionGate module="operations" userData={effectiveUserData}><TacticalDeployment /></PermissionGate>} />
           <Route path="manuales" element={<PermissionGate module="academy" userData={effectiveUserData}><SOPManuals /></PermissionGate>} />
-          <Route path="turs" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <MasterForms />} />
+          <Route path="turs" element={<PermissionGate module="formTemplates" userData={effectiveUserData}><MasterForms /></PermissionGate>} />
           <Route path="helpdesk" element={<PermissionGate module="helpdesk" userData={effectiveUserData}><Helpdesk /></PermissionGate>} />
           <Route path="drive" element={<PermissionGate module="drive" userData={effectiveUserData}><DocumentDrive /></PermissionGate>} />
-          <Route path="audits" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <AuditsSGI />} />
+          <Route path="audits" element={<PermissionGate module="reports" userData={effectiveUserData}><AuditsSGI /></PermissionGate>} />
           <Route path="security" element={<PermissionGate module="security" userData={effectiveUserData}><SecurityCenter /></PermissionGate>} />
-          <Route path="nervous" element={!isManagementRole ? <Navigate to="/crm/dashboard" /> : <NervousSystem />} />
+          <Route path="nervous" element={<PermissionGate module="dashboard" userData={effectiveUserData}><NervousSystem /></PermissionGate>} />
           <Route path="strategy-blog" element={<StrategyBlog />} />
           
           {/* Portales */}
