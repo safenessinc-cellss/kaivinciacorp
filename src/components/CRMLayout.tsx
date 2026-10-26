@@ -41,7 +41,8 @@ export default function CRMLayout({ userData }: { userData: any }) {
     'Configuración': false
   });
 
-  const userRole = userData?.role || 'user';
+  const rawUserRole = String(userData?.role || 'user').trim().toLowerCase();
+  const userRole = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[rawUserRole] || rawUserRole;
   const isAdminOrFin = ['superadmin', 'admin', 'billing', 'accounting'].includes(userRole);
   const isSuperAdmin = String(userRole).trim().toLowerCase() === 'superadmin';
   const { can } = usePermissions(userData);
