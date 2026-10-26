@@ -193,16 +193,19 @@ export default function App() {
     );
   }
 
-  // Usuario logueado pero pendiente de aprobación → pantalla de espera (sin auto-activación)
-  if (user && userData && (userData.status === 'pending' || !userData.role || userData.role === 'none')) {
+  // Autorización explícita: normalizar espacios/mayúsculas y denegar por defecto.
+  const normalizedRole = String(userData?.role || 'none').trim().toLowerCase();
+  const normalizedStatus = String(userData?.status || '').trim().toLowerCase();
+  const validRoles = ['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas', 'ceo', 'gestor', 'alumno'];
+  if (user && (normalizedStatus !== 'approved' || !validRoles.includes(normalizedRole))) {
     return <PendingApproval />;
   }
 
   const effectiveUserData = userData || {
     name: user?.displayName || 'Agente TLMK',
     email: user?.email || 'operador@kaivincia.com',
-    role: 'none',
-    status: 'pending'
+    role: normalizedRole,
+    status: normalizedStatus || 'pending'
   };
 
   return (
@@ -231,49 +234,49 @@ export default function App() {
             </RouteGuard>
           }
         >
-          <Route index element={<Navigate to={effectiveUserData?.role === 'alumno' ? "/crm/academy-internal" : (effectiveUserData?.role === 'tlmk' ? "/crm/pipeline" : "/crm/dashboard")} />} />
-          <Route path="dashboard" element={userData?.role === 'alumno' ? <Navigate to="/crm/academy-internal" /> : <Dashboard />} />
+          <Route index element={<Navigate to={normalizedRole === 'alumno' ? "/crm/academy-internal" : (normalizedRole === 'tlmk' || normalizedRole === 'ventas' ? "/crm/pipeline" : "/crm/dashboard")} />} />
+          <Route path="dashboard" element={normalizedRole === 'alumno' ? <Navigate to="/crm/academy-internal" /> : <Dashboard />} />
           <Route path="dashboard/customize" element={<DashboardCustomizer />} />
-          <Route path="strategic-report" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <StrategicReport />} />
-          <Route path="clients" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Clients />} />
-          <Route path="pipeline" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Pipeline />} />
+          <Route path="strategic-report" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <StrategicReport />} />
+          <Route path="clients" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Clients />} />
+          <Route path="pipeline" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Pipeline />} />
           <Route path="tasks" element={<Tasks />} />
           <Route path="calendar" element={<CalendarView />} />
           <Route path="chat" element={<Chat />} />
           <Route path="cobranza" element={<Cobranza />} />
-          <Route path="call-center" element={userData?.role !== "superadmin" && userData?.role !== "admin" ? <Navigate to="/crm/dashboard" /> : <CallCenterAdmin />} />
+          <Route path="call-center" element={normalizedRole !== 'superadmin' && normalizedRole !== 'admin' ? <Navigate to="/crm/dashboard" /> : <CallCenterAdmin />} />
           
           {/* New Modules */}
-          <Route path="superadmin" element={userData?.role !== 'superadmin' ? <Navigate to="/crm/dashboard" /> : <SuperAdmin />} />
-          <Route path="appearance" element={userData?.role !== 'superadmin' && userData?.role !== 'admin' ? <Navigate to="/crm/dashboard" /> : <AppearancePanel />} />
-          <Route path="automations" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Automations />} />
-          <Route path="form-templates" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <FormTemplates />} />
-          <Route path="integrations" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Integrations />} />
+          <Route path="superadmin" element={normalizedRole !== 'superadmin' ? <Navigate to="/crm/dashboard" /> : <SuperAdmin />} />
+          <Route path="appearance" element={normalizedRole !== 'superadmin' && normalizedRole !== 'admin' ? <Navigate to="/crm/dashboard" /> : <AppearancePanel />} />
+          <Route path="automations" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Automations />} />
+          <Route path="form-templates" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <FormTemplates />} />
+          <Route path="integrations" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Integrations />} />
           <Route path="academy-internal" element={<AcademyInternal />} />
           <Route path="academy-external" element={<AcademyExternal />} />
           <Route path="digital-products" element={<DigitalProducts />} />
-          <Route path="calls" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <CallSystem />} />
+          <Route path="calls" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <CallSystem />} />
           
           {/* Administrativo */}
-          <Route path="recruitment" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Recruitment />} />
-          <Route path="team" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <TeamManagement />} />
-          <Route path="payroll" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Payroll />} />
-          <Route path="accounting" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Accounting />} />
-          <Route path="client-management" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <ClientManagement />} />
+          <Route path="recruitment" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Recruitment />} />
+          <Route path="team" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <TeamManagement />} />
+          <Route path="payroll" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Payroll />} />
+          <Route path="accounting" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Accounting />} />
+          <Route path="client-management" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <ClientManagement />} />
           <Route path="billing" element={<Billing />} />
-          <Route path="operations" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Operations />} />
-          <Route path="marketing" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Marketing />} />
-          <Route path="projects" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Projects />} />
-          <Route path="reports" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Reports />} />
-          <Route path="commissions" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Commissions />} />
-          <Route path="tactical" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <TacticalDeployment />} />
+          <Route path="operations" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Operations />} />
+          <Route path="marketing" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Marketing />} />
+          <Route path="projects" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Projects />} />
+          <Route path="reports" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Reports />} />
+          <Route path="commissions" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Commissions />} />
+          <Route path="tactical" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <TacticalDeployment />} />
           <Route path="manuales" element={<SOPManuals />} />
-          <Route path="turs" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <MasterForms />} />
-          <Route path="helpdesk" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Helpdesk />} />
-          <Route path="drive" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <DocumentDrive />} />
-          <Route path="audits" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <AuditsSGI />} />
-          <Route path="security" element={userData?.role !== 'superadmin' ? <Navigate to="/crm/dashboard" /> : <SecurityCenter />} />
-          <Route path="nervous" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <NervousSystem />} />
+          <Route path="turs" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <MasterForms />} />
+          <Route path="helpdesk" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Helpdesk />} />
+          <Route path="drive" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <DocumentDrive />} />
+          <Route path="audits" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <AuditsSGI />} />
+          <Route path="security" element={normalizedRole !== 'superadmin' ? <Navigate to="/crm/dashboard" /> : <SecurityCenter />} />
+          <Route path="nervous" element={normalizedRole === 'alumno' ? <Navigate to="/crm/user-portal" /> : <NervousSystem />} />
           <Route path="strategy-blog" element={<StrategyBlog />} />
           
           {/* Portales */}
