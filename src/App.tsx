@@ -194,9 +194,10 @@ export default function App() {
   }
 
   // Autorización explícita: normalizar espacios/mayúsculas y denegar por defecto.
-  const normalizedRole = String(userData?.role || 'none').trim().toLowerCase();
+  const rawRole = String(userData?.role || 'none').trim().toLowerCase();
+  const normalizedRole = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[rawRole] || rawRole;
   const normalizedStatus = String(userData?.status || '').trim().toLowerCase();
-  const validRoles = ['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas', 'ceo', 'gestor', 'alumno'];
+  const validRoles = ['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ventas', 'ceo', 'gestor', 'alumno', 'rrhh', 'collaborator', 'tutor', 'cliente', 'user'];
   const isManagementRole = ['superadmin', 'admin', 'supervisor'].includes(normalizedRole);
   if (user && (normalizedStatus !== 'approved' || !validRoles.includes(normalizedRole))) {
     return <PendingApproval />;
