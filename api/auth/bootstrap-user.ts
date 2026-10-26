@@ -2,15 +2,13 @@ import { adminAuth, adminDb } from '../../server/_lib/firebaseAdmin.js';
 import { FieldValue } from 'firebase-admin/firestore';
 
 const ROOT_USER = 'safeness.c.a@gmail.com';
-const SUPERADMINS = (process.env.SUPERADMIN_EMAILS || ROOT_USER)
-  .split(',')
-  .map((email) => email.trim().toLowerCase())
-  .filter(Boolean);
+// Exactly one identity is trusted to bootstrap as SuperAdmin. Environment variables
+// must not silently grant administrator access to additional accounts.
+const SUPERADMINS = [ROOT_USER];
 
 function normalizeStatus(value: unknown): string {
-  const status = String(value || 'pending').trim().toLowerCase();
-  if (status === 'active' || status === 'enabled') return 'approved';
-  return status;
+  // Legacy "active"/"enabled" is not proof of explicit approval.
+  return String(value || 'pending').trim().toLowerCase();
 }
 
 function sendJson(res: any, status: number, body: Record<string, unknown>) {
