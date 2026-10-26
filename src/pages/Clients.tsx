@@ -910,7 +910,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
     return matchesSearch && matchesStatus && matchesSector;
   });
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Cargando clientes...</div>;
+  if (loading) return <div className="p-8 text-center text-fg-secondary">Cargando clientes...</div>;
 
   const handleGenerateInvoice = async () => {
     if (!selectedClient) return;
@@ -977,7 +977,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
 
   if (selectedClient) {
     return (
-      <div className="space-y-6 flex flex-col h-full bg-[#0B0E14] text-gray-400 p-2 sm:p-4">
+      <div className="space-y-6 flex flex-col h-full bg-[#0B0E14] text-fg-tertiary p-2 sm:p-4">
         <div className="flex flex-col md:flex-row items-center gap-6 glass-panel p-6 rounded-[2rem]">
           <button 
             onClick={() => setSelectedClient(null)}
@@ -988,7 +988,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
           <div className="flex-1 text-center md:text-left">
             <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none">{selectedClient.name}</h2>
             <div className="flex items-center gap-3 mt-2 justify-center md:justify-start">
-               <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{selectedClient.company || 'Independiente'}</span>
+               <span className="text-[10px] font-black text-fg-secondary uppercase tracking-widest">{selectedClient.company || 'Independiente'}</span>
                <span className="h-1 w-1 bg-gray-700 rounded-full" />
                <span className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest">Node ID: {selectedClient.id.slice(0, 8)}</span>
             </div>
@@ -996,12 +996,12 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setActiveProfileTab('chat')}
-              className="flex items-center gap-3 px-6 py-3 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl font-black uppercase tracking-widest hover:bg-blue-500/20 transition-all text-[10px]"
+              className="flex items-center gap-3 px-6 py-3 bg-accent-subtle text-blue-400 border border-separator rounded-xl font-black uppercase tracking-widest hover:bg-blue-500/20 transition-all text-[10px]"
             >
               <MessageSquare className="w-4 h-4" /> Open Comms
             </button>
             <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
-              selectedClient.status === 'Activo' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+              selectedClient.status === 'Activo' ? 'bg-semantic-success-bg text-semantic-success border-separator' : 'bg-accent-subtle text-accent border-separator'
             }`}>
               {selectedClient.status}
             </div>
@@ -1025,7 +1025,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                 className={`flex items-center gap-3 px-6 py-4 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl whitespace-nowrap ${
                   activeProfileTab === tab.id 
                     ? 'bg-white/10 text-white border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]' 
-                    : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                    : 'text-fg-secondary hover:text-gray-300 hover:bg-white/5'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -1053,11 +1053,11 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
 
                     <div className="grid grid-cols-2 gap-4 mb-8">
                        <div className="p-5 bg-white/5 rounded-3xl border border-white/5">
-                          <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Lifetime Value</p>
-                          <p className="text-xl font-black text-emerald-400 italic font-mono">${clientIntel.ltv.toLocaleString()}</p>
+                          <p className="text-[9px] font-black text-fg-secondary uppercase tracking-widest mb-1">Lifetime Value</p>
+                          <p className="text-xl font-black text-semantic-success italic font-mono">${clientIntel.ltv.toLocaleString()}</p>
                        </div>
                        <div className="p-5 bg-white/5 rounded-3xl border border-white/5">
-                          <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Pending Invoices</p>
+                          <p className="text-[9px] font-black text-fg-secondary uppercase tracking-widest mb-1">Pending Invoices</p>
                           <p className="text-xl font-black text-amber-400 italic font-mono">{clientIntel.pendingInvoices}</p>
                        </div>
                     </div>
@@ -1079,7 +1079,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
 
                   {/* Health Radar - Spider Chart */}
                   <div className="glass-panel p-8 rounded-[2.5rem] bg-[#161B22]/60">
-                    <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] font-mono mb-8 text-center">Neural Health Vector</h4>
+                    <h4 className="text-[10px] font-black text-fg-secondary uppercase tracking-[0.3em] font-mono mb-8 text-center">Neural Health Vector</h4>
                     <div className="h-64 w-full min-h-80">
                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} initialDimension={{ width: 300, height: 256 }}>
                          <RadarChart cx="50%" cy="50%" outerRadius="80%" data={[
@@ -1097,7 +1097,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                     </div>
                     <div className="mt-8 flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
                        <div className="flex items-center gap-3">
-                          <div className={`w-3 h-3 rounded-full animate-pulse ${clientIntel.sentiment === 'Positive' ? 'bg-emerald-500 shadow-[0_0_10px_#10B981]' : clientIntel.sentiment === 'Neutral' ? 'bg-amber-500 shadow-[0_0_10px_#F59E0B]' : 'bg-red-500 shadow-[0_0_10px_#EF4444]'}`} />
+                          <div className={`w-3 h-3 rounded-full animate-pulse ${clientIntel.sentiment === 'Positive' ? 'bg-emerald-500 shadow-[0_0_10px_#10B981]' : clientIntel.sentiment === 'Neutral' ? 'bg-semantic-warning shadow-[0_0_10px_#F59E0B]' : 'bg-semantic-danger shadow-[0_0_10px_#EF4444]'}`} />
                           <span className="text-[10px] font-black text-white uppercase tracking-widest">Sentiment: {clientIntel.sentiment}</span>
                        </div>
                        <span className="text-2xl font-black text-white italic tracking-tighter">{(selectedClient.healthScore || 85)}%</span>
@@ -1110,7 +1110,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          className="w-full mt-6 py-4 bg-red-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(239,68,68,0.4)] flex items-center justify-center gap-3 hover:scale-[1.02] transition-all"
+                          className="w-full mt-6 py-4 bg-semantic-danger text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(239,68,68,0.4)] flex items-center justify-center gap-3 hover:scale-[1.02] transition-all"
                         >
                           <AlertCircle className="w-4 h-4" /> Ejecutar Acción Preventiva
                         </motion.button>
@@ -1142,13 +1142,13 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                                <div className="flex justify-between items-start mb-6">
                                   <div>
                                      <h4 className="text-sm font-black text-white uppercase italic tracking-tight">{p.name}</h4>
-                                     <p className="text-[9px] font-black text-gray-600 uppercase mt-1 tracking-widest">Category: {p.category || 'Consultora'}</p>
+                                     <p className="text-[9px] font-black text-fg-secondary uppercase mt-1 tracking-widest">Category: {p.category || 'Consultora'}</p>
                                   </div>
                                   <div className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border shadow-[0_0_15px_rgba(0,0,0,0.5)] ${
-                                    p.status === 'Completado' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 glow-emerald' :
-                                    p.status === 'Retrasado' ? 'bg-red-500/10 text-red-400 border-red-500/20 glow-crimson' :
-                                    p.status === 'En Pausa' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20 glow-amber' :
-                                    'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                    p.status === 'Completado' ? 'bg-semantic-success-bg text-semantic-success border-separator glow-emerald' :
+                                    p.status === 'Retrasado' ? 'bg-semantic-danger/10 text-red-400 border-red-500/20 glow-crimson' :
+                                    p.status === 'En Pausa' ? 'bg-semantic-warning/10 text-amber-400 border-amber-500/20 glow-amber' :
+                                    'bg-accent-subtle text-blue-400 border-separator'
                                   }`}>
                                      {p.status}
                                   </div>
@@ -1159,13 +1159,13 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                                     initial={{ width: 0 }}
                                     animate={{ width: `${p.progress || 50}%` }}
                                     className={`h-full ${
-                                      p.status === 'Retrasado' ? 'bg-red-500' : 
+                                      p.status === 'Retrasado' ? 'bg-semantic-danger' : 
                                       p.status === 'Completado' ? 'bg-emerald-500' : 
-                                      p.status === 'En Pausa' ? 'bg-amber-500' : 'bg-blue-500'
+                                      p.status === 'En Pausa' ? 'bg-semantic-warning' : 'bg-blue-500'
                                     }`}
                                   />
                                </div>
-                               <div className="flex justify-between text-[8px] font-black text-gray-600 uppercase tracking-widest">
+                               <div className="flex justify-between text-[8px] font-black text-fg-secondary uppercase tracking-widest">
                                   <span>Task Completion</span>
                                   <span className="text-white">{p.progress || 50}%</span>
                                </div>
@@ -1177,30 +1177,30 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
 
                   {/* Academy Node Integrated */}
                   <div className="glass-panel p-8 rounded-[2.5rem] bg-gradient-to-br from-blue-500/5 to-transparent relative overflow-hidden group">
-                     <GraduationCap className="absolute top-0 right-0 w-32 h-32 text-blue-500/5 -mr-16 -mt-16 group-hover:scale-110 transition-transform" />
+                     <GraduationCap className="absolute top-0 right-0 w-32 h-32 text-accent/5 -mr-16 -mt-16 group-hover:scale-110 transition-transform" />
                      <h3 className="text-xl font-black text-white uppercase tracking-tighter italic mb-8 flex items-center gap-3">
                         <Sparkles className="w-5 h-5 text-blue-400" /> Talent Forge Node
                      </h3>
                      
                      <div className="grid grid-cols-2 gap-6 mb-8">
                         <div>
-                           <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">Avg. Staff Progress</p>
+                           <p className="text-[9px] font-black text-fg-secondary uppercase tracking-widest mb-2">Avg. Staff Progress</p>
                            <p className="text-3xl font-black text-white italic tracking-tighter">{clientIntel.academyStats.progress.toFixed(1)}%</p>
                         </div>
                         <div>
-                           <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">Top Certified Talent</p>
+                           <p className="text-[9px] font-black text-fg-secondary uppercase tracking-widest mb-2">Top Certified Talent</p>
                            <p className="text-sm font-black text-blue-400 uppercase italic truncate">{clientIntel.academyStats.topTalent}</p>
                         </div>
                      </div>
 
                      <div className="p-6 bg-blue-500/5 rounded-3xl border border-blue-500/10">
                         <div className="flex items-center gap-4">
-                           <div className="h-12 w-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 border border-blue-500/20">
+                           <div className="h-12 w-12 bg-accent-subtle rounded-2xl flex items-center justify-center text-blue-400 border border-separator">
                               <ShieldCheck className="w-6 h-6" />
                            </div>
                            <div>
                               <p className="text-[10px] font-black text-white uppercase tracking-widest">Certification Compliance</p>
-                              <p className="text-xs text-gray-500 mt-0.5">85% of staff ready for scaling protocol.</p>
+                              <p className="text-xs text-fg-secondary mt-0.5">85% of staff ready for scaling protocol.</p>
                            </div>
                         </div>
                      </div>
@@ -1210,7 +1210,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                 {/* RIGHT COLUMN: ACTION RECAP & INTEL */}
                 <div className="lg:col-span-3 space-y-6">
                    <div className="glass-panel p-8 rounded-[3rem] bg-white/[0.02] border-white/5 relative overflow-hidden">
-                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] font-mono mb-8">Interaction Log</h4>
+                      <h4 className="text-[10px] font-black text-fg-secondary uppercase tracking-[0.3em] font-mono mb-8">Interaction Log</h4>
                       <div className="space-y-8 relative">
                           <div className="absolute left-[15px] top-4 bottom-4 w-[1px] bg-white/5" />
                           {[
@@ -1222,7 +1222,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                                <div className={`h-8 w-8 rounded-full border border-cyber-dark z-10 shrink-0 ${log.color} opacity-20`} />
                                <div className="pt-1">
                                   <p className="text-[10px] font-black text-white uppercase tracking-widest">{log.label}</p>
-                                  <p className="text-[9px] text-gray-600 font-mono mt-0.5">{log.date}</p>
+                                  <p className="text-[9px] text-fg-secondary font-mono mt-0.5">{log.date}</p>
                                </div>
                             </div>
                           ))}
@@ -1236,7 +1236,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                       <button className="w-full py-5 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl">Execute Node Expansion</button>
                    </div>
 
-                   <button onClick={() => setActiveProfileTab('info')} className="w-full py-6 bg-white/5 border border-white/10 rounded-[2.5rem] text-[10px] font-black text-gray-500 uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all flex items-center justify-center gap-3">
+                   <button onClick={() => setActiveProfileTab('info')} className="w-full py-6 bg-white/5 border border-white/10 rounded-[2.5rem] text-[10px] font-black text-fg-secondary uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all flex items-center justify-center gap-3">
                       View Raw Node Data <ArrowRight className="w-4 h-4" />
                    </button>
                 </div>
@@ -1245,47 +1245,47 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
 
             {activeProfileTab === 'info' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                  <h3 className="text-sm font-bold text-gray-500 uppercase mb-4">Datos de Contacto</h3>
+                <div className="bg-white p-6 rounded-xl border border-separator shadow-sm">
+                  <h3 className="text-sm font-bold text-fg-secondary uppercase mb-4">Datos de Contacto</h3>
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <Mail className="w-5 h-5 text-gray-400" />
+                      <Mail className="w-5 h-5 text-fg-tertiary" />
                       <div>
-                        <p className="text-xs text-gray-500">Email</p>
+                        <p className="text-xs text-fg-secondary">Email</p>
                         <p className="text-sm font-medium">{selectedClient.email}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Phone className="w-5 h-5 text-gray-400" />
+                      <Phone className="w-5 h-5 text-fg-tertiary" />
                       <div>
-                        <p className="text-xs text-gray-500">Teléfono</p>
+                        <p className="text-xs text-fg-secondary">Teléfono</p>
                         <p className="text-sm font-medium">{selectedClient.phone || 'No registrado'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Globe className="w-5 h-5 text-gray-400" />
+                      <Globe className="w-5 h-5 text-fg-tertiary" />
                       <div>
-                        <p className="text-xs text-gray-500">Sitio Web</p>
+                        <p className="text-xs text-fg-secondary">Sitio Web</p>
                         <p className="text-sm font-medium">{selectedClient.website || 'No registrado'}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                  <h3 className="text-sm font-bold text-gray-500 uppercase mb-4">Modelo de Negocio</h3>
+                <div className="bg-white p-6 rounded-xl border border-separator shadow-sm">
+                  <h3 className="text-sm font-bold text-fg-secondary uppercase mb-4">Modelo de Negocio</h3>
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
                       <CreditCard className="w-5 h-5 text-[#00F0FF]" />
                       <div>
-                        <p className="text-xs text-gray-500">Modelo de Cobro</p>
+                        <p className="text-xs text-fg-secondary">Modelo de Cobro</p>
                         <p className="text-sm font-bold">{selectedClient.billingModel || 'Fijo'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Briefcase className="w-5 h-5 text-gray-400" />
+                      <Briefcase className="w-5 h-5 text-fg-tertiary" />
                       <div>
-                        <p className="text-xs text-gray-500">Sector</p>
+                        <p className="text-xs text-fg-secondary">Sector</p>
                         <p className="text-sm font-medium">{selectedClient.sector}</p>
                       </div>
                     </div>
@@ -1295,10 +1295,10 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
             )}
 
             {activeProfileTab === 'chat' && (
-              <div className="flex flex-col h-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="flex flex-col h-full bg-white rounded-xl border border-separator shadow-sm overflow-hidden">
                 <div className="flex-1 p-4 overflow-y-auto space-y-4">
                   {chatHistory.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                    <div className="h-full flex flex-col items-center justify-center text-fg-tertiary">
                       <MessageSquare className="w-12 h-12 mb-2 opacity-20" />
                       <p className="text-sm">Inicia una conversación interna sobre este cliente</p>
                     </div>
@@ -1310,9 +1310,9 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                           <div className={`max-w-[70%] p-3 rounded-2xl text-sm ${
                             isMe 
                               ? 'bg-[#00F0FF] text-white rounded-tr-none' 
-                              : 'bg-gray-100 text-gray-900 rounded-tl-none'
+                              : 'bg-surface-grouped text-fg-primary rounded-tl-none'
                           }`}>
-                            {!isMe && <p className="text-[10px] font-bold text-gray-500 mb-1">{msg.sender}</p>}
+                            {!isMe && <p className="text-[10px] font-bold text-fg-secondary mb-1">{msg.sender}</p>}
                             <p>{msg.text}</p>
                             <p className={`text-[10px] mt-1 opacity-70 ${isMe ? 'text-right' : 'text-left'}`}>
                               {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1323,13 +1323,13 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                     })
                   )}
                 </div>
-                <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-100 flex gap-2">
+                <form onSubmit={handleSendMessage} className="p-4 border-t border-separator flex gap-2">
                   <input 
                     type="text"
                     value={chatMessage}
                     onChange={e => setChatMessage(e.target.value)}
                     placeholder="Escribe un mensaje interno..."
-                    className="flex-1 p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
+                    className="flex-1 p-2 border border-separator rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
                   />
                   <button 
                     type="submit"
@@ -1343,8 +1343,8 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
 
             {activeProfileTab === 'tasks' && (
               <div className="space-y-6">
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Tareas del Cliente</h3>
+                <div className="bg-white p-6 rounded-xl border border-separator shadow-sm">
+                  <h3 className="text-lg font-bold text-fg-primary mb-4">Tareas del Cliente</h3>
                   
                   <form onSubmit={handleCreateTask} className="flex gap-3 mb-6">
                     <input 
@@ -1353,20 +1353,20 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                       placeholder="Nueva tarea..."
                       value={newClientTask.title}
                       onChange={e => setNewClientTask({...newClientTask, title: e.target.value})}
-                      className="flex-1 p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
+                      className="flex-1 p-2 border border-separator rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
                     />
                     <input 
                       type="text"
                       placeholder="Responsable"
                       value={newClientTask.assignee}
                       onChange={e => setNewClientTask({...newClientTask, assignee: e.target.value})}
-                      className="w-40 p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
+                      className="w-40 p-2 border border-separator rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
                     />
                     <input 
                       type="date"
                       value={newClientTask.dueDate}
                       onChange={e => setNewClientTask({...newClientTask, dueDate: e.target.value})}
-                      className="w-40 p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
+                      className="w-40 p-2 border border-separator rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
                     />
                     <button 
                       type="submit"
@@ -1378,10 +1378,10 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
 
                   <div className="space-y-3">
                     {clientTasks.length === 0 ? (
-                      <p className="text-center text-gray-500 py-8 text-sm italic">No hay tareas asociadas a este cliente.</p>
+                      <p className="text-center text-fg-secondary py-8 text-sm italic">No hay tareas asociadas a este cliente.</p>
                     ) : (
                       clientTasks.map(task => (
-                        <div key={task.id} className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${task.status === 'completed' ? 'bg-gray-50 border-gray-100' : 'bg-white border-gray-200 shadow-sm'}`}>
+                        <div key={task.id} className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${task.status === 'completed' ? 'bg-surface-grouped border-separator' : 'bg-white border-separator shadow-sm'}`}>
                           <div className="flex items-center gap-3">
                             <button 
                               onClick={() => handleToggleTask(task.id, task.status)}
@@ -1389,25 +1389,25 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                               title="Clic para cambiar estado: Pendiente -> En Proceso -> Completado"
                             >
                               {task.status === 'completed' && <CheckCircle2 className="h-6 w-6 text-green-500" />}
-                              {task.status === 'in-progress' && <PlayCircle className="h-6 w-6 text-blue-500" />}
-                              {task.status === 'pending' && <Circle className="h-6 w-6 text-gray-300 group-hover:text-gray-400" />}
+                              {task.status === 'in-progress' && <PlayCircle className="h-6 w-6 text-accent" />}
+                              {task.status === 'pending' && <Circle className="h-6 w-6 text-gray-300 group-hover:text-fg-tertiary" />}
                             </button>
                             <div>
                               <div className="flex items-center gap-2">
-                                <p className={`text-sm font-bold ${task.status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+                                <p className={`text-sm font-bold ${task.status === 'completed' ? 'text-fg-tertiary line-through' : 'text-fg-primary'}`}>
                                   {task.title}
                                 </p>
                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                                   task.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                  task.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                                  'bg-gray-100 text-gray-600'
+                                  task.status === 'in-progress' ? 'bg-accent-subtle text-blue-700' :
+                                  'bg-surface-grouped text-fg-secondary'
                                 }`}>
                                   {task.status === 'in-progress' ? 'En Proceso' : task.status === 'completed' ? 'Completado' : 'Pendiente'}
                                 </span>
                               </div>
                               <div className="flex items-center gap-3 mt-1">
                                 {task.assignee && (
-                                  <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+                                  <span className="text-[10px] bg-surface-grouped text-fg-secondary px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
                                     <User className="w-3 h-3" /> {task.assignee}
                                   </span>
                                 )}
@@ -1415,7 +1415,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${
                                     new Date(task.dueDate) < new Date() && task.status !== 'completed'
                                       ? 'bg-red-100 text-red-700'
-                                      : 'bg-blue-100 text-blue-700'
+                                      : 'bg-accent-subtle text-blue-700'
                                   }`}>
                                     <Calendar className="w-3 h-3" /> {task.dueDate}
                                   </span>
@@ -1435,8 +1435,8 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900">Historial de Visitas</h3>
-                    <p className="text-sm text-gray-500">Registra y revisa salidas a terreno con el cliente.</p>
+                    <h3 className="text-lg font-bold text-fg-primary">Historial de Visitas</h3>
+                    <p className="text-sm text-fg-secondary">Registra y revisa salidas a terreno con el cliente.</p>
                   </div>
                   <button 
                     onClick={() => setIsRegisteringVisit(!isRegisteringVisit)}
@@ -1448,16 +1448,16 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                 </div>
 
                 {isRegisteringVisit && (
-                  <form onSubmit={handleRegisterVisit} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
-                    <h4 className="font-bold text-gray-900 border-b pb-2">Nueva Visita en Terreno</h4>
+                  <form onSubmit={handleRegisterVisit} className="bg-white p-6 rounded-xl border border-separator shadow-sm space-y-4">
+                    <h4 className="font-bold text-fg-primary border-b pb-2">Nueva Visita en Terreno</h4>
                     
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Resultado / Estado</label>
+                      <label className="block text-xs font-bold text-fg-secondary uppercase mb-2">Resultado / Estado</label>
                       <select 
                         required
                         value={newVisit.outcome}
                         onChange={e => setNewVisit({...newVisit, outcome: e.target.value})}
-                        className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm font-bold"
+                        className="w-full p-3 border border-separator rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm font-bold"
                       >
                         <option>Seguimiento</option>
                         <option>Venta Concluida</option>
@@ -1467,13 +1467,13 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                     </div>
                     
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Notas y Observaciones</label>
+                      <label className="block text-xs font-bold text-fg-secondary uppercase mb-2">Notas y Observaciones</label>
                       <textarea
                         required
                         placeholder="Detalles sobre acuerdos, razones de rechazo o interés..."
                         value={newVisit.notes}
                         onChange={e => setNewVisit({...newVisit, notes: e.target.value})}
-                        className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
+                        className="w-full p-3 border border-separator rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
                         rows={3}
                       />
                     </div>
@@ -1481,21 +1481,21 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Photo / Camera Capture */}
                       <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Adjuntar Evidencia (Foto)</label>
+                        <label className="block text-xs font-bold text-fg-secondary uppercase mb-2">Adjuntar Evidencia (Foto)</label>
                         <div className="flex gap-2 items-center">
-                          <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg font-bold text-sm transition-colors border border-gray-200 flex-1 flex justify-center items-center gap-2">
+                          <label className="cursor-pointer bg-surface-grouped hover:bg-gray-200 text-fg-secondary px-4 py-3 rounded-lg font-bold text-sm transition-colors border border-separator flex-1 flex justify-center items-center gap-2">
                             <Upload className="w-4 h-4" /> Tomar Foto o Subir
                             {/* capture="environment" forces the rear camera on mobile */}
                             <input type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} className="hidden" />
                           </label>
                         </div>
                         {newVisit.photoUrl && (
-                          <div className="mt-2 w-full h-32 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden relative">
+                          <div className="mt-2 w-full h-32 rounded-lg bg-surface-grouped border border-separator overflow-hidden relative">
                             <img src={newVisit.photoUrl} alt="Evidencia" className="w-full h-full object-cover" />
                             <button 
                               type="button" 
                               onClick={() => setNewVisit({...newVisit, photoUrl: ''})}
-                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
+                              className="absolute top-2 right-2 bg-semantic-danger text-white rounded-full p-1"
                             >
                               <X className="w-3 h-3" />
                             </button>
@@ -1505,21 +1505,21 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
 
                       {/* Geolocation */}
                       <div>
-                         <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Geolocalización In-Situ</label>
+                         <label className="block text-xs font-bold text-fg-secondary uppercase mb-2">Geolocalización In-Situ</label>
                          {newVisit.location ? (
                             <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm flex items-start gap-3 h-[128px]">
                               <Globe className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
                               <div className="flex-1 min-w-0">
                                 <p className="font-bold text-green-800">Ubicación Capturada</p>
                                 <p className="text-[10px] text-green-600 font-mono mt-1 mb-2">Lat: {newVisit.location.lat.toFixed(6)} <br/>Lng: {newVisit.location.lng.toFixed(6)}</p>
-                                <button type="button" onClick={() => setNewVisit({...newVisit, location: null})} className="text-xs font-bold text-red-500 hover:underline">Eliminar ubicación</button>
+                                <button type="button" onClick={() => setNewVisit({...newVisit, location: null})} className="text-xs font-bold text-semantic-danger hover:underline">Eliminar ubicación</button>
                               </div>
                             </div>
                          ) : (
                           <button 
                             type="button"
                             onClick={captureLocation}
-                            className="w-full bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 px-4 py-3 rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                            className="w-full bg-blue-50 text-accent hover:bg-accent-subtle border border-blue-200 px-4 py-3 rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2"
                           >
                             <Globe className="w-4 h-4" /> Capturar GPS Automáticamente
                           </button>
@@ -1537,7 +1537,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
 
                 <div className="space-y-4">
                   {clientVisits.length === 0 ? (
-                    <div className="bg-white border rounded-xl p-8 text-center text-gray-500 shadow-sm">
+                    <div className="bg-white border rounded-xl p-8 text-center text-fg-secondary shadow-sm">
                       <Globe className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                       <p className="font-bold">Aún no hay visitas registradas</p>
                       <p className="text-sm mt-1">Registra tu primera salida técnica o comercial en terreno.</p>
@@ -1547,33 +1547,33 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                       <div key={visit.id} className="bg-white rounded-xl border p-5 shadow-sm space-y-4">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-bold text-gray-900">{visit.registeredBy}</h4>
-                            <p className="text-xs text-gray-500">{new Date(visit.timestamp).toLocaleString()}</p>
+                            <h4 className="font-bold text-fg-primary">{visit.registeredBy}</h4>
+                            <p className="text-xs text-fg-secondary">{new Date(visit.timestamp).toLocaleString()}</p>
                           </div>
                           <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
                             visit.outcome === 'Venta Concluida' ? 'bg-green-100 text-green-700' :
-                            visit.outcome === 'Venta Rechazada' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+                            visit.outcome === 'Venta Rechazada' ? 'bg-red-100 text-red-700' : 'bg-accent-subtle text-blue-700'
                           }`}>
                             {visit.outcome}
                           </span>
                         </div>
                         
-                        <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">{visit.notes}</p>
+                        <p className="text-sm text-fg-secondary bg-surface-grouped p-3 rounded-lg">{visit.notes}</p>
                         
                         {(visit.photoUrl || visit.location) && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
                             {visit.photoUrl && (
                               <div className="space-y-1">
-                                <span className="text-[10px] uppercase font-bold text-gray-400">Evidencia Fotográfica</span>
-                                <div className="h-40 rounded-lg overflow-hidden border border-gray-200">
+                                <span className="text-[10px] uppercase font-bold text-fg-tertiary">Evidencia Fotográfica</span>
+                                <div className="h-40 rounded-lg overflow-hidden border border-separator">
                                   <img src={visit.photoUrl} alt="Visita" className="w-full h-full object-cover" />
                                 </div>
                               </div>
                             )}
                             {visit.location && (
                               <div className="space-y-1">
-                                <span className="text-[10px] uppercase font-bold text-gray-400">Verificación GPS</span>
-                                <div className="h-40 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center">
+                                <span className="text-[10px] uppercase font-bold text-fg-tertiary">Verificación GPS</span>
+                                <div className="h-40 rounded-lg overflow-hidden border border-separator bg-surface-grouped flex items-center justify-center">
                                    {/* Simple map iframe showing the location visually */}
                                    <iframe
                                       width="100%"
@@ -1583,7 +1583,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                                       className="rounded-lg pointer-events-none"
                                    ></iframe>
                                 </div>
-                                <div className="text-[10px] pt-1 text-gray-500 font-mono text-center">
+                                <div className="text-[10px] pt-1 text-fg-secondary font-mono text-center">
                                   {visit.location.lat}, {visit.location.lng}
                                 </div>
                               </div>
@@ -1601,7 +1601,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
               <div className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden font-serif">
+                    <div className="bg-white p-8 rounded-xl border border-separator shadow-sm relative overflow-hidden font-serif">
                       <div className="absolute top-0 right-0 p-4">
                         <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-bold flex items-center gap-1 uppercase tracking-wider">
                           <Shield className="w-3 h-3" /> Contrato Firmado
@@ -1609,54 +1609,54 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                       </div>
                       
                       <div className="max-w-2xl mx-auto space-y-8">
-                        <div className="text-center border-b border-gray-100 pb-8">
+                        <div className="text-center border-b border-separator pb-8">
                           <Building2 className="w-12 h-12 text-[#00F0FF] mx-auto mb-4" />
-                          <h3 className="text-xl font-bold text-gray-900 font-sans tracking-tight">CONTRATO DE PRESTACIÓN DE SERVICIOS B2B</h3>
-                          <p className="text-[10px] text-gray-500 mt-1 font-mono uppercase">Reference ID: KV-{selectedClient.id?.substring(0, 8).toUpperCase()}</p>
+                          <h3 className="text-xl font-bold text-fg-primary font-sans tracking-tight">CONTRATO DE PRESTACIÓN DE SERVICIOS B2B</h3>
+                          <p className="text-[10px] text-fg-secondary mt-1 font-mono uppercase">Reference ID: KV-{selectedClient.id?.substring(0, 8).toUpperCase()}</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-8 text-sm font-sans">
                           <div>
-                            <h4 className="font-bold text-gray-400 uppercase text-[10px] mb-2 tracking-widest">Prestador de Servicios</h4>
-                            <p className="font-bold text-gray-900">Kaivincia Corp S.L.</p>
-                            <p className="text-gray-600">CIF: B12345678</p>
-                            <p className="text-gray-500 text-[10px]">Calle de la Innovación 42, Madrid</p>
+                            <h4 className="font-bold text-fg-tertiary uppercase text-[10px] mb-2 tracking-widest">Prestador de Servicios</h4>
+                            <p className="font-bold text-fg-primary">Kaivincia Corp S.L.</p>
+                            <p className="text-fg-secondary">CIF: B12345678</p>
+                            <p className="text-fg-secondary text-[10px]">Calle de la Innovación 42, Madrid</p>
                           </div>
                           <div>
-                            <h4 className="font-bold text-gray-400 uppercase text-[10px] mb-2 tracking-widest">Cliente / Contratante</h4>
-                            <p className="font-bold text-gray-900">{selectedClient.company || selectedClient.name}</p>
-                            <p className="text-gray-600">{selectedClient.email}</p>
-                            <p className="text-gray-500 text-[10px]">{selectedClient.phone || 'N/A'}</p>
+                            <h4 className="font-bold text-fg-tertiary uppercase text-[10px] mb-2 tracking-widest">Cliente / Contratante</h4>
+                            <p className="font-bold text-fg-primary">{selectedClient.company || selectedClient.name}</p>
+                            <p className="text-fg-secondary">{selectedClient.email}</p>
+                            <p className="text-fg-secondary text-[10px]">{selectedClient.phone || 'N/A'}</p>
                           </div>
                         </div>
 
-                        <div className="space-y-6 text-sm text-gray-700 leading-relaxed border-t border-gray-50 pt-8">
+                        <div className="space-y-6 text-sm text-fg-secondary leading-relaxed border-t border-separator pt-8">
                           <div className="space-y-2">
-                            <p className="font-bold text-gray-900 uppercase text-[10px] tracking-wider">Cláusula 1: Objeto del Contrato</p>
+                            <p className="font-bold text-fg-primary uppercase text-[10px] tracking-wider">Cláusula 1: Objeto del Contrato</p>
                             <p>El presente contrato tiene por objeto la prestación de servicios de generación de leads calificados, gestión de ventas y consultoría estratégica por parte de Kaivincia Corp para el crecimiento de la cartera B2B del Cliente.</p>
                           </div>
                           <div className="space-y-2">
-                            <p className="font-bold text-gray-900 uppercase text-[10px] tracking-wider">Cláusula 2: Modelo de Compensación</p>
+                            <p className="font-bold text-fg-primary uppercase text-[10px] tracking-wider">Cláusula 2: Modelo de Compensación</p>
                             <p>Las partes acuerdan un modelo de compensación basado en <strong>{selectedClient.billingModel || 'Fijo'}</strong>. Los pagos se realizarán dentro de los primeros 5 días de cada mes natural.</p>
                           </div>
                           <div className="space-y-2">
-                            <p className="font-bold text-gray-900 uppercase text-[10px] tracking-wider">Cláusula 3: Confidencialidad</p>
+                            <p className="font-bold text-fg-primary uppercase text-[10px] tracking-wider">Cláusula 3: Confidencialidad</p>
                             <p>Ambas partes se comprometen a mantener la más estricta confidencialidad sobre toda la información técnica, comercial o financiera a la que tengan acceso durante la vigencia del contrato.</p>
                           </div>
                         </div>
 
-                        <div className="pt-12 grid grid-cols-2 gap-12 border-t border-gray-100">
+                        <div className="pt-12 grid grid-cols-2 gap-12 border-t border-separator">
                           <div className="text-center space-y-4">
-                            <div className="h-16 border-b border-gray-200 flex items-end justify-center pb-2">
-                              <span className="text-xs italic text-gray-400 font-sans">Firmado Digitalmente</span>
+                            <div className="h-16 border-b border-separator flex items-end justify-center pb-2">
+                              <span className="text-xs italic text-fg-tertiary font-sans">Firmado Digitalmente</span>
                             </div>
-                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Kaivincia Corp</p>
+                            <p className="text-[10px] font-bold text-fg-secondary uppercase tracking-widest">Kaivincia Corp</p>
                           </div>
                           <div className="text-center space-y-4">
-                            <div className="h-16 border-b border-gray-200 flex items-end justify-center pb-2">
-                              <span className="text-xs italic text-gray-400 font-sans">Firmado Digitalmente</span>
+                            <div className="h-16 border-b border-separator flex items-end justify-center pb-2">
+                              <span className="text-xs italic text-fg-tertiary font-sans">Firmado Digitalmente</span>
                             </div>
-                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{selectedClient.name}</p>
+                            <p className="text-[10px] font-bold text-fg-secondary uppercase tracking-widest">{selectedClient.name}</p>
                           </div>
                         </div>
                       </div>
@@ -1664,27 +1664,27 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                   </div>
 
                   <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Documentos Adjuntos</h4>
+                    <div className="bg-white p-6 rounded-xl border border-separator shadow-sm">
+                      <h4 className="text-xs font-bold text-fg-tertiary uppercase tracking-widest mb-4">Documentos Adjuntos</h4>
                       <div className="space-y-3">
                         {[
                           { name: 'Contrato_Principal.pdf', size: '1.2 MB', date: '12/03/2024' },
                           { name: 'Anexo_Tarifas.pdf', size: '450 KB', date: '12/03/2024' },
                           { name: 'NDA_Firmado.pdf', size: '890 KB', date: '10/03/2024' },
                         ].map((doc, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group hover:bg-gray-100 transition-colors cursor-pointer">
+                          <div key={i} className="flex items-center justify-between p-3 bg-surface-grouped rounded-lg group hover:bg-surface-grouped transition-colors cursor-pointer">
                             <div className="flex items-center gap-3">
-                              <FileText className="w-5 h-5 text-gray-400 group-hover:text-[#00F0FF]" />
+                              <FileText className="w-5 h-5 text-fg-tertiary group-hover:text-[#00F0FF]" />
                               <div>
-                                <p className="text-xs font-bold text-gray-900">{doc.name}</p>
-                                <p className="text-[10px] text-gray-500">{doc.size} • {doc.date}</p>
+                                <p className="text-xs font-bold text-fg-primary">{doc.name}</p>
+                                <p className="text-[10px] text-fg-secondary">{doc.size} • {doc.date}</p>
                               </div>
                             </div>
-                            <Download className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                            <Download className="w-4 h-4 text-fg-tertiary group-hover:text-fg-secondary" />
                           </div>
                         ))}
                       </div>
-                      <button className="w-full mt-4 py-2 border-2 border-dashed border-gray-200 rounded-lg text-xs font-bold text-gray-400 hover:border-[#00F0FF] hover:text-[#00F0FF] transition-all">
+                      <button className="w-full mt-4 py-2 border-2 border-dashed border-separator rounded-lg text-xs font-bold text-fg-tertiary hover:border-[#00F0FF] hover:text-[#00F0FF] transition-all">
                         + Subir Nuevo Documento
                       </button>
                     </div>
@@ -1694,11 +1694,11 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                         <Shield className="w-5 h-5 text-[#00F0FF]" />
                         <h4 className="text-xs font-bold uppercase tracking-widest">Seguridad Legal</h4>
                       </div>
-                      <p className="text-[11px] text-gray-400 leading-relaxed">
+                      <p className="text-[11px] text-fg-tertiary leading-relaxed">
                         Este contrato está protegido por encriptación de grado bancario y cumple con la normativa eIDAS para firmas electrónicas en la Unión Europea.
                       </p>
                       <div className="mt-4 pt-4 border-t border-gray-800 flex items-center justify-between">
-                        <span className="text-[10px] font-mono text-gray-500">Hash: 8f2d...4e1a</span>
+                        <span className="text-[10px] font-mono text-fg-secondary">Hash: 8f2d...4e1a</span>
                         <button className="text-[10px] font-bold text-[#00F0FF] hover:underline">Verificar</button>
                       </div>
                     </div>
@@ -1709,14 +1709,14 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
 
             {activeProfileTab === 'billing' && (
               <div className="max-w-2xl space-y-6">
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <div className="bg-white p-6 rounded-xl border border-separator shadow-sm">
+                  <h3 className="text-lg font-bold text-fg-primary mb-6 flex items-center gap-2">
                     <Settings className="w-5 h-5 text-[#00F0FF]" /> Configuración de Reglas de Cobro
                   </h3>
                   
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">Modelo de Facturación</label>
+                      <label className="block text-sm font-bold text-fg-secondary mb-2">Modelo de Facturación</label>
                       <div className="grid grid-cols-3 gap-3">
                         {['Fijo', 'Cita', 'Híbrido'].map(model => (
                           <button 
@@ -1725,7 +1725,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                             className={`p-4 rounded-xl border-2 text-center transition-all ${
                               selectedClient.billingModel === model 
                                 ? 'border-[#00F0FF] bg-cyan-500/10 text-[#00F0FF]' 
-                                : 'border-gray-100 hover:border-gray-200 text-gray-500'
+                                : 'border-separator hover:border-separator text-fg-secondary'
                             }`}
                           >
                             <p className="font-bold text-sm">{model}</p>
@@ -1737,12 +1737,12 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-separator">
                       {(selectedClient.billingModel === 'Fijo' || selectedClient.billingModel === 'Híbrido') && (
                         <div className="space-y-1">
-                          <label className="block text-xs font-bold text-gray-500 uppercase">Monto Base Mensual</label>
+                          <label className="block text-xs font-bold text-fg-secondary uppercase">Monto Base Mensual</label>
                           <div className="relative">
-                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-tertiary" />
                             <input 
                               type="number"
                               value={selectedClient.billingRules?.baseAmount || 0}
@@ -1750,16 +1750,16 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                                 ...selectedClient, 
                                 billingRules: { ...selectedClient.billingRules, baseAmount: Number(e.target.value) }
                               })}
-                              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
+                              className="w-full pl-10 pr-4 py-2 bg-surface-grouped border border-separator rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
                             />
                           </div>
                         </div>
                       )}
                       {(selectedClient.billingModel === 'Cita' || selectedClient.billingModel === 'Híbrido') && (
                         <div className="space-y-1">
-                          <label className="block text-xs font-bold text-gray-500 uppercase">Costo por Cita Efectiva</label>
+                          <label className="block text-xs font-bold text-fg-secondary uppercase">Costo por Cita Efectiva</label>
                           <div className="relative">
-                            <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-tertiary" />
                             <input 
                               type="number"
                               value={selectedClient.billingRules?.appointmentRate || 0}
@@ -1767,16 +1767,16 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                                 ...selectedClient, 
                                 billingRules: { ...selectedClient.billingRules, appointmentRate: Number(e.target.value) }
                               })}
-                              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
+                              className="w-full pl-10 pr-4 py-2 bg-surface-grouped border border-separator rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
                             />
                           </div>
                         </div>
                       )}
                       {selectedClient.billingModel === 'Híbrido' && (
                         <div className="space-y-1">
-                          <label className="block text-xs font-bold text-gray-500 uppercase">Bono por Hitos (Opcional)</label>
+                          <label className="block text-xs font-bold text-fg-secondary uppercase">Bono por Hitos (Opcional)</label>
                           <div className="relative">
-                            <Zap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Zap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-tertiary" />
                             <input 
                               type="number"
                               value={selectedClient.billingRules?.milestoneBonus || 0}
@@ -1784,14 +1784,14 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                                 ...selectedClient, 
                                 billingRules: { ...selectedClient.billingRules, milestoneBonus: Number(e.target.value) }
                               })}
-                              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
+                              className="w-full pl-10 pr-4 py-2 bg-surface-grouped border border-separator rounded-lg outline-none focus:ring-2 focus:ring-[#00F0FF] text-sm"
                             />
                           </div>
                         </div>
                       )}
                     </div>
 
-                    <div className="flex gap-3 pt-4 border-t border-gray-100">
+                    <div className="flex gap-3 pt-4 border-t border-separator">
                       <button 
                         onClick={async () => {
                           try {
@@ -1822,7 +1822,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
 
                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
                   <div className="flex gap-3">
-                    <Activity className="w-5 h-5 text-blue-600 shrink-0" />
+                    <Activity className="w-5 h-5 text-accent shrink-0" />
                     <div>
                       <p className="text-sm font-bold text-blue-900">Automatización de Facturación</p>
                       <p className="text-xs text-blue-700 mt-1 leading-relaxed">
@@ -1839,29 +1839,29 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
   }
 
   return (
-    <div className="space-y-8 pb-12 bg-[#0B0E14] text-gray-400 min-h-screen">
+    <div className="space-y-8 pb-12 bg-[#0B0E14] text-fg-tertiary min-h-screen">
       {/* COMMAND HEADER */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 glass-panel p-8 rounded-[2.5rem]">
         <div>
           <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none mb-3">B2B Nexus Command</h2>
           <div className="flex flex-wrap items-center gap-6">
-            <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" /> Multi-Node Portfolio Audit
+            <p className="text-[10px] font-black text-fg-secondary uppercase tracking-[0.2em] flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-semantic-success" /> Multi-Node Portfolio Audit
             </p>
             <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
               <button 
                 onClick={() => setActiveMainTab('list')}
-                className={`px-6 py-2 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all ${activeMainTab === 'list' ? 'bg-white/10 text-white shadow-xl' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`px-6 py-2 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all ${activeMainTab === 'list' ? 'bg-white/10 text-white shadow-xl' : 'text-fg-secondary hover:text-gray-300'}`}
               >
                 Active Nodes
               </button>
               <button 
                 onClick={() => setActiveMainTab('upsell')}
-                className={`px-6 py-2 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 ${activeMainTab === 'upsell' ? 'bg-[#00F0FF]/20 text-[#00F0FF] shadow-xl border border-[#00F0FF]/20' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`px-6 py-2 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 ${activeMainTab === 'upsell' ? 'bg-[#00F0FF]/20 text-[#00F0FF] shadow-xl border border-[#00F0FF]/20' : 'text-fg-secondary hover:text-gray-300'}`}
               >
                 <Zap className="w-3 h-3" /> Expansion Ops
                 {upsellOpportunities.length > 0 && (
-                  <span className="bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-full animate-pulse">{upsellOpportunities.length}</span>
+                  <span className="bg-semantic-danger text-white text-[8px] px-1.5 py-0.5 rounded-full animate-pulse">{upsellOpportunities.length}</span>
                 )}
               </button>
             </div>
@@ -1889,7 +1889,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                       onClick={handleExportToExcel}
                       className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3"
                     >
-                      <FileSpreadsheet className="w-4 h-4 text-emerald-400" /> Export Excel (.xlsx)
+                      <FileSpreadsheet className="w-4 h-4 text-semantic-success" /> Export Excel (.xlsx)
                     </button>
                     <button 
                       onClick={handleExportToCSV}
@@ -1935,7 +1935,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
             <div className={`absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity`}>
               {i === 0 ? <Globe className="w-12 h-12" /> : i === 1 ? <Activity className="w-12 h-12" /> : i === 2 ? <Receipt className="w-12 h-12" /> : <ShieldCheck className="w-12 h-12" />}
             </div>
-            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">{kpi.label}</p>
+            <p className="text-[10px] font-black text-fg-secondary uppercase tracking-widest mb-2">{kpi.label}</p>
             <div className="flex items-end gap-3">
               <h3 className="text-3xl font-black text-white italic tracking-tighter">{kpi.val}</h3>
               <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg bg-${kpi.color}-500/10 text-${kpi.color}-400 mb-1`}>{kpi.trend}</span>
@@ -1959,16 +1959,16 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                  {opp.source === 'Academia' ? <GraduationCap className="h-6 w-6 text-blue-400" /> : <TrendingUp className="h-6 w-6 text-[#00F0FF]" />}
               </div>
               
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600 mb-6 font-mono">Vector: {opp.source === 'Academia' ? 'Neural Scaling' : 'Market Surge'}</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-fg-secondary mb-6 font-mono">Vector: {opp.source === 'Academia' ? 'Neural Scaling' : 'Market Surge'}</h4>
               
               <div className="mb-8">
                 <h3 className="text-xl font-black text-white italic tracking-tighter mb-2">{opp.clientName || opp.name}</h3>
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest px-2 py-0.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20">{opp.potentialValue || 'High Propensity'}</span>
-                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{opp.email || 'Encrypted ID'}</span>
+                  <span className="text-[10px] font-black text-semantic-success uppercase tracking-widest px-2 py-0.5 bg-semantic-success-bg rounded-lg border border-separator">{opp.potentialValue || 'High Propensity'}</span>
+                  <span className="text-[10px] font-black text-fg-secondary uppercase tracking-widest">{opp.email || 'Encrypted ID'}</span>
                 </div>
                 <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl italic">
-                   <p className="text-[11px] text-gray-500 leading-relaxed">"{opp.reason}"</p>
+                   <p className="text-[11px] text-fg-secondary leading-relaxed">"{opp.reason}"</p>
                 </div>
               </div>
 
@@ -1992,7 +1992,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
             <div className="col-span-full py-20 text-center glass-panel rounded-[3rem] border-dashed border-white/10">
               <Zap className="w-16 h-16 text-white/5 mx-auto mb-6" />
               <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">Zero Expansion Vectors Detected</h3>
-              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-2">The Neural Core will alert you when a node reaches peak saturation.</p>
+              <p className="text-[10px] text-fg-secondary font-bold uppercase tracking-widest mt-2">The Neural Core will alert you when a node reaches peak saturation.</p>
             </div>
           )}
         </div>
@@ -2005,9 +2005,9 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
               <div className="flex justify-between items-center mb-10">
                 <div>
                   <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Intel Sync 2.0</h3>
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Neural Data Normalization Protocol</p>
+                  <p className="text-[10px] font-black text-fg-secondary uppercase tracking-widest">Neural Data Normalization Protocol</p>
                 </div>
-                <button onClick={() => { setIsImporting(false); setImportStep(1); }} className="p-3 bg-white/5 rounded-2xl text-gray-500 hover:text-white transition-colors">
+                <button onClick={() => { setIsImporting(false); setImportStep(1); }} className="p-3 bg-white/5 rounded-2xl text-fg-secondary hover:text-white transition-colors">
                   <X className="w-6 h-6" />
                 </button>
               </div>
@@ -2016,7 +2016,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
               <div className="flex gap-4 mb-10">
                 {[1, 2, 3].map((step) => (
                   <div key={step} className="flex-1">
-                    <div className={`h-1.5 rounded-full transition-all duration-500 ${importStep >= step ? 'bg-[#00F0FF]' : 'bg-gray-100'}`} />
+                    <div className={`h-1.5 rounded-full transition-all duration-500 ${importStep >= step ? 'bg-[#00F0FF]' : 'bg-surface-grouped'}`} />
                   </div>
                 ))}
               </div>
@@ -2029,10 +2029,10 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                 >
                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".xlsx, .xls, .csv, .pdf, .txt, .json" className="hidden" />
                    <div className="h-24 w-24 bg-white/5 rounded-full flex items-center justify-center mb-8 group-hover:scale-110 transition-transform border border-white/10 group-hover:border-[#00F0FF]/30">
-                      <FileSpreadsheet className="w-10 h-10 text-gray-600 group-hover:text-[#00F0FF]" />
+                      <FileSpreadsheet className="w-10 h-10 text-fg-secondary group-hover:text-[#00F0FF]" />
                    </div>
                    <p className="text-sm font-black text-white uppercase tracking-[0.3em] mb-3 font-mono">Deploy Dataset Alpha</p>
-                   <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">XLSX, CSV, PDF, TXT or JSON supported (AI Assisted)</p>
+                   <p className="text-[10px] text-fg-secondary font-black uppercase tracking-widest">XLSX, CSV, PDF, TXT or JSON supported (AI Assisted)</p>
                 </motion.div>
               )}
 
@@ -2041,18 +2041,18 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                    <div className="flex justify-between items-center mb-4">
                       <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#00F0FF] font-mono">Phase 02: Neural Mapping</h4>
                       <div className="flex items-center gap-3">
-                        <Activity className="w-4 h-4 text-emerald-500 animate-pulse" />
-                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">98.4% Confidence Logic</span>
+                        <Activity className="w-4 h-4 text-semantic-success animate-pulse" />
+                        <span className="text-[10px] font-black text-semantic-success uppercase tracking-widest">98.4% Confidence Logic</span>
                       </div>
                    </div>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {Object.keys(importRows[0] || {}).filter(k => k !== '_id').map(header => (
                         <div key={header} className="p-6 bg-white/[0.03] rounded-[2rem] border border-white/5 flex items-center justify-between group hover:bg-white/5 transition-all">
                            <div>
-                              <p className="text-[9px] font-black text-gray-600 uppercase mb-2 tracking-widest">Dataset Column</p>
+                              <p className="text-[9px] font-black text-fg-secondary uppercase mb-2 tracking-widest">Dataset Column</p>
                               <p className="text-xs font-black text-white italic truncate max-w-[150px]">{header}</p>
                            </div>
-                           <ArrowRight className="w-4 h-4 text-gray-700" />
+                           <ArrowRight className="w-4 h-4 text-fg-secondary" />
                            <select 
                              value={columnMapping[header] || ''} 
                              onChange={(e) => setColumnMapping({...columnMapping, [header]: e.target.value})}
@@ -2084,7 +2084,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                    <div className="flex justify-between items-center mb-4">
                       <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#00F0FF] font-mono">Phase 03: Data Ledger Preview</h4>
                       <div className="flex gap-6">
-                         <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">{importErrors.length} Collision Points Detected</span>
+                         <span className="text-[10px] font-black text-semantic-danger uppercase tracking-widest">{importErrors.length} Collision Points Detected</span>
                          <button 
                            onClick={handleAutoPatch}
                            className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest underline decoration-2 underline-offset-4 hover:text-[#00BFFF] transition-colors"
@@ -2097,7 +2097,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                    <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-black/40">
                       <div className="max-h-[350px] overflow-y-auto">
                         <table className="w-full text-left border-collapse">
-                           <thead className="bg-white/5 text-gray-500 sticky top-0 backdrop-blur-md">
+                           <thead className="bg-white/5 text-fg-secondary sticky top-0 backdrop-blur-md">
                               <tr>
                                  {Object.entries(columnMapping).map(([fileCol, dbCol]) => (
                                    <th key={fileCol} className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] italic border-b border-white/5">{dbCol}</th>
@@ -2110,7 +2110,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                                    {Object.entries(columnMapping).map(([fileCol, dbCol]) => {
                                       const hasError = importErrors.some(e => e.rowIdx === rIdx && e.field === dbCol);
                                       return (
-                                        <td key={fileCol} className={`px-6 py-4 ${hasError ? 'bg-red-500/10 text-red-400 font-black' : 'text-gray-400'}`}>
+                                        <td key={fileCol} className={`px-6 py-4 ${hasError ? 'bg-semantic-danger/10 text-red-400 font-black' : 'text-fg-tertiary'}`}>
                                            {row[fileCol] || <span className="opacity-20 italic">VOID</span>}
                                         </td>
                                       );
@@ -2123,7 +2123,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                    </div>
 
                    <div className="pt-10 flex justify-end gap-6">
-                      <button onClick={() => setImportStep(2)} className="px-8 py-5 border border-white/10 text-gray-500 rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:text-white transition-all">Re-Map Logic</button>
+                      <button onClick={() => setImportStep(2)} className="px-8 py-5 border border-white/10 text-fg-secondary rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:text-white transition-all">Re-Map Logic</button>
                       <button 
                         onClick={finalizeImport}
                         className="px-10 py-5 bg-emerald-500 text-black rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-4 hover:scale-105 transition-all shadow-2xl shadow-emerald-500/20"
@@ -2142,17 +2142,17 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                       <BrainCircuit className="absolute inset-0 m-auto w-10 h-10 text-[#00F0FF] animate-pulse" />
                    </div>
                    <h4 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">Processing Neural Logic</h4>
-                   <p className="text-[10px] font-black text-gray-500 font-mono animate-pulse uppercase tracking-[0.4em]">{importStatus.message}</p>
+                   <p className="text-[10px] font-black text-fg-secondary font-mono animate-pulse uppercase tracking-[0.4em]">{importStatus.message}</p>
                 </div>
               )}
 
               {importStep === 4 && (
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center py-20 text-center">
-                   <div className="h-24 w-24 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mb-8 border border-emerald-500/20 glow-emerald">
+                   <div className="h-24 w-24 bg-semantic-success-bg text-semantic-success rounded-full flex items-center justify-center mb-8 border border-separator glow-emerald">
                       <CheckCircle2 className="w-12 h-12" />
                    </div>
                    <h4 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">Ingestion Successful</h4>
-                   <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] font-mono">{importStatus.message}</p>
+                   <p className="text-[10px] font-black text-fg-secondary uppercase tracking-[0.3em] font-mono">{importStatus.message}</p>
                    <button 
                      onClick={() => { setIsImporting(false); setImportStep(1); }}
                      className="mt-12 px-10 py-5 bg-white/5 border border-white/10 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:bg-white/10"
@@ -2168,13 +2168,13 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
             <div className="p-6 border-b border-white/10 flex flex-wrap gap-4 justify-between items-center bg-white/5">
               <div className="flex flex-wrap gap-4 flex-1">
                 <div className="relative max-w-sm w-full group">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 group-focus-within:text-[#00F0FF] transition-colors" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-fg-secondary group-focus-within:text-[#00F0FF] transition-colors" />
                   <input
                     type="text"
                     placeholder="Search Node, Company, or Ledger ID..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-6 py-4 bg-cyber-dark border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white focus:ring-2 focus:ring-[#00F0FF]/50 outline-none transition-all placeholder:text-gray-700"
+                    className="w-full pl-12 pr-6 py-4 bg-cyber-dark border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white focus:ring-2 focus:ring-[#00F0FF]/50 outline-none transition-all placeholder:text-fg-secondary"
                   />
                 </div>
                 
@@ -2212,11 +2212,11 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
               <table className="min-w-full divide-y divide-white/5">
                 <thead className="bg-white/[0.02]">
                   <tr>
-                    <th className="px-8 py-5 text-left text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Core Node / Org</th>
-                    <th className="px-8 py-5 text-left text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Comm Link</th>
-                    <th className="px-8 py-5 text-left text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Revenue Model</th>
-                    <th className="px-8 py-5 text-left text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Neural Status</th>
-                    <th className="px-8 py-5 text-left text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Tactical Ops</th>
+                    <th className="px-8 py-5 text-left text-[9px] font-black text-fg-secondary uppercase tracking-[0.2em]">Core Node / Org</th>
+                    <th className="px-8 py-5 text-left text-[9px] font-black text-fg-secondary uppercase tracking-[0.2em]">Comm Link</th>
+                    <th className="px-8 py-5 text-left text-[9px] font-black text-fg-secondary uppercase tracking-[0.2em]">Revenue Model</th>
+                    <th className="px-8 py-5 text-left text-[9px] font-black text-fg-secondary uppercase tracking-[0.2em]">Neural Status</th>
+                    <th className="px-8 py-5 text-left text-[9px] font-black text-fg-secondary uppercase tracking-[0.2em]">Tactical Ops</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -2228,13 +2228,13 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                     >
                       <td className="px-8 py-6 whitespace-nowrap">
                         <div className="text-sm font-black text-white italic truncate max-w-[200px] mb-1">{client.name}</div>
-                        <div className="text-[10px] text-gray-600 font-bold uppercase tracking-widest flex items-center gap-2">
+                        <div className="text-[10px] text-fg-secondary font-bold uppercase tracking-widest flex items-center gap-2">
                           <div className="h-1.5 w-1.5 rounded-full bg-blue-500 opacity-40" /> {client.company || 'Independiente'}
                         </div>
                       </td>
                       <td className="px-8 py-6 whitespace-nowrap">
-                        <div className="text-[11px] font-black text-gray-400 mb-1">{client.phone}</div>
-                        <div className="text-[10px] text-gray-600 font-medium lowercase tracking-tight">{client.email}</div>
+                        <div className="text-[11px] font-black text-fg-tertiary mb-1">{client.phone}</div>
+                        <div className="text-[10px] text-fg-secondary font-medium lowercase tracking-tight">{client.email}</div>
                       </td>
                       <td className="px-8 py-6 whitespace-nowrap">
                         <span className="px-3 py-1.5 bg-white/5 border border-white/5 text-[#00F0FF] rounded-xl text-[9px] font-black uppercase tracking-widest group-hover:border-[#00F0FF]/30 transition-all">
@@ -2243,9 +2243,9 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                       </td>
                       <td className="px-8 py-6 whitespace-nowrap">
                         <span className={`px-4 py-1.5 inline-flex text-[9px] font-black uppercase tracking-widest rounded-full border ${
-                          client.status === 'Activo' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 glow-emerald' : 
-                          client.status === 'Prospecto' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 
-                          'bg-gray-500/10 text-gray-500 border-gray-500/20'
+                          client.status === 'Activo' ? 'bg-semantic-success-bg text-semantic-success border-separator glow-emerald' : 
+                          client.status === 'Prospecto' ? 'bg-accent-subtle text-accent border-separator' : 
+                          'bg-gray-500/10 text-fg-secondary border-gray-500/20'
                         }`}>
                           {client.status === 'Activo' ? 'Online' : client.status}
                         </span>
@@ -2257,14 +2257,14 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                               setSelectedClient(client);
                               setActiveProfileTab('chat');
                             }}
-                            className="bg-white/5 p-3 rounded-xl text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 border border-white/5 transition-all"
+                            className="bg-white/5 p-3 rounded-xl text-fg-secondary hover:text-blue-400 hover:bg-accent-subtle border border-white/5 transition-all"
                             title="Open Link"
                           >
                             <MessageSquare className="h-4 w-4" />
                           </button>
                           <button 
                             onClick={() => setSelectedClient(client)}
-                            className="bg-white/5 p-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/10 border border-white/5 transition-all"
+                            className="bg-white/5 p-3 rounded-xl text-fg-secondary hover:text-white hover:bg-white/10 border border-white/5 transition-all"
                             title="Inspect Index"
                           >
                             <User className="h-4 w-4" />
@@ -2275,7 +2275,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                   ))}
                   {filteredClients.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={5} className="px-6 py-8 text-center text-fg-secondary">
                         No se encontraron clientes.
                       </td>
                     </tr>
@@ -2298,19 +2298,19 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                 </div>
                 <div>
                   <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Register Core Node</h3>
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Module: Portfolio Ingestion</p>
+                  <p className="text-[10px] font-black text-fg-secondary uppercase tracking-[0.3em]">Module: Portfolio Ingestion</p>
                 </div>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="p-4 bg-white/5 rounded-2xl text-gray-500 hover:text-white transition-colors">
+              <button onClick={() => setIsModalOpen(false)} className="p-4 bg-white/5 rounded-2xl text-fg-secondary hover:text-white transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
             <form onSubmit={handleCreateClient} className="p-10 space-y-8 bg-cyber-dark/50">
               <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Node Command Name</label>
+                  <label className="text-[10px] font-black text-fg-secondary uppercase tracking-widest">Node Command Name</label>
                   <div className="relative group">
-                    <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-[#00F0FF] transition-colors" />
+                    <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-secondary group-focus-within:text-[#00F0FF] transition-colors" />
                     <input 
                       required
                       value={newClient.name}
@@ -2321,9 +2321,9 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Organization ID</label>
+                  <label className="text-[10px] font-black text-fg-secondary uppercase tracking-widest">Organization ID</label>
                   <div className="relative group">
-                    <Building2 className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-[#00F0FF] transition-colors" />
+                    <Building2 className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-secondary group-focus-within:text-[#00F0FF] transition-colors" />
                     <input 
                       required
                       value={newClient.company}
@@ -2336,9 +2336,9 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Digital Address (Email)</label>
+                <label className="text-[10px] font-black text-fg-secondary uppercase tracking-widest">Digital Address (Email)</label>
                 <div className="relative group">
-                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-[#00F0FF] transition-colors" />
+                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-secondary group-focus-within:text-[#00F0FF] transition-colors" />
                   <input 
                     type="email"
                     required
@@ -2349,7 +2349,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                   />
                 </div>
                 {clients.some(c => c.email === newClient.email) && (
-                  <p className="text-[9px] text-red-500 font-black uppercase tracking-widest mt-2 flex items-center gap-2">
+                  <p className="text-[9px] text-semantic-danger font-black uppercase tracking-widest mt-2 flex items-center gap-2">
                     <AlertCircle className="w-3 h-3" /> Address Collision Detected
                   </p>
                 )}
@@ -2357,9 +2357,9 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
 
               <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Comm ID (Phone)</label>
+                  <label className="text-[10px] font-black text-fg-secondary uppercase tracking-widest">Comm ID (Phone)</label>
                   <div className="relative group">
-                    <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-[#00F0FF] transition-colors" />
+                    <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-secondary group-focus-within:text-[#00F0FF] transition-colors" />
                     <input 
                       value={newClient.phone}
                       onChange={e => setNewClient({...newClient, phone: e.target.value})}
@@ -2369,7 +2369,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Revenue Logic</label>
+                  <label className="text-[10px] font-black text-fg-secondary uppercase tracking-widest">Revenue Logic</label>
                   <select 
                     value={newClient.billingModel}
                     onChange={e => setNewClient({...newClient, billingModel: e.target.value})}
@@ -2386,7 +2386,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                 <button 
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-5 bg-white/5 border border-white/10 text-gray-400 rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:text-white transition-all"
+                  className="flex-1 py-5 bg-white/5 border border-white/10 text-fg-tertiary rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:text-white transition-all"
                 >
                   Abort Protocol
                 </button>
@@ -2414,10 +2414,10 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                 </div>
                 <div>
                   <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Review Expansion Opportunity</h3>
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">{selectedOpportunity.clientName}</p>
+                  <p className="text-[10px] font-black text-fg-secondary uppercase tracking-[0.3em]">{selectedOpportunity.clientName}</p>
                 </div>
               </div>
-              <button onClick={() => setSelectedOpportunity(null)} className="p-4 bg-white/5 rounded-2xl text-gray-500 hover:text-white transition-colors">
+              <button onClick={() => setSelectedOpportunity(null)} className="p-4 bg-white/5 rounded-2xl text-fg-secondary hover:text-white transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -2425,17 +2425,17 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
             <div className="p-10 space-y-8 bg-cyber-dark/50">
               <div className="grid grid-cols-2 gap-6">
                 <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl">
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Target Client Node</p>
+                  <p className="text-[10px] font-black text-fg-secondary uppercase tracking-widest mb-1">Target Client Node</p>
                   <p className="text-sm font-bold text-white">{selectedOpportunity.clientName}</p>
                 </div>
                 <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl">
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Expansion Service Module</p>
+                  <p className="text-[10px] font-black text-fg-secondary uppercase tracking-widest mb-1">Expansion Service Module</p>
                   <p className="text-sm font-bold text-[#00F0FF]">{selectedOpportunity.service}</p>
                 </div>
               </div>
 
               <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-3">
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Algorithmic Justification</p>
+                <p className="text-[10px] font-black text-fg-secondary uppercase tracking-widest">Algorithmic Justification</p>
                 <p className="text-xs text-gray-300 leading-relaxed italic">"{selectedOpportunity.reason}"</p>
               </div>
 
@@ -2445,7 +2445,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                   <p className="text-xl font-black text-white font-mono">{selectedOpportunity.potentialValue || 'High Value'}</p>
                 </div>
                 <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl">
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Node Comm Address</p>
+                  <p className="text-[10px] font-black text-fg-secondary uppercase tracking-widest mb-1">Node Comm Address</p>
                   <p className="text-xs font-bold text-gray-300 truncate">{selectedOpportunity.email}</p>
                 </div>
               </div>
@@ -2454,7 +2454,7 @@ Devuelve exclusivamente el objeto JSON de la forma {"clients": [...]}. No incluy
                 <button 
                   type="button"
                   onClick={() => setSelectedOpportunity(null)}
-                  className="flex-1 py-5 bg-white/5 border border-white/10 text-gray-400 rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:text-white transition-all"
+                  className="flex-1 py-5 bg-white/5 border border-white/10 text-fg-tertiary rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:text-white transition-all"
                 >
                   Dismiss Analysis
                 </button>
