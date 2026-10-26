@@ -28,6 +28,20 @@ export default async function handler(req: any, res: any) {
     console.log('[telnyx-token] Usuario autenticado:', authUser.uid, authUser.email);
 
     const db = adminDb;
+
+    // La autenticación de Firebase por sí sola no concede acceso a telefonía.
+    // Solo perfiles aprobados con un rol operativo pueden obtener credenciales Telnyx.
+    const profileSnap = await db.collection('users').doc(authUser.uid).get();
+    const profile = profileSnap.exists ? (profileSnap.data() || {}) : null;
+    const profileRole = String(profile?.role || '').trim().toLowerCase();
+    if (!profile || String(profile.status || '').trim().toLowerCase() !== 'approved' ||
+        !['superadmin', 'admin', 'supervisor', 'agente', 'tlmk', 'ceo', 'gestor'].includes(profileRole)) {
+      res.statusCode = 403;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Acceso a telefonía pendiente de aprobación o no autorizado.' }));
+      return;
+    }
+
     const operadorDoc = await db.collection('operadores').doc(authUser.uid).get();
 
     let operadorData: any;
