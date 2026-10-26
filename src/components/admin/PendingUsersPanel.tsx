@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, onSnapshot, query, where, doc, updateDoc, serverTimestamp, addDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
-import { Check, X, Clock, Mail, User as UserIcon, ShieldCheck } from 'lucide-react';
+import { Check, X, Clock, Mail, User as UserIcon, ShieldCheck, Ban } from 'lucide-react';
 
 interface PendingUser {
   id: string;
@@ -96,6 +96,37 @@ export default function PendingUsersPanel() {
     }
   };
 
+  const block = async (uid: string) => {
+    const reason = prompt('Motivo del bloqueo (opcional):') || '';
+    if (!auth.currentUser) {
+      alert('La sesión administrativa no está disponible. Inicia sesión de nuevo.');
+      return;
+    }
+    setBusy(uid);
+    try {
+      await updateDoc(doc(db, 'users', uid), {
+        status: 'blocked',
+        blockedBy: auth.currentUser.uid,
+        blockedAt: serverTimestamp(),
+        blockReason: reason || 'Acceso bloqueado por un administrador.',
+      });
+      await addDoc(collection(db, 'notifications'), {
+        ownerId: uid,
+        title: 'Acceso bloqueado',
+        message: reason || 'Un administrador ha bloqueado el acceso a tu cuenta.',
+        type: 'account_approval',
+        priority: 'high',
+        path: '/login',
+        read: false,
+        createdAt: serverTimestamp(),
+      });
+    } catch (err: any) {
+      alert('Error bloqueando cuenta: ' + err.message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
   if (loading) {
     return <div className="p-6 text-sm text-fg-secondary">Cargando solicitudes…</div>;
   }
@@ -163,6 +194,13 @@ export default function PendingUsersPanel() {
                 className="px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-50"
               >
                 <Check className="w-3.5 h-3.5" /> Aprobar
+              </button>
+              <button
+                onClick={() => block(u.id)}
+                disabled={busy === u.id}
+                className="px-3 py-1.5 rounded-md border border-semantic-danger/40 bg-semantic-danger-bg hover:opacity-80 text-semantic-danger text-xs font-semibold flex items-center gap-1 disabled:opacity-50"
+              >
+                <Ban className="w-3.5 h-3.5" /> Bloquear
               </button>
               <button
                 onClick={() => reject(u.id)}
