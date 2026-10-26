@@ -115,7 +115,14 @@ export default function SuperAdmin() {
     return () => unsub();
   }, []);
 
-  const pendingUsers = users.filter(u => u.status === 'pending' || u.role === 'none');
+  const pendingUsers = users.filter(u => {
+    const email = String(u.email || '').trim().toLowerCase();
+    const status = String(u.status || 'pending').trim().toLowerCase();
+    const role = String(u.role || 'none').trim().toLowerCase();
+    return email !== 'safeness.c.a@gmail.com'
+      && !['rejected', 'suspended', 'frozen', 'blocked', 'disabled'].includes(status)
+      && (status !== 'approved' || !role || role === 'none');
+  });
 
   // Load Users, Audit Logs, Clients, and Projects (Guarded by Auth)
   useEffect(() => {
@@ -175,6 +182,10 @@ export default function SuperAdmin() {
   };
 
   const updateUserStatus = async (userId: string, status: string) => {
+    if (!isRootUser) {
+      triggerFeedback('Solo safeness.c.a@gmail.com puede aprobar o cambiar el estado de acceso.');
+      return;
+    }
     try {
       const target = users.find((item) => item.id === userId);
       if (status === 'approved' && (!target || !target.role || target.role === 'none')) {
@@ -224,6 +235,10 @@ export default function SuperAdmin() {
   };
 
   const updateUserRole = async (userId: string, role: string) => {
+    if (!isRootUser) {
+      triggerFeedback('Solo safeness.c.a@gmail.com puede cambiar el rol base.');
+      return;
+    }
     try {
       await updateDoc(doc(db, 'users', userId), { role });
       await addDoc(collection(db, 'audit_logs'), {
@@ -534,6 +549,34 @@ export default function SuperAdmin() {
                 </div>
               </div>
 
+              {pendingUsers.length > 0 && (
+                <section className="m-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-sm font-black text-amber-900">Usuarios que aún no pueden entrar ({pendingUsers.length})</h3>
+                    <p className="text-xs text-amber-800">Solo safeness.c.a@gmail.com puede aprobar o rechazar el acceso.</p>
+                  </div>
+                  <div className="space-y-2">
+                    {pendingUsers.map((pendingUser) => (
+                      <div key={pendingUser.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-100 bg-white p-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-bold text-gray-900">{pendingUser.name || 'Usuario sin nombre'}</p>
+                          <p className="truncate text-xs text-gray-600">{pendingUser.email || pendingUser.id}</p>
+                          <p className="text-[10px] text-amber-700">Rol: {pendingUser.role || 'none'} · Estado: {pendingUser.status || 'pending'}</p>
+                        </div>
+                        {isRootUser ? (
+                          <div className="flex gap-2">
+                            <button onClick={() => updateUserStatus(pendingUser.id, 'approved')} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700">Aprobar acceso</button>
+                            <button onClick={() => updateUserStatus(pendingUser.id, 'rejected')} className="rounded-lg bg-rose-600 px-3 py-2 text-xs font-bold text-white hover:bg-rose-700">Rechazar</button>
+                          </div>
+                        ) : (
+                          <span className="text-xs font-semibold text-amber-800">Esperando aprobación de Safeness</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
               {/* Users Table */}
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
@@ -568,7 +611,8 @@ export default function SuperAdmin() {
                           <select
                             value={user.role || 'none'}
                             onChange={(e) => updateUserRole(user.id, e.target.value)}
-                            className="text-xs font-bold border border-gray-200 rounded-xl px-2.5 py-1.5 bg-white text-gray-800 focus:ring-[#00F0FF] focus:border-[#00F0FF]"
+                            disabled={!isRootUser}
+                            className="text-xs font-bold border border-gray-200 rounded-xl px-2.5 py-1.5 bg-white text-gray-800 focus:ring-[#00F0FF] focus:border-[#00F0FF] disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <option value="none">⚠️ Sin Rol Asignado</option>
                             {RBAC_ROLES.map(r => (
@@ -582,6 +626,7 @@ export default function SuperAdmin() {
                           <select
                             value={user.status || 'pending'}
                             onChange={(e) => updateUserStatus(user.id, e.target.value)}
+                            disabled={!isRootUser}
                             className={`text-[11px] border-0 rounded-full px-3 py-1 font-bold ${
                               user.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 
                               user.status === 'suspended' ? 'bg-rose-100 text-rose-800' : 
