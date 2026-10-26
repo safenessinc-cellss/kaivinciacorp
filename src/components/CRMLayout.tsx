@@ -18,6 +18,7 @@ import HelpDrawer from './help/HelpDrawer';
 import NotificationCenter from './NotificationCenter';
 import LanguageSelector from './LanguageSelector';
 import MacAppearanceControls from './MacAppearanceControls';
+import { usePermissions } from '../hooks/usePermissions';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAppearance } from '../contexts/AppearanceContext';
 
@@ -42,7 +43,8 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
   const userRole = userData?.role || 'user';
   const isAdminOrFin = ['superadmin', 'admin', 'billing', 'accounting'].includes(userRole);
-  const isSuperAdmin = userRole === 'superadmin';
+  const isSuperAdmin = String(userRole).trim().toLowerCase() === 'superadmin';
+  const { can } = usePermissions(userData);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -157,98 +159,53 @@ export default function CRMLayout({ userData }: { userData: any }) {
       ]
     };
 
-    // Lógica de menús según el Rol
+    // El rol determina los valores por defecto; los permisos individuales filtran el menú real.
     if (userRole === 'alumno') {
-      return [
-        academyGroup,
-        {
-          title: t('nav.groups.portal', 'PAGOS & PORTAL'),
-          items: [
-            { name: t('nav.my_portal', 'Mi Portal'), href: '/crm/user-portal', icon: UserCircle, color: 'text-fg-tertiary' },
-            { name: t('nav.billing', 'Pagos y Facturas'), href: '/crm/billing', icon: Receipt, color: 'text-cyan-600' },
-            { name: t('nav.digital_products', 'Academy Store'), href: '/crm/digital-products', icon: ShoppingCart, color: 'text-fg-tertiary' },
-          ]
-        }
-      ];
+      return [academyGroup, { title: t('nav.groups.portal', 'PAGOS & PORTAL'), items: [
+        { name: t('nav.my_portal', 'Mi Portal'), href: '/crm/user-portal', icon: UserCircle, color: 'text-fg-tertiary' },
+        { name: t('nav.billing', 'Pagos y Facturas'), href: '/crm/billing', icon: Receipt, color: 'text-cyan-600' },
+        { name: t('nav.digital_products', 'Academy Store'), href: '/crm/digital-products', icon: ShoppingCart, color: 'text-fg-tertiary' },
+      ] }];
     }
-
-    if (['tlmk', 'ventas', 'setter', 'closer', 'telemarketing', 'agent'].includes(userRole)) {
-      return [telemarketingGroup, coreGroup, portalGroup];
-    }
-
-    if (userRole === 'collaborator') {
-      return [
-        telemarketingGroup,
-        {
-          title: t('nav.groups.operations', 'MI TRABAJO'),
-          items: [
-            { name: t('nav.master_dashboard', 'Panel Operativo'), href: '/crm/dashboard', icon: Home, color: 'text-cyan-500' },
-            { name: t('nav.tasks', 'Tareas Asignadas'), href: '/crm/tasks', icon: ClipboardCheck, color: 'text-blue-400' },
-            { name: t('nav.neural_chat', 'Neural Chat'), href: '/crm/chat', icon: MessageSquare, color: 'text-[var(--color-purple)]' },
-            { name: t('nav.sop_manuals', 'Manuales SOP'), href: '/crm/manuales', icon: BookOpen, color: 'text-semantic-success' },
-          ]
-        },
-        portalGroup
-      ];
-    }
-
-    if (userRole === 'rrhh') {
-      return [coreGroup, talentGroup, academyGroup, portalGroup];
-    }
-
-    if (userRole === 'gestor') {
-      return [telemarketingGroup, coreGroup, operationsGroup, clientGroup, strategyGroup, portalGroup];
-    }
-
-    if (userRole === 'ceo' || userRole === 'superadmin') {
-      const groups = [
-        telemarketingGroup,
-        coreGroup,
-        clientGroup,
-        operationsGroup,
-        talentGroup,
-        strategyGroup,
-        academyGroup,
-        portalGroup,
-      ];
-
-      if (isSuperAdmin) {
-        groups.push({
-          title: t('nav.groups.config', 'CONFIGURACIÓN'),
-          items: [
-            { name: t('nav.superadmin', 'SuperAdmin'), href: '/crm/superadmin', icon: ShieldAlert },
-            { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[var(--color-pink)]' },
-            { name: t('nav.security_center', 'Security Center'), href: '/crm/security', icon: ShieldCheck, color: 'text-[var(--color-yellow)]' },
-            { name: t('nav.automations', 'Automatizaciones'), href: '/crm/automations', icon: Zap },
-            { name: t('nav.form_templates', 'Plantillas de Ficha'), href: '/crm/form-templates', icon: LayoutTemplate, color: 'text-[var(--accent)]' },
-            { name: t('nav.integrations', 'Integraciones Externas'), href: '/crm/integrations', icon: Share2, color: 'text-violet-400' },
-          ]
-        } as any);
-      }
-      return groups;
-    }
-
-    // Usuario básico o sin rol/pending
-    return [
-      telemarketingGroup,
-      {
-        title: t('common.welcome', 'BIENVENIDO'),
-        items: [
-          { name: t('nav.my_portal', 'Mi Portal'), href: '/crm/user-portal', icon: UserCircle, color: 'text-fg-tertiary' },
-          { name: t('nav.helpdesk', 'Centro de Soporte'), href: '/crm/helpdesk', icon: HelpCircle, color: 'text-cyan-400' },
-        ]
-      }
-    ];
+    const groups: any[] = [telemarketingGroup, coreGroup, clientGroup, operationsGroup, talentGroup, strategyGroup, academyGroup, portalGroup];
+    if (isSuperAdmin) groups.push({
+      title: t('nav.groups.config', 'CONFIGURACIÓN'),
+      items: [
+        { name: t('nav.superadmin', 'SuperAdmin'), href: '/crm/superadmin', icon: ShieldAlert, permissionKey: 'superadmin' },
+        { name: 'Permisos granulares', href: '/crm/permissions', icon: ShieldCheck, permissionKey: 'superadmin' },
+        { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[var(--color-pink)]' },
+        { name: t('nav.security_center', 'Security Center'), href: '/crm/security', icon: ShieldCheck, color: 'text-[var(--color-yellow)]' },
+        { name: t('nav.automations', 'Automatizaciones'), href: '/crm/automations', icon: Zap },
+        { name: t('nav.form_templates', 'Plantillas de Ficha'), href: '/crm/form-templates', icon: LayoutTemplate, color: 'text-[var(--accent)]' },
+        { name: t('nav.integrations', 'Integraciones Externas'), href: '/crm/integrations', icon: Share2, color: 'text-violet-400' },
+      ]
+    });
+    return groups;
   }, [userRole, isAdminOrFin, isSuperAdmin, t]);
 
   const filteredMenuGroups = useMemo(() => {
-    if (!menuSearch) return menuGroups;
+    const permissionKeyForPath = (href: string): string => {
+      const path = href.split('?')[0].replace('/crm/', '');
+      const mapping: Record<string, string> = {
+        dashboard:'dashboard', nervous:'dashboard', 'client-management':'clients', clients:'clients',
+        pipeline:'marketing', marketing:'marketing', calls:'calls', calendar:'calendar', cobranza:'cobranza',
+        billing:'billing', accounting:'accounting', payroll:'payroll', team:'team', recruitment:'recruitment',
+        tasks:'tasks', projects:'projects', operations:'operations', reports:'reports', 'strategic-report':'strategicReport',
+        commissions:'reports', chat:'chat', helpdesk:'helpdesk', drive:'drive', 'academy-internal':'academy',
+        manuales:'academy', integrations:'integrations', automations:'automations', 'form-templates':'formTemplates',
+        appearance:'appearance', security:'security', superadmin:'superadmin', permissions:'superadmin'
+      };
+      return mapping[path] || 'dashboard';
+    };
     const lowerSearch = menuSearch.toLowerCase();
     return menuGroups.map(group => ({
       ...group,
-      items: group.items.filter(item => item.name.toLowerCase().includes(lowerSearch))
+      items: group.items.filter((item: any) =>
+        can(permissionKeyForPath(item.href) as any) &&
+        (!menuSearch || item.name.toLowerCase().includes(lowerSearch))
+      )
     })).filter(group => group.items.length > 0);
-  }, [menuGroups, menuSearch]);
+  }, [menuGroups, menuSearch, can]);
 
   // Generate Breadcrumbs based on current path
   const generateBreadcrumbs = () => {
