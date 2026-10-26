@@ -9,16 +9,16 @@
   --font-size-base: 14px;
   --font-weight-base: 400;
   --heading-scale: 1;
-  --color-primary: #00F0FF;
-  --color-secondary: #1e293b;
-  --color-background: #05070a;
-  --color-surface: #0b1118;
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #94a3b8;
-  --color-sidebar-bg: #070b10;
-  --color-sidebar-text: #cbd5e1;
-  --color-sidebar-active: #00F0FF;
-  --color-header-bg: #070b10;
+  --color-primary: var(--accent);
+  --color-secondary: var(--fg-secondary);
+  --color-background: var(--bg-page);
+  --color-surface: var(--bg-elevated);
+  --color-text-primary: var(--fg-primary);
+  --color-text-secondary: var(--fg-secondary);
+  --color-sidebar-bg: var(--bg-sidebar);
+  --color-sidebar-text: var(--fg-primary);
+  --color-sidebar-active: var(--accent);
+  --color-header-bg: var(--bg-toolbar);
   --sidebar-width: 256px;
   --border-radius: 12px;
   --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
@@ -51,7 +51,7 @@
     font-weight: var(--font-weight-base);
     background-color: var(--color-background);
     color: var(--color-text-secondary);
-    background-image: radial-gradient(rgba(31, 41, 55, 0.2) 1px, transparent 0);
+    background-image: none;
     background-size: 24px 24px;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
@@ -65,21 +65,21 @@
   .glass-panel {
     background-color: var(--color-surface);
     backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--separator);
     box-shadow: var(--card-shadow);
     border-radius: var(--border-radius);
   }
   
   .glow-emerald {
-    filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
+    filter: drop-shadow(0 0 8px var(--success));
   }
 
   .glow-amber {
-    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.4));
+    filter: drop-shadow(0 0 8px var(--warning));
   }
 
   .glow-crimson {
-    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
+    filter: drop-shadow(0 0 8px var(--danger));
   }
 
   .glow-primary {
@@ -137,51 +137,3 @@
   animation: gradient 15s ease infinite;
 }
 
-/* ── Forzar tema blanco en toda la app ──────────────────────────── */
-/* Sobrescribe fondos oscuros hardcodeados. Para revertir: borrar este bloque. */
-@layer utilities {
-  .bg-gray-950, .bg-gray-900,
-  .bg-slate-950, .bg-slate-900,
-  .bg-zinc-950, .bg-zinc-900,
-  .bg-neutral-950, .bg-neutral-900,
-  .bg-stone-950, .bg-stone-900 {
-    background-color: #ffffff !important;
-  }
-  .bg-gray-800, .bg-slate-800, .bg-zinc-800,
-  .bg-neutral-800, .bg-stone-800 {
-    background-color: #f9fafb !important;
-  }
-
-  /* Texto claro sobre los fondos que acabamos de volver blancos */
-  .text-gray-100, .text-slate-100 { color: #111827 !important; }
-  .text-gray-200, .text-slate-200 { color: #1f2937 !important; }
-  .text-gray-300, .text-slate-300 { color: #374151 !important; }
-
-  /* Bordes oscuros → bordes claros */
-  .border-gray-700, .border-gray-800,
-  .border-slate-700, .border-slate-800 {
-    border-color: #e5e7eb !important;
-  }
-
-  /* text-white dentro de contenedores blancos (pero NO en botones de color) */
-  .bg-white.text-white,
-  .bg-gray-50.text-white,
-  .bg-gray-100.text-white {
-    color: #111827 !important;
-  }
-}
-
-/* ── Extra: clases arbitrarias oscuras no cubiertas ─────────────── */
-@layer utilities {
-  .bg-\[\#07090E\], .bg-\[\#05070a\], .bg-\[\#0B0E14\],
-  .bg-\[\#0f172a\], .bg-\[\#111827\], .bg-\[\#161B22\],
-  .bg-black {
-    background-color: #ffffff !important;
-  }
-  .bg-slate-900\/90, .bg-slate-950\/60, .bg-slate-800, .bg-slate-700,
-  .bg-gray-900\/90, .bg-gray-950\/60 {
-    background-color: #f9fafb !important;
-  }
-  .text-cyan-300, .text-cyan-400, .text-\[\#00F0FF\] { color: #111827 !important; }
-  .border-\[\#00F0FF\], .border-cyan-500\/30 { border-color: #e5e7eb !important; }
-}
