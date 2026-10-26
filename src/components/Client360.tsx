@@ -21,7 +21,7 @@ export default function Client360({ client, onClose }: Client360Props) {
         initial={{ x: '100%' }}
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
-        className="w-full max-w-4xl h-full bg-[#0B0E14] border-l border-white/10 shadow-2xl rounded-[3rem] overflow-hidden flex flex-col"
+        className="w-full max-w-4xl h-full bg-[var(--bg-page)] border-l border-white/10 shadow-2xl rounded-[3rem] overflow-hidden flex flex-col"
       >
         {/* Header Section */}
         <div className="p-8 border-b border-white/5 flex justify-between items-start">
@@ -32,7 +32,7 @@ export default function Client360({ client, onClose }: Client360Props) {
             <div>
               <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">{client.name}</h2>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-[10px] font-black text-[#A855F7] uppercase tracking-[0.2em]">{client.industry || 'B2B Enterprise'}</span>
+                <span className="text-[10px] font-black text-[var(--color-purple)] uppercase tracking-[0.2em]">{client.industry || 'B2B Enterprise'}</span>
                 <div className="h-1 w-1 bg-gray-700 rounded-full" />
                 <span className="text-[10px] font-black text-fg-secondary uppercase tracking-widest flex items-center gap-1">
                    <ShieldCheck className="w-3 h-3 text-semantic-success" /> CISO Verified Data
@@ -113,11 +113,11 @@ export default function Client360({ client, onClose }: Client360Props) {
 
              {/* Right Column: Key Links */}
              <div className="lg:col-span-4 space-y-6">
-                <div className="bg-[#A855F7]/10 rounded-[2.5rem] border border-[#A855F7]/20 p-6 text-center">
-                   <Target className="w-10 h-10 text-[#A855F7] mx-auto mb-4" />
+                <div className="bg-[var(--color-purple)]/10 rounded-[2.5rem] border border-[var(--color-purple)]/20 p-6 text-center">
+                   <Target className="w-10 h-10 text-[var(--color-purple)] mx-auto mb-4" />
                    <h4 className="text-xs font-black text-white uppercase italic tracking-tight">Siguiente Paso Estratégico</h4>
                    <p className="text-[10px] text-fg-tertiary mt-2 leading-relaxed">Migrar a este cliente al Plan Híbrido Elite para duplicar volumen de citas.</p>
-                   <button className="w-full mt-4 py-3 bg-[#A855F7] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#A855F7]/20 hover:scale-[1.02] transition-transform">Ejecutar Acción</button>
+                   <button className="w-full mt-4 py-3 bg-[var(--color-purple)] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[var(--color-purple)]/20 hover:scale-[1.02] transition-transform">Ejecutar Acción</button>
                 </div>
 
                 <div className="space-y-2">
