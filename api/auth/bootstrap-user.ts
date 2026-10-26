@@ -43,31 +43,54 @@ export default async function handler(req: any, res: any) {
 
   if (snap.exists) {
     const existing = snap.data() || {};
-    const role = String(existing.role || 'none').trim().toLowerCase();
-    const status = String(existing.status || '').trim().toLowerCase();
+    const currentRole = String(existing.role || 'none').trim().toLowerCase();
+    const currentStatus = String(existing.status || '').trim().toLowerCase();
 
-    // Allowlist membership is not an approval mechanism. Never elevate or activate
-    // an existing account from a login/bootstrap request.
-    if (SUPERADMINS.includes(email) && !(['superadmin', 'admin'].includes(role) && status === 'approved')) {
-      return sendJson(res, 403, {
-        error: 'La cuenta administrativa requiere provisión y aprobación explícitas.',
-        code: 'ADMIN_APPROVAL_REQUIRED',
+    // Configured SuperAdmin emails are the trusted administrator allowlist.
+    // Repair legacy profiles so login and RouteGuard use the canonical role/status.
+    // Explicitly rejected or suspended accounts remain blocked.
+    if (SUPERADMINS.includes(email)) {
+      if (['rejected', 'suspended'].includes(currentStatus)) {
+        return sendJson(res, 403, {
+          error: 'La cuenta administrativa está bloqueada. Un administrador debe revisar su estado.',
+          code: 'ADMIN_ACCOUNT_BLOCKED',
+        });
+      }
+
+      const role = 'superadmin';
+      const status = 'approved';
+      const repaired = {
+        role,
+        status,
+        email: email || existing.email || null,
+        uid: decoded.uid,
+        updatedAt: FieldValue.serverTimestamp(),
+        lastLogin: FieldValue.serverTimestamp(),
+      };
+      await userRef.set(repaired, { merge: true });
+      await syncBaseRoleClaims(decoded.uid, role, status);
+      return sendJson(res, 200, {
+        user: { ...existing, ...repaired },
+        repaired: currentRole !== role || currentStatus !== status,
       });
     }
 
+    const role = currentRole;
+    const status = currentStatus || 'pending';
     await syncBaseRoleClaims(decoded.uid, role, status);
     await userRef.update({ lastLogin: FieldValue.serverTimestamp() }).catch(() => undefined);
     return sendJson(res, 200, { user: { ...existing, role, status } });
   }
 
-  // Every first-time account starts unprivileged and pending. Even a configured
-  // admin email must be provisioned by an authorized administrator out of band.
+  // Only explicitly configured SuperAdmin emails are provisioned as administrators.
+  // All other first-time accounts remain unprivileged and pending.
+  const isSuperAdmin = SUPERADMINS.includes(email);
   const profile = {
     uid: decoded.uid,
     name: decoded.name || email.split('@')[0] || 'Usuario',
     email: email || null,
-    role: 'none',
-    status: 'pending',
+    role: isSuperAdmin ? 'superadmin' : 'none',
+    status: isSuperAdmin ? 'approved' : 'pending',
     avatarUrl: decoded.picture || '',
     createdAt: new Date().toISOString(),
     lastLogin: FieldValue.serverTimestamp(),
