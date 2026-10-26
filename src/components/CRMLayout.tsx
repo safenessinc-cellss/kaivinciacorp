@@ -91,9 +91,9 @@ export default function CRMLayout({ userData }: { userData: any }) {
     const coreGroup = {
       title: t('nav.groups.nervous', 'SISTEMA NERVIOSO'),
       items: [
-        { name: t('nav.nervous_system', 'Nervous System'), href: '/crm/nervous', icon: BrainCircuit, highlight: true, color: 'text-[#22D3EE]' },
+        { name: t('nav.nervous_system', 'Nervous System'), href: '/crm/nervous', icon: BrainCircuit, highlight: true, color: 'text-[var(--color-cyan)]' },
         { name: t('nav.master_dashboard', 'Panel Maestro'), href: '/crm/dashboard', icon: Home, highlight: true, color: 'text-cyan-500' },
-        { name: t('nav.neural_chat', 'Neural Chat'), href: '/crm/chat', icon: MessageSquare, badge: '9+', color: 'text-[#A855F7]' },
+        { name: t('nav.neural_chat', 'Neural Chat'), href: '/crm/chat', icon: MessageSquare, badge: '9+', color: 'text-[var(--color-purple)]' },
         { name: t('nav.members_roles', 'Miembros / Roles'), href: '/crm/chat?view=contacts', icon: Users, color: 'text-semantic-success' },
       ]
     };
@@ -110,7 +110,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
     const clientGroup = {
       title: t('nav.groups.clients', 'ECOSISTEMA DE CLIENTES'),
       items: [
-        { name: t('nav.pipeline', 'Marketing (Oportunidades)'), href: '/crm/pipeline', icon: Navigation, highlight: true, color: 'text-[#00F0FF]', badge: 'Meta Ads' },
+        { name: t('nav.pipeline', 'Marketing (Oportunidades)'), href: '/crm/pipeline', icon: Navigation, highlight: true, color: 'text-[var(--accent)]', badge: 'Meta Ads' },
         { name: t('nav.voip_softphone', 'Discador & VoIP Softphone'), href: '/crm/calls', icon: PhoneCall, highlight: true, color: 'text-semantic-success' },
         { name: t('nav.clients', 'Base de Clientes'), href: '/crm/clients', icon: Users, color: 'text-semantic-success' },
         { name: t('nav.calendar', 'Agenda & Reuniones'), href: '/crm/calendar', icon: Calendar, color: 'text-cyan-400' },
@@ -121,7 +121,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
     const telemarketingGroup = {
       title: t('nav.groups.tlmk', 'TELEMARKETING & VENTAS (TLMK)'),
       items: [
-        { name: t('nav.pipeline', 'Marketing (Oportunidades)'), href: '/crm/pipeline', icon: Navigation, highlight: true, color: 'text-[#00F0FF]', badge: 'Meta Ads' },
+        { name: t('nav.pipeline', 'Marketing (Oportunidades)'), href: '/crm/pipeline', icon: Navigation, highlight: true, color: 'text-[var(--accent)]', badge: 'Meta Ads' },
         { name: t('nav.voip_softphone', 'Discador & VoIP Softphone'), href: '/crm/calls', icon: PhoneCall, highlight: true, color: 'text-semantic-success' },
         { name: t('nav.calendar', 'Agenda & Reuniones'), href: '/crm/calendar', icon: Calendar, color: 'text-cyan-400' },
         { name: t('nav.clients', 'Base de Clientes'), href: '/crm/clients', icon: Users, color: 'text-semantic-success' },
@@ -134,7 +134,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
       items: [
         { name: t('nav.tasks', 'Gestión de Tareas'), href: '/crm/tasks', icon: ClipboardCheck, color: 'text-blue-400' },
         { name: t('nav.projects', 'Proyectos Activos'), href: '/crm/projects', icon: FolderKanban, color: 'text-orange-500' },
-        { name: t('nav.form_templates', 'Plantillas de Ficha'), href: '/crm/form-templates', icon: LayoutTemplate, color: 'text-[#00F0FF]' },
+        { name: t('nav.form_templates', 'Plantillas de Ficha'), href: '/crm/form-templates', icon: LayoutTemplate, color: 'text-[var(--accent)]' },
         { name: t('nav.integrations', 'Integraciones Externas'), href: '/crm/integrations', icon: Share2, color: 'text-violet-400' },
         { name: t('nav.sgi_drive', 'SGI Drive'), href: '/crm/drive', icon: HardDrive, color: 'text-indigo-500' },
       ]
@@ -184,7 +184,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
           items: [
             { name: t('nav.master_dashboard', 'Panel Operativo'), href: '/crm/dashboard', icon: Home, color: 'text-cyan-500' },
             { name: t('nav.tasks', 'Tareas Asignadas'), href: '/crm/tasks', icon: ClipboardCheck, color: 'text-blue-400' },
-            { name: t('nav.neural_chat', 'Neural Chat'), href: '/crm/chat', icon: MessageSquare, color: 'text-[#A855F7]' },
+            { name: t('nav.neural_chat', 'Neural Chat'), href: '/crm/chat', icon: MessageSquare, color: 'text-[var(--color-purple)]' },
             { name: t('nav.sop_manuals', 'Manuales SOP'), href: '/crm/manuales', icon: BookOpen, color: 'text-semantic-success' },
           ]
         },
@@ -217,10 +217,10 @@ export default function CRMLayout({ userData }: { userData: any }) {
           title: t('nav.groups.config', 'CONFIGURACIÓN'),
           items: [
             { name: t('nav.superadmin', 'SuperAdmin'), href: '/crm/superadmin', icon: ShieldAlert },
-            { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[#EC4899]' },
-            { name: t('nav.security_center', 'Security Center'), href: '/crm/security', icon: ShieldCheck, color: 'text-[#FACC15]' },
+            { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[var(--color-pink)]' },
+            { name: t('nav.security_center', 'Security Center'), href: '/crm/security', icon: ShieldCheck, color: 'text-[var(--color-yellow)]' },
             { name: t('nav.automations', 'Automatizaciones'), href: '/crm/automations', icon: Zap },
-            { name: t('nav.form_templates', 'Plantillas de Ficha'), href: '/crm/form-templates', icon: LayoutTemplate, color: 'text-[#00F0FF]' },
+            { name: t('nav.form_templates', 'Plantillas de Ficha'), href: '/crm/form-templates', icon: LayoutTemplate, color: 'text-[var(--accent)]' },
             { name: t('nav.integrations', 'Integraciones Externas'), href: '/crm/integrations', icon: Share2, color: 'text-violet-400' },
           ]
         } as any);
@@ -322,15 +322,15 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
         {/* Quick Access Icons */}
         {!isSidebarCollapsed && (
-          <div className="flex items-center justify-around p-3 border-b border-gray-800 shrink-0 bg-[#111]">
-            <Link to="/crm/chat" className="p-2 rounded-lg hover:bg-gray-800 hover:text-[#00F0FF] transition-colors relative group" title={t('nav.neural_chat', 'Chat Interno')}>
+          <div className="flex items-center justify-around p-3 border-b border-gray-800 shrink-0 bg-[var(--fg-primary)]">
+            <Link to="/crm/chat" className="p-2 rounded-lg hover:bg-gray-800 hover:text-[var(--accent)] transition-colors relative group" title={t('nav.neural_chat', 'Chat Interno')}>
               <MessageSquare className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-semantic-danger rounded-full"></span>
             </Link>
-            <Link to="/crm/calls" className="p-2 rounded-lg hover:bg-gray-800 hover:text-[#00F0FF] transition-colors group" title={t('nav.voip_softphone', 'Sistema de Llamadas')}>
+            <Link to="/crm/calls" className="p-2 rounded-lg hover:bg-gray-800 hover:text-[var(--accent)] transition-colors group" title={t('nav.voip_softphone', 'Sistema de Llamadas')}>
               <PhoneCall className="w-5 h-5" />
             </Link>
-            <Link to="/crm/tasks" className="p-2 rounded-lg hover:bg-gray-800 hover:text-[#00F0FF] transition-colors group" title={t('nav.tasks', 'Mis Tareas')}>
+            <Link to="/crm/tasks" className="p-2 rounded-lg hover:bg-gray-800 hover:text-[var(--accent)] transition-colors group" title={t('nav.tasks', 'Mis Tareas')}>
               <CheckSquare className="w-5 h-5" />
             </Link>
           </div>
@@ -346,7 +346,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
                 placeholder={t('header.search_placeholder', 'Buscar módulo...')} 
                 value={menuSearch}
                 onChange={(e) => setMenuSearch(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-800 rounded-lg pl-9 pr-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-[#00F0FF] focus:ring-1 focus:ring-[#00F0FF] transition-colors"
+                className="w-full bg-gray-900 border border-gray-800 rounded-lg pl-9 pr-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-colors"
               />
             </div>
           </div>
@@ -388,7 +388,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
                         >
                           <item.icon className={`${!isSidebarCollapsed ? 'mr-3' : ''} h-4 w-4 shrink-0 transition-transform group-hover:scale-125 ${
                             isActive 
-                              ? item.color || 'text-[#00F0FF]' 
+                              ? item.color || 'text-[var(--accent)]' 
                               : item.color || 'text-fg-secondary'
                           }`} />
                           {!isSidebarCollapsed && (
@@ -396,7 +396,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
                               <span className="text-[10px] uppercase font-black tracking-widest">{item.name}</span>
                               {item.badge && (
                                 <span className={`text-[7px] font-black px-1.5 py-0.5 rounded-full ${
-                                  item.badge === 'LIVE' ? 'bg-cyan-500 text-black animate-pulse' : 'bg-[#A855F7] text-white'
+                                  item.badge === 'LIVE' ? 'bg-cyan-500 text-black animate-pulse' : 'bg-[var(--color-purple)] text-white'
                                 }`}>
                                   {item.badge}
                                 </span>
@@ -406,7 +406,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
                           {isActive && !isSidebarCollapsed && (
                             <motion.div 
                               layoutId="nav-glow"
-                              className="absolute left-0 w-1 h-4 bg-[#00F0FF] rounded-r-full"
+                              className="absolute left-0 w-1 h-4 bg-[var(--accent)] rounded-r-full"
                             />
                           )}
                         </Link>
@@ -420,21 +420,21 @@ export default function CRMLayout({ userData }: { userData: any }) {
         </div>
 
         {/* User Profile Footer */}
-        <div className="p-4 border-t border-gray-800 shrink-0 bg-[#111]">
+        <div className="p-4 border-t border-gray-800 shrink-0 bg-[var(--fg-primary)]">
           {!isSidebarCollapsed ? (
             <>
               <div className="flex items-center gap-3 mb-4 px-2">
                 {userData?.avatarUrl ? (
                   <img src={userData.avatarUrl} alt={userData?.name} className="h-10 w-10 rounded-full object-cover border border-gray-700 shadow-lg" />
                 ) : (
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#00F0FF] to-yellow-700 flex items-center justify-center text-sm font-bold text-white shadow-lg">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--accent)] to-yellow-700 flex items-center justify-center text-sm font-bold text-white shadow-lg">
                     {userData?.name?.charAt(0) || 'U'}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-white truncate">{userData?.name}</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="text-[10px] bg-gray-800 text-[#00F0FF] px-1.5 py-0.5 rounded border border-gray-700 uppercase font-black tracking-tighter shadow-sm">
+                    <span className="text-[10px] bg-gray-800 text-[var(--accent)] px-1.5 py-0.5 rounded border border-gray-700 uppercase font-black tracking-tighter shadow-sm">
                       {userData?.role || 'User'}
                     </span>
                     <span className={`w-2 h-2 rounded-full ${userData?.status === 'active' ? 'bg-semantic-success' : 'bg-cyan-500/100'}`}></span>
@@ -463,7 +463,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
               {userData?.avatarUrl ? (
                 <img src={userData.avatarUrl} alt={userData?.name} className="h-10 w-10 rounded-full object-cover shadow-lg cursor-pointer border border-gray-700" onClick={() => navigate('/crm/user-portal')} title={t('header.profile', 'Perfil')} />
               ) : (
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#00F0FF] to-yellow-700 flex items-center justify-center text-sm font-bold text-white shadow-lg cursor-pointer" onClick={() => navigate('/crm/user-portal')} title={t('header.profile', 'Perfil')}>
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--accent)] to-yellow-700 flex items-center justify-center text-sm font-bold text-white shadow-lg cursor-pointer" onClick={() => navigate('/crm/user-portal')} title={t('header.profile', 'Perfil')}>
                   {userData?.name?.charAt(0) || 'U'}
                 </div>
               )}
@@ -553,8 +553,8 @@ export default function CRMLayout({ userData }: { userData: any }) {
                 <button
                   type="button"
                   onClick={() => setCeoMode(!ceoMode)}
-                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#00F0FF] focus:ring-offset-2 ${
-                    ceoMode ? 'bg-[#00F0FF]' : 'bg-gray-200'
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
+                    ceoMode ? 'bg-[var(--accent)]' : 'bg-gray-200'
                   }`}
                   role="switch"
                   aria-checked={ceoMode}
@@ -566,7 +566,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
                       ceoMode ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   >
-                    {ceoMode ? <Eye className="w-3 h-3 text-[#00F0FF]" /> : <EyeOff className="w-3 h-3 text-fg-tertiary" />}
+                    {ceoMode ? <Eye className="w-3 h-3 text-[var(--accent)]" /> : <EyeOff className="w-3 h-3 text-fg-tertiary" />}
                   </span>
                 </button>
               </div>
@@ -584,7 +584,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
             <button 
               onClick={() => navigate('/crm/pipeline')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#00F0FF]/10 border border-[#00F0FF]/30 text-cyan-700 hover:bg-[#00F0FF] hover:text-black text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/30 text-cyan-700 hover:bg-[var(--accent)] hover:text-black text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
               title={t('pipeline.title', 'Abrir Módulo de Marketing & Oportunidades')}
             >
               <Navigation className="w-3.5 h-3.5" />
@@ -593,9 +593,9 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
             <button 
               onClick={() => setIsCommandBarOpen(true)}
-              className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm text-fg-secondary bg-surface-grouped hover:bg-surface-grouped border border-separator rounded-xl transition-all hover:border-[#00F0FF] group sm:min-w-[180px] cursor-pointer"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm text-fg-secondary bg-surface-grouped hover:bg-surface-grouped border border-separator rounded-xl transition-all hover:border-[var(--accent)] group sm:min-w-[180px] cursor-pointer"
             >
-              <Search className="w-4 h-4 group-hover:text-[#00F0FF]" />
+              <Search className="w-4 h-4 group-hover:text-[var(--accent)]" />
               <span className="flex-1 text-left hidden sm:inline">{t('header.search_placeholder', 'Buscar o comando...')}</span>
               <kbd className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold text-fg-tertiary bg-white border border-separator rounded">⌘K</kbd>
             </button>
@@ -610,19 +610,19 @@ export default function CRMLayout({ userData }: { userData: any }) {
             {isSuperAdmin && (
               <button 
                 onClick={() => navigate('/crm/superadmin')}
-                className="h-10 w-10 rounded-xl bg-[#00F0FF]/10 border border-[#00F0FF]/20 flex flex-shrink-0 items-center justify-center hover:bg-[#00F0FF]/20 transition-colors group cursor-pointer"
+                className="h-10 w-10 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex flex-shrink-0 items-center justify-center hover:bg-[var(--accent)]/20 transition-colors group cursor-pointer"
                 title={t('nav.superadmin', 'Panel Maestro')}
               >
-                <Settings className="w-5 h-5 text-[#00F0FF] group-hover:rotate-90 transition-transform duration-500" />
+                <Settings className="w-5 h-5 text-[var(--accent)] group-hover:rotate-90 transition-transform duration-500" />
               </button>
             )}
 
             <button 
               onClick={() => navigate('/crm/automations')}
-              className="h-10 w-10 rounded-xl bg-surface-grouped hover:bg-[#00F0FF]/10 border border-separator hover:border-[#00F0FF]/30 flex flex-shrink-0 items-center justify-center transition-all hidden sm:flex cursor-pointer group"
+              className="h-10 w-10 rounded-xl bg-surface-grouped hover:bg-[var(--accent)]/10 border border-separator hover:border-[var(--accent)]/30 flex flex-shrink-0 items-center justify-center transition-all hidden sm:flex cursor-pointer group"
               title={t('nav.automations', 'Centro de Automatizaciones & Triggers')}
             >
-              <Zap className="w-5 h-5 text-fg-secondary group-hover:text-[#00F0FF] transition-colors" />
+              <Zap className="w-5 h-5 text-fg-secondary group-hover:text-[var(--accent)] transition-colors" />
             </button>
           </div>
         </header>
