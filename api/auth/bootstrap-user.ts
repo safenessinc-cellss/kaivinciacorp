@@ -2,15 +2,13 @@ import { adminAuth, adminDb } from '../../server/_lib/firebaseAdmin.js';
 import { FieldValue } from 'firebase-admin/firestore';
 
 const ROOT_USER = 'safeness.c.a@gmail.com';
-const SUPERADMINS = (process.env.SUPERADMIN_EMAILS || ROOT_USER)
-  .split(',')
-  .map((email) => email.trim().toLowerCase())
-  .filter(Boolean);
+// Exactly one identity is trusted to bootstrap as SuperAdmin. Environment variables
+// must not silently grant administrator access to additional accounts.
+const SUPERADMINS = [ROOT_USER];
 
 function normalizeStatus(value: unknown): string {
-  const status = String(value || 'pending').trim().toLowerCase();
-  if (status === 'active' || status === 'enabled') return 'approved';
-  return status;
+  // Legacy "active"/"enabled" is not proof of explicit approval.
+  return String(value || 'pending').trim().toLowerCase();
 }
 
 function sendJson(res: any, status: number, body: Record<string, unknown>) {
@@ -22,7 +20,7 @@ function sendJson(res: any, status: number, body: Record<string, unknown>) {
 // Role/status remain authoritative in Firestore; permissions are intentionally not copied to claims.
 async function syncBaseRoleClaims(uid: string, roleValue: unknown, statusValue: unknown) {
   const roleRaw = String(roleValue || 'none').trim().toLowerCase();
-  const role = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[roleRaw] || roleRaw;
+  const role = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk', professor: 'tutor', mkt: 'tlmk', operador: 'agente' } as Record<string, string>)[roleRaw] || roleRaw;
   const status = normalizeStatus(statusValue);
   const user = await adminAuth.getUser(uid);
   await adminAuth.setCustomUserClaims(uid, { ...(user.customClaims || {}), role, status });

@@ -14,7 +14,7 @@ agente:{dashboard:true,clients:true,clientsCreate:true,clientsEdit:true,calls:tr
 };
 export function resolvePermissions(roleValue:unknown, customValue:unknown):Record<PermissionKey,boolean>{
 const rawRole=String(roleValue||'none').trim().toLowerCase();
-const role=({sales:'ventas',agent:'agente',agente_tlmk:'tlmk'} as Record<string,string>)[rawRole]||rawRole;
+const role=({sales:'ventas',agent:'agente',agente_tlmk:'tlmk',professor:'tutor',mkt:'tlmk',operador:'agente'} as Record<string,string>)[rawRole]||rawRole;
 const custom=customValue&&typeof customValue==='object'?customValue as Record<string,unknown>:{};
 const defaults=DEFAULTS[role]||{};
 return Object.fromEntries(PERMISSION_MODULES.map(({key})=>[key,key==='superadmin'?role==='superadmin':(role==='superadmin'?true:(typeof custom[key]==='boolean'?custom[key]:defaults[key]===true))])) as Record<PermissionKey,boolean>;

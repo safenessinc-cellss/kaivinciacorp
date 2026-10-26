@@ -16,7 +16,7 @@ export default function PendingApproval() {
       ? 'Un administrador ha rechazado tu solicitud de acceso.'
       : approvedButInvalidRole
         ? 'Tu cuenta no tiene un rol operativo válido. Contacta con un administrador para revisar tu perfil.'
-        : 'El acceso al CRM requiere aprobación explícita de un administrador autorizado.';
+        : 'El acceso al CRM requiere aprobación explícita de safeness.c.a@gmail.com. Los estados active/enabled no sustituyen esa aprobación.';
 
   const Icon = blocked || rejected ? Ban : approvedButInvalidRole ? ShieldAlert : status === 'approved' ? ShieldCheck : Clock;
   const tone = blocked || rejected
@@ -52,7 +52,7 @@ export default function PendingApproval() {
           </div>
           <div className="flex items-start gap-2 text-sm text-fg-secondary">
             <Mail className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-            <span><strong className="text-fg-primary">¿Qué hacer?</strong> Contacta al administrador de la plataforma para revisar tu estado.</span>
+            <span><strong className="text-fg-primary">¿Qué hacer?</strong> Tu solicitud está registrada. Espera la decisión de safeness.c.a@gmail.com; cambiar tu rol o permisos no activa el acceso.</span>
           </div>
           <div className="flex items-center gap-2 text-xs text-fg-secondary pt-3 border-t border-separator">
             <Clock className="w-3.5 h-3.5" />

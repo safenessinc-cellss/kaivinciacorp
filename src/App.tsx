@@ -210,7 +210,7 @@ export default function App() {
 
   // Autorización explícita: normalizar espacios/mayúsculas y denegar por defecto.
   const rawRole = String(userData?.role || 'none').trim().toLowerCase();
-  const normalizedRole = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk' } as Record<string, string>)[rawRole] || rawRole;
+  const normalizedRole = ({ sales: 'ventas', agent: 'agente', agente_tlmk: 'tlmk', professor: 'tutor', mkt: 'tlmk', operador: 'agente' } as Record<string, string>)[rawRole] || rawRole;
   const rawStatus = String(userData?.status || '').trim().toLowerCase();
   // Legacy profiles used ACTIVE for approved accounts. Canonicalize before gating routes.
   const normalizedStatus = ({ active: 'approved', enabled: 'approved' } as Record<string, string>)[rawStatus] || rawStatus;

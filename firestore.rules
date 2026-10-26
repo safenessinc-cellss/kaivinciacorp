@@ -6,8 +6,12 @@ service cloud.firestore {
     // ===============================================================
     // Helpers
     // ===============================================================
-    function isAuthenticated() {
+    function isSignedIn() {
       return request.auth != null;
+    }
+
+    function isAuthenticated() {
+      return isSignedIn() && (isRoot() || isApproved());
     }
 
     function userRole() {
@@ -15,14 +19,14 @@ service cloud.firestore {
     }
 
     function isApproved() {
-      return isAuthenticated() &&
+      return isSignedIn() &&
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("status", "") == "approved";
     }
 
     function isRoot() {
       // ROOT_USER: cuenta única autorizada para eliminar usuarios.
-      return isAuthenticated() && request.auth.token.email == "safeness.c.a@gmail.com";
+      return isSignedIn() && request.auth.token.email == "safeness.c.a@gmail.com";
     }
 
     function isAdmin() {
@@ -79,8 +83,13 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("role", "") in ["superadmin", "admin"];
     }
 
+    // Any explicitly approved SuperAdmin may approve/reject accounts and assign base roles.
+    function canApproveUsers() {
+      return isSuperAdminOnly();
+    }
+
     function isUser(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
 
     function incoming() {
@@ -119,7 +128,7 @@ service cloud.firestore {
     // Users
     // ===============================================================
     match /users/{userId} {
-      allow read: if isAuthenticated() && (isUser(userId) || isAdmin());
+      allow read: if isSignedIn() && (isUser(userId) || isAdmin());
 
       // Los perfiles solo se crean desde el backend bootstrap con Admin SDK.
       allow create: if false;
@@ -130,14 +139,9 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['permissions', 'permissionsUpdatedAt', 'permissionsUpdatedBy'])
       ) || (
-        canApprove()
+        canApproveUsers()
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['status', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason', 'blockedBy', 'blockedAt', 'blockReason', 'role'])
-        && (
-          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
-          || isSuperAdminOnly()
-          || request.resource.data.get('role', '') in ['tlmk', 'sales', 'agente', 'rrhh', 'collaborator', 'tutor', 'alumno', 'cliente', 'user']
-        )
       ) || (
         isAdmin()
         && !request.resource.data.diff(resource.data).affectedKeys()
@@ -148,7 +152,8 @@ service cloud.firestore {
           .hasAny(['role', 'status', 'permissions', 'permissionsUpdatedAt', 'permissionsUpdatedBy', 'uid', 'approvedBy', 'approvedAt', 'rejectedBy', 'rejectedAt', 'rejectionReason', 'blockedBy', 'blockedAt', 'blockReason'])
       );
 
-      allow delete: if isRoot();
+      // Approved SuperAdmins may delete ordinary accounts; only root may delete a SuperAdmin.
+      allow delete: if (isRoot() && resource.data.get('email', '').lower() != 'safeness.c.a@gmail.com') || (isSuperAdminOnly() && resource.data.get('role', 'none') != 'superadmin' && resource.data.get('email', '').lower() != 'safeness.c.a@gmail.com');
     }
 
     match /user_sessions/{sessionId} {
