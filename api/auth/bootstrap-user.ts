@@ -1,7 +1,7 @@
 import { adminAuth, adminDb } from '../../server/_lib/firebaseAdmin.js';
 import { FieldValue } from 'firebase-admin/firestore';
 
-const ROOT_USER = 'safeness.c.a@gmail.com'; // ROOT_USER: cuenta única autorizada para eliminar usuarios.
+const ROOT_USER = 'safeness.c.a@gmail.com';
 const SUPERADMINS = (process.env.SUPERADMIN_EMAILS || ROOT_USER)
   .split(',')
   .map((email) => email.trim().toLowerCase())
@@ -17,65 +17,41 @@ export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return sendJson(res, 405, { error: 'Method not allowed' });
 
   const authHeader = req.headers['authorization'] || req.headers['Authorization'];
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (typeof authHeader !== 'string' || !authHeader.startsWith('Bearer ')) {
     return sendJson(res, 401, { error: 'Missing token' });
   }
 
   let decoded: any;
   try {
-    decoded = await adminAuth.verifyIdToken(authHeader.slice(7).trim());
+    decoded = await adminAuth.verifyIdToken(authHeader.slice(7).trim(), true);
   } catch {
-    return sendJson(res, 401, { error: 'Invalid token' });
+    return sendJson(res, 401, { error: 'Invalid or revoked token' });
   }
 
   const email = String(decoded.email || '').trim().toLowerCase();
   const userRef = adminDb.collection('users').doc(decoded.uid);
   const snap = await userRef.get();
-  const configuredSuperAdmin = email === ROOT_USER || SUPERADMINS.includes(email);
 
   if (snap.exists) {
     const existing = snap.data() || {};
-    // Migración acotada: solo una cuenta configurada explícitamente puede conservar el acceso administrativo.
-    if (configuredSuperAdmin && (
-      (existing.role !== 'superadmin' && existing.role !== 'admin') || existing.status !== 'approved'
-    )) {
-      const role = existing.role === 'admin' ? 'admin' : 'superadmin';
-      await userRef.update({ role, status: 'approved', lastLogin: FieldValue.serverTimestamp() });
-      return sendJson(res, 200, { user: { ...existing, role, status: 'approved' } });
+    const role = String(existing.role || 'none').trim().toLowerCase();
+    const status = String(existing.status || '').trim().toLowerCase();
+
+    // Allowlist membership is not an approval mechanism. Never elevate or activate
+    // an existing account from a login/bootstrap request.
+    if (SUPERADMINS.includes(email) && !(role === 'superadmin' && status === 'approved')) {
+      return sendJson(res, 403, {
+        error: 'La cuenta administrativa requiere provisión y aprobación explícitas.',
+        code: 'ADMIN_APPROVAL_REQUIRED',
+      });
     }
+
     await userRef.update({ lastLogin: FieldValue.serverTimestamp() }).catch(() => undefined);
-    return sendJson(res, 200, { user: existing });
+    return sendJson(res, 200, { user: { ...existing, role, status } });
   }
 
-  if (email === ROOT_USER) {
-    const profile = {
-      uid: decoded.uid,
-      name: decoded.name || email.split('@')[0] || 'Administrador',
-      email,
-      role: 'superadmin',
-      status: 'approved',
-      avatarUrl: decoded.picture || '',
-      createdAt: new Date().toISOString(),
-      lastLogin: FieldValue.serverTimestamp(),
-    };
-    await userRef.set(profile);
-    return sendJson(res, 201, { user: profile });
-  }
-
-  // La plataforma no admite altas mientras no exista un superadmin aprobado.
-  const approvedSuperAdmin = await adminDb.collection('users')
-    .where('role', '==', 'superadmin')
-    .where('status', '==', 'approved')
-    .limit(1)
-    .get();
-
-  if (approvedSuperAdmin.empty) {
-    return sendJson(res, 403, {
-      error: 'El sistema no tiene administradores activos. Contacta al equipo de plataforma.',
-      code: 'NO_APPROVED_SUPERADMIN',
-    });
-  }
-
+  // Every first-time account starts unprivileged and pending. Even a configured
+  // admin email must be provisioned by an authorized administrator out of band.
   const profile = {
     uid: decoded.uid,
     name: decoded.name || email.split('@')[0] || 'Usuario',
@@ -86,15 +62,15 @@ export default async function handler(req: any, res: any) {
     createdAt: new Date().toISOString(),
     lastLogin: FieldValue.serverTimestamp(),
   };
-  // LoginPage y AuthContext pueden invocar bootstrap en paralelo durante el mismo login.
-  // Hacer la creación idempotente evita que la segunda petición falle por documento existente.
+
   try {
     await userRef.create(profile);
+    return sendJson(res, 201, { user: profile });
   } catch (createError) {
+    // Concurrent bootstrap calls are idempotent, but must never overwrite roles.
     const latest = await userRef.get();
     if (!latest.exists) throw createError;
-    return sendJson(res, 200, { user: latest.data() });
+    const existing = latest.data() || {};
+    return sendJson(res, 200, { user: existing });
   }
-
-  return sendJson(res, 201, { user: profile });
 }
