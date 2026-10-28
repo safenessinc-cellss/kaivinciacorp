@@ -201,6 +201,7 @@ export default function SoftphoneDialer({
   const [isSavingTelnyxToken, setIsSavingTelnyxToken] = useState(false);
   const [isGeneratingBackendToken, setIsGeneratingBackendToken] = useState(false);
   const [currentWebRtcJwt, setCurrentWebRtcJwt] = useState(() => telnyxWebRTCService.getLoginToken());
+  const [telnyxCallId, setTelnyxCallId] = useState<string | null>(null);
 
   // Sincronizar token en vivo con el servicio
   useEffect(() => {
@@ -640,7 +641,8 @@ export default function SoftphoneDialer({
     clearAllTimeouts();
     playHangupBeep();
 
-    try { telnyxWebRTCService.hangup(); } catch (e) { console.warn('Error colgando Telnyx:', e); }
+    try { telnyxWebRTCService.hangup(telnyxCallId || undefined); } catch (e) { console.warn('Error colgando Telnyx:', e); }
+    setTelnyxCallId(null);
 
     if (callDurationIntervalRef.current) {
       clearInterval(callDurationIntervalRef.current);
@@ -688,7 +690,7 @@ export default function SoftphoneDialer({
       setIsRecording(false);
     }, 1500);
     timeoutsRef.current.push(resetTimeout);
-  }, [duration, phoneNumber, selectedClientName, selectedCallerId, activeCarrierObj, selectedProject, isRecording, agentAssignment, onCallEnd, stopRingback, clearAllTimeouts, playHangupBeep, user]);
+  }, [duration, phoneNumber, selectedClientName, selectedCallerId, activeCarrierObj, selectedProject, isRecording, agentAssignment, onCallEnd, stopRingback, clearAllTimeouts, playHangupBeep, user, telnyxCallId]);
 
   const handleStartCall = async (targetPhone?: string) => {
     const dialNum = targetPhone || phoneNumber;
@@ -738,6 +740,7 @@ export default function SoftphoneDialer({
       try {
         console.log(`[SoftphoneDialer] Llamando vía Telnyx SDK a ${dialNum} con Caller ID ${selectedCallerId}`);
         const call = await telnyxWebRTCService.makeCall(dialNum, selectedCallerId);
+        setTelnyxCallId(call?.id ? String(call.id) : null);
         setSipLogs(prev => [
           `[${new Date().toLocaleTimeString()}] ✅ Llamada Telnyx iniciada (ID: ${call?.id || 'unknown'})`,
           `[${new Date().toLocaleTimeString()}] Caller ID: ${selectedCallerId}`,
