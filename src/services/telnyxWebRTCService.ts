@@ -21,6 +21,7 @@ export interface TelnyxWebRTCState {
 class TelnyxWebRTCService {
   private client: any = null;
   private clientToken: string | null = null;
+  private isConnecting = false;
   private activeCalls = new Map<string, { call: any; audio: HTMLAudioElement }>();
   private latestCallId: string | null = null;
   private state: TelnyxWebRTCState = {
@@ -129,8 +130,11 @@ class TelnyxWebRTCService {
 
       // No reiniciar el cliente si ya está conectado: hacerlo corta las llamadas activas
       // y ocurría cuando el marcador embebido y el flotante compartían el servicio.
-      if (this.client && this.state.isConnected && this.clientToken === token) {
+      if (this.client && this.clientToken === token && this.state.isConnected) {
         return { success: true, message: 'Cliente Telnyx ya conectado; se reutiliza la sesión existente.' };
+      }
+      if (this.client && this.clientToken === token && this.isConnecting) {
+        return { success: true, message: 'La conexión Telnyx ya se está inicializando; se reutiliza la sesión existente.' };
       }
       if (this.client && this.activeCalls.size > 0) {
         if (typeof this.client.updateToken === 'function') {
@@ -158,6 +162,7 @@ class TelnyxWebRTCService {
 
       this.client.on('telnyx.ready', () => {
         console.log('[TelnyxWebRTC] ✅ Cliente conectado y listo.');
+        this.isConnecting = false;
         this.state.isConnected = true;
         this.state.isInitialized = true;
         this.state.lastError = null;
@@ -195,6 +200,8 @@ class TelnyxWebRTCService {
 
       this.client.on('telnyx.error', (error: any) => {
         console.error('[TelnyxWebRTC] ❌ Error en cliente:', error);
+        this.isConnecting = false;
+        this.state.isConnected = false;
         this.state.lastError = error?.message || 'Error en conexión Telnyx WebRTC';
         this.notify();
       });
@@ -220,6 +227,7 @@ class TelnyxWebRTCService {
         this.notify();
       });
 
+      this.isConnecting = true;
       this.client.connect();
 
       return {
@@ -228,6 +236,8 @@ class TelnyxWebRTCService {
       };
     } catch (err: any) {
       console.error('[TelnyxWebRTC] ❌ Error inicializando SDK:', err);
+      this.isConnecting = false;
+      this.state.isConnected = false;
       this.state.lastError = err?.message || 'Error desconocido al inicializar Telnyx';
       this.notify();
       return { success: false, message: err?.message || 'Error al inicializar cliente' };
