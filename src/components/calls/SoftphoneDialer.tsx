@@ -31,6 +31,22 @@ interface SoftphoneDialerProps {
 }
 
 // Frecuencias DTMF estándar (ITU-T)
+const CALLER_ID_AREA_LABELS: Record<string, string> = {
+  '213': 'Los Ángeles, CA', '323': 'Los Ángeles, CA', '562': 'Long Beach, CA',
+  '619': 'San Diego, CA', '714': 'Orange County, CA', '760': 'Oceanside / Palm Springs, CA',
+  '909': 'San Bernardino, CA', '951': 'Riverside, CA', '720': 'Denver, CO',
+  '631': 'Long Island, NY', '856': 'Camden / Cherry Hill, NJ'
+};
+
+function getCallerIdOptionLabel(phoneNumber: string): string {
+  const digits = String(phoneNumber || '').replace(/\\D/g, '');
+  const areaCode = digits.length >= 11 && digits.startsWith('1')
+    ? digits.slice(1, 4)
+    : digits.length === 10 ? digits.slice(0, 3) : '';
+  const region = CALLER_ID_AREA_LABELS[areaCode];
+  return region ? `${phoneNumber} · ${region}` : phoneNumber;
+}
+
 const DTMF_FREQUENCIES: Record<string, [number, number]> = {
   '1': [697, 1209],
   '2': [697, 1336],
@@ -1087,6 +1103,31 @@ export default function SoftphoneDialer({
 
           {activeTab === 'dialer' ? (
             <div className="space-y-2">
+              {selectedCarrier === 'telnyx' && (
+                <div className="rounded-xl border border-cyan-500/30 bg-slate-950/80 p-2.5">
+                  <label className="mb-1 flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wider text-slate-300">
+                    <span>Caller ID de salida / Región</span>
+                    <span className={authorizedCallerIds.length ? 'text-emerald-400' : 'text-amber-300'}>
+                      {authorizedCallerIds.length ? `${authorizedCallerIds.length} número(s) autorizado(s)` : 'Sin números asignados'}
+                    </span>
+                  </label>
+                  <select
+                    value={selectedCallerId}
+                    onChange={(e) => setSelectedCallerId(e.target.value)}
+                    disabled={callStatus !== 'idle' || authorizedCallerIds.length === 0}
+                    className="w-full rounded-lg border border-cyan-500/40 bg-slate-900 px-3 py-2 text-xs font-mono font-bold text-cyan-200 outline-none focus:border-cyan-300 disabled:opacity-50"
+                    aria-label="Seleccionar número de salida de Telnyx"
+                  >
+                    {authorizedCallerIds.length === 0 && <option value="">Sin números autorizados</option>}
+                    {authorizedCallerIds.map((num) => (
+                      <option key={num} value={num}>{getCallerIdOptionLabel(num)}{agentAssignment?.defaultCallerId === num ? ' · Predeterminado' : ''}</option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-[10px] text-slate-500">
+                    El destinatario verá este número si Telnyx y la operadora de destino lo aceptan.
+                  </p>
+                </div>
+              )}
               <SoftphoneKeypad onDigitPress={handleDigitPress} disabled={callStatus === 'ended'} compact={isFloating} />
             </div>
           ) : (
