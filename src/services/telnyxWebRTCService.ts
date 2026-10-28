@@ -20,7 +20,10 @@ export interface TelnyxWebRTCState {
 
 class TelnyxWebRTCService {
   private client: any = null;
-  private currentCall: any = null;
+  private clientToken: string | null = null;
+  private isConnecting = false;
+  private activeCalls = new Map<string, { call: any; audio: HTMLAudioElement }>();
+  private latestCallId: string | null = null;
   private state: TelnyxWebRTCState = {
     isInitialized: false,
     isConnected: false,
@@ -125,12 +128,28 @@ class TelnyxWebRTCService {
     try {
       console.log('[TelnyxWebRTC] Inicializando TelnyxRTC con login_token:', `${token.slice(0, 15)}...${token.slice(-10)}`);
 
-      // Desconectar cliente existente antes de crear uno nuevo
+      // No reiniciar el cliente si ya está conectado: hacerlo corta las llamadas activas
+      // y ocurría cuando el marcador embebido y el flotante compartían el servicio.
+      if (this.client && this.clientToken === token && this.state.isConnected) {
+        return { success: true, message: 'Cliente Telnyx ya conectado; se reutiliza la sesión existente.' };
+      }
+      if (this.client && this.clientToken === token && this.isConnecting) {
+        return { success: true, message: 'La conexión Telnyx ya se está inicializando; se reutiliza la sesión existente.' };
+      }
+      if (this.client && this.activeCalls.size > 0) {
+        if (typeof this.client.updateToken === 'function') {
+          this.client.updateToken(token);
+          await this.setLoginToken(token, false);
+          return { success: true, message: 'Token actualizado sin interrumpir las llamadas activas.' };
+        }
+        throw new Error('No se puede renovar la sesión mientras hay llamadas activas. Finaliza las llamadas e inténtalo de nuevo.');
+      }
       if (this.client) {
         try { this.client.disconnect(); } catch {}
       }
 
       // Crear cliente usando el SDK importado desde @telnyx/webrtc
+      this.state.isConnected = false;
       this.client = new TelnyxRTC({
         login_token: token,
         debug: true,
@@ -139,8 +158,11 @@ class TelnyxWebRTCService {
         ringtoneFile: '/sounds/ringtone.mp3'
       });
 
+      this.clientToken = token;
+
       this.client.on('telnyx.ready', () => {
         console.log('[TelnyxWebRTC] ✅ Cliente conectado y listo.');
+        this.isConnecting = false;
         this.state.isConnected = true;
         this.state.isInitialized = true;
         this.state.lastError = null;
@@ -178,18 +200,34 @@ class TelnyxWebRTCService {
 
       this.client.on('telnyx.error', (error: any) => {
         console.error('[TelnyxWebRTC] ❌ Error en cliente:', error);
+        this.isConnecting = false;
+        this.state.isConnected = false;
         this.state.lastError = error?.message || 'Error en conexión Telnyx WebRTC';
         this.notify();
       });
 
       this.client.on('telnyx.notification', (notification: any) => {
-        console.log('[TelnyxWebRTC] Notificación:', notification);
-        if (notification?.call) {
-          this.state.activeCallId = notification.call.id;
-          this.notify();
+        const call = notification?.call;
+        if (!call) return;
+        const callId = String(call.id || '');
+        if (callId) this.latestCallId = callId;
+        const callState = String(call.state || notification?.state || '').toLowerCase();
+        if (callId && ['hangup', 'ended', 'destroy', 'destroyed', 'disconnected'].includes(callState)) {
+          const active = this.activeCalls.get(callId);
+          if (active) {
+            try { active.audio.pause(); active.audio.srcObject = null; active.audio.remove(); } catch {}
+            this.activeCalls.delete(callId);
+          }
+          if (this.latestCallId === callId) {
+            const remainingIds = Array.from(this.activeCalls.keys());
+            this.latestCallId = remainingIds.length ? remainingIds[remainingIds.length - 1] : null;
+          }
         }
+        this.state.activeCallId = this.latestCallId;
+        this.notify();
       });
 
+      this.isConnecting = true;
       this.client.connect();
 
       return {
@@ -198,6 +236,8 @@ class TelnyxWebRTCService {
       };
     } catch (err: any) {
       console.error('[TelnyxWebRTC] ❌ Error inicializando SDK:', err);
+      this.isConnecting = false;
+      this.state.isConnected = false;
       this.state.lastError = err?.message || 'Error desconocido al inicializar Telnyx';
       this.notify();
       return { success: false, message: err?.message || 'Error al inicializar cliente' };
@@ -213,39 +253,60 @@ class TelnyxWebRTCService {
       throw new Error('Falta el login_token de Telnyx WebRTC.');
     }
 
-    console.log(`[TelnyxWebRTC] Iniciando llamada a ${destinationNumber} con Caller ID ${callerIdNumber || 'default'}`);
+    const cleanDestination = String(destinationNumber || '').trim();
+    if (!cleanDestination) throw new Error('Introduce un número de destino válido.');
 
     if (!this.client?.newCall) {
-      throw new Error('El cliente TelnyxRTC no está inicializado. Ve a la pestaña de configuración del softphone y pulsa "Configurar JWT" para autenticarte con Telnyx.');
+      throw new Error('El cliente TelnyxRTC no está inicializado. Ve a la pestaña de configuración del softphone y autentícate con Telnyx.');
     }
 
-    // Crear la llamada con remoteElement para reproducir el audio entrante
-    this.currentCall = this.client.newCall({
-      destinationNumber: destinationNumber,
-      callerNumber: callerIdNumber,
-      remoteElement: 'remote-audio'
-    });
+    // Cada llamada necesita su propio elemento de audio. El elemento compartido anterior
+    // provocaba que una llamada reemplazara el audio de otra en sesiones concurrentes.
+    const audio = document.createElement('audio');
+    audio.autoplay = true;
+    audio.setAttribute('playsinline', 'true');
+    audio.style.display = 'none';
+    audio.dataset.telnyxCallAudio = 'true';
+    document.body.appendChild(audio);
 
-    console.log('[TelnyxWebRTC] Llamada creada:', this.currentCall);
-
-    // Guardar el ID de la llamada activa
-    if (this.currentCall?.id) {
-      this.state.activeCallId = this.currentCall.id;
+    try {
+      const call = this.client.newCall({
+        destinationNumber: cleanDestination,
+        callerNumber: callerIdNumber || undefined,
+        remoteElement: audio
+      });
+      const callId = String(call?.id || `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+      this.activeCalls.set(callId, { call, audio });
+      this.latestCallId = callId;
+      this.state.activeCallId = callId;
+      this.state.lastError = null;
       this.notify();
+      console.log('[TelnyxWebRTC] Llamada creada:', { callId, destination: cleanDestination, callerId: callerIdNumber || 'default', activeCalls: this.activeCalls.size });
+      return call;
+    } catch (error) {
+      try { audio.pause(); audio.remove(); } catch {}
+      throw error;
     }
-
-    return this.currentCall;
   }
 
-  /**
-   * Cuelga la llamada activa
-   */
-  public hangup(): void {
-    if (this.currentCall?.hangup) {
-      try { this.currentCall.hangup(); } catch {}
+  /** Número de llamadas que siguen registradas en esta sesión WebRTC. */
+  public getActiveCallsCount(): number {
+    return this.activeCalls.size;
+  }
+
+  /** Cuelga una llamada concreta; sin ID, cuelga la última llamada creada. */
+  public hangup(callId?: string): void {
+    const targetId = callId || this.latestCallId;
+    if (!targetId) return;
+    const active = this.activeCalls.get(targetId);
+    if (active) {
+      try { active.call?.hangup?.(); } catch {}
+      try { active.audio.pause(); active.audio.srcObject = null; active.audio.remove(); } catch {}
+      this.activeCalls.delete(targetId);
     }
-    this.currentCall = null;
-    this.state.activeCallId = null;
+    const remaining = Array.from(this.activeCalls.keys());
+    this.latestCallId = remaining.length ? remaining[remaining.length - 1] : null;
+    this.state.activeCallId = this.latestCallId;
     this.notify();
   }
 
