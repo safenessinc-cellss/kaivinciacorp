@@ -20,6 +20,7 @@ export interface TelnyxWebRTCState {
 
 class TelnyxWebRTCService {
   private client: any = null;
+  private clientToken: string | null = null;
   private activeCalls = new Map<string, { call: any; audio: HTMLAudioElement }>();
   private latestCallId: string | null = null;
   private state: TelnyxWebRTCState = {
@@ -128,7 +129,7 @@ class TelnyxWebRTCService {
 
       // No reiniciar el cliente si ya está conectado: hacerlo corta las llamadas activas
       // y ocurría cuando el marcador embebido y el flotante compartían el servicio.
-      if (this.client && this.state.isConnected && this.getLoginToken() === token) {
+      if (this.client && this.state.isConnected && this.clientToken === token) {
         return { success: true, message: 'Cliente Telnyx ya conectado; se reutiliza la sesión existente.' };
       }
       if (this.client && this.activeCalls.size > 0) {
@@ -151,6 +152,8 @@ class TelnyxWebRTCService {
         ringbackFile: '/sounds/ringback.mp3',
         ringtoneFile: '/sounds/ringtone.mp3'
       });
+
+      this.clientToken = token;
 
       this.client.on('telnyx.ready', () => {
         console.log('[TelnyxWebRTC] ✅ Cliente conectado y listo.');
