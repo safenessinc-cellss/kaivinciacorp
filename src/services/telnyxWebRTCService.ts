@@ -145,6 +145,7 @@ class TelnyxWebRTCService {
       }
 
       // Crear cliente usando el SDK importado desde @telnyx/webrtc
+      this.state.isConnected = false;
       this.client = new TelnyxRTC({
         login_token: token,
         debug: true,
@@ -209,6 +210,10 @@ class TelnyxWebRTCService {
           if (active) {
             try { active.audio.pause(); active.audio.srcObject = null; active.audio.remove(); } catch {}
             this.activeCalls.delete(callId);
+          }
+          if (this.latestCallId === callId) {
+            const remainingIds = Array.from(this.activeCalls.keys());
+            this.latestCallId = remainingIds.length ? remainingIds[remainingIds.length - 1] : null;
           }
         }
         this.state.activeCallId = this.latestCallId;
