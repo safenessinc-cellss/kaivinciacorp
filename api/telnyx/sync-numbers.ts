@@ -61,7 +61,7 @@ async function syncPhoneNumbers(apiKey: string) {
 
   let created = 0;
   let updated = 0;
-  let writes: Array<{ ref: FirebaseFirestore.DocumentReference; data: Record<string, any> }> = [];
+  let writes: Array<{ ref: any; data: Record<string, any> }> = [];
 
   for (const [phoneNumber, number] of unique) {
     const existing = await adminDb.collection('telnyx_phone_numbers')
