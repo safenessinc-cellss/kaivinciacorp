@@ -39,7 +39,7 @@ const CALLER_ID_AREA_LABELS: Record<string, string> = {
 };
 
 function getCallerIdOptionLabel(phoneNumber: string): string {
-  const digits = String(phoneNumber || '').replace(/\\D/g, '');
+  const digits = String(phoneNumber || '').replace(/\D/g, '');
   const areaCode = digits.length >= 11 && digits.startsWith('1')
     ? digits.slice(1, 4)
     : digits.length === 10 ? digits.slice(0, 3) : '';
