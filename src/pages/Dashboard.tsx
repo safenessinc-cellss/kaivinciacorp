@@ -36,7 +36,6 @@ export default function Dashboard() {
   
   // Data State
   const [clients, setClients] = useState<any[]>([]);
-  const [isOptimizing, setIsOptimizing] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   
   // System Events Feed
@@ -77,11 +76,7 @@ export default function Dashboard() {
     .slice(0, 7)
     .map((client, index) => ({ name: String(client.name || client.companyName || client.company || `Cliente ${index + 1}`).slice(0, 18), revenue: Number(client.amount) || 0 })), [clients]);
 
-  const handleAiOptimization = () => {
-    setIsOptimizing(true);
-    // No ejecutar ni registrar una optimización ficticia: esta acción solo prepara la interfaz.
-    window.setTimeout(() => setIsOptimizing(false), 400);
-  };
+  const handleAiOptimization = () => navigate('/crm/reports');
 
   return (
     <div className="kaivincia-tahoe-dashboard min-h-screen bg-[#F5F7FB] text-slate-700 font-sans p-6 lg:p-10 pb-20">
@@ -129,25 +124,14 @@ export default function Dashboard() {
             className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#F59E0B] hover:bg-[#F59E0B]/10 hover:border-[#F59E0B]/30 transition-all flex items-center gap-3 group relative overflow-hidden"
           >
             <AnimatePresence mode="wait">
-              {isOptimizing ? (
-                <motion.div 
-                  key="optimizing"
-                  initial={{ rotate: 0 }} 
-                  animate={{ rotate: 360 }} 
-                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </motion.div>
-              ) : (
-                <Sparkles key="idle" className="w-4 h-4 group-hover:scale-125 transition-transform" />
-              )}
+              <Sparkles className="w-4 h-4 group-hover:scale-125 transition-transform" />
             </AnimatePresence>
-            {isOptimizing ? 'Optimizando...' : 'IA Optimization'}
+            Ver análisis
           </button>
           <div className="flex items-center gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-xl">
              <div className="text-right">
                 <p className="text-[8px] font-black uppercase text-gray-500">Security Pulse</p>
-                <p className="text-xs font-black text-white">99.8% Encrypted</p>
+                <p className="text-xs font-black text-white">{user ? "Sesión activa" : "Sin sesión"}</p>
              </div>
              <ShieldAlert className="w-5 h-5 text-emerald-500" />
           </div>
@@ -297,16 +281,6 @@ export default function Dashboard() {
               <IAAdvisor 
                 moduleName="Estrategia Ejecutiva"
                 insights={[
-                  { 
-                    type: 'automation', 
-                    message: "Análisis Sistémico: El 12% del Revenue de este mes provino de cierres en 'Despliegue Táctico'. Sugerencia: Escalar rutas en Zona Norte para maximizar ROI.",
-                    action: { label: "Optimizar Rutas", onClick: () => navigate('/crm/tactical') }
-                  },
-                  { 
-                    type: 'alert', 
-                    message: "Alerta de Salud: 2 clientes muestran deserción en el Módulo de Academia. Impacto proyectado: -$4.2k MRR.",
-                    action: { label: "Intervenir Academia", onClick: () => navigate('/crm/academia') }
-                  }
                 ]}
               />
            </div>
@@ -406,7 +380,7 @@ export default function Dashboard() {
                     i === 3 || i === 12 ? 'bg-[#EF4444] border-red-500/50' : 
                     i % 5 === 0 ? 'bg-[#F59E0B22] border-amber-500/30' : 'bg-[#10B98122] border-emerald-500/30'
                   }`}
-                  title="Unit Status"
+                  title="Indicador visual, sin telemetría de salud conectada"
                 />
               ))}
             </div>
@@ -422,7 +396,7 @@ export default function Dashboard() {
                    <span className="text-[8px] font-black uppercase tracking-widest">Error Node</span>
                  </div>
                </div>
-               <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest">2 Entities Delayed</span>
+               <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Sin monitor de riesgo conectado</span>
             </div>
           </motion.div>
 
@@ -454,10 +428,10 @@ export default function Dashboard() {
                     <div className="flex-1">
                       <div className="flex justify-between items-center mb-1">
                          <span className="text-[10px] font-bold text-white uppercase">{member.name}</span>
-                         <span className="text-[9px] font-black text-emerald-500">{member.roi}% ROI</span>
+                         <span className="text-[9px] font-black text-slate-500">{member.role}</span>
                       </div>
                       <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#10B981]" style={{ width: `${(member.roi/2.1)}%` }} />
+                        <div className="h-full bg-[#4285F4]" style={{ width: `${Math.min(100, Math.max(12, member.impact.length * 7))}%` }} />
                       </div>
                     </div>
                  </div>
@@ -486,13 +460,13 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 gap-4 h-48 content-center">
                <div className="p-5 bg-white/5 border border-white/5 rounded-3xl text-center">
                   <BookOpen className="w-6 h-6 text-purple-400 mx-auto mb-3" />
-                  <p className="text-2xl font-black text-white tracking-widest">42</p>
-                  <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Certificaciones Mes</p>
+                  <p className="text-2xl font-black text-white tracking-widest">{pendingUsers.length}</p>
+                  <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Usuarios pendientes</p>
                </div>
                <div className="p-5 bg-white/5 border border-white/5 rounded-3xl text-center">
                   <TrendingUp className="w-6 h-6 text-emerald-400 mx-auto mb-3" />
-                  <p className="text-2xl font-black text-white tracking-widest">12</p>
-                  <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Nuevos Leads (High Q)</p>
+                  <p className="text-2xl font-black text-white tracking-widest">{clients.length}</p>
+                  <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Clientes registrados</p>
                </div>
             </div>
 
