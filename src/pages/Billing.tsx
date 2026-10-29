@@ -51,6 +51,17 @@ export default function Billing() {
     description: ''
   });
 
+  const invoiceCurrency = (invoice: any) => String(invoice.currency ?? invoice.currencyCode ?? '').toUpperCase();
+  const formatInvoiceTotals = (predicate: (invoice: any) => boolean = () => true) => {
+    const rows = invoices.filter(predicate);
+    const totalFor = (code: string) => rows
+      .filter(invoice => invoiceCurrency(invoice) === code)
+      .reduce((sum, invoice) => sum + (Number(invoice.amount) || 0), 0);
+    const unknown = rows.filter(invoice => !['BRL', 'USD'].includes(invoiceCurrency(invoice))).length;
+    const fmt = (value: number, code: string) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: code, maximumFractionDigits: 2 }).format(value);
+    return <span className="flex flex-col gap-1 text-base sm:text-lg"><span>{fmt(totalFor('BRL'), 'BRL')} <span className="text-xs font-medium text-gray-400">BRL</span></span><span>{fmt(totalFor('USD'), 'USD')} <span className="text-xs font-medium text-gray-400">USD</span></span>{unknown > 0 && <span className="text-xs font-medium text-amber-700">{unknown} factura(s) sin moneda, excluidas</span>}</span>;
+  };
+
   const [newQuote, setNewQuote] = useState({
     client: '',
     items: [{ desc: '', price: '' }],
@@ -720,25 +731,25 @@ export default function Billing() {
                 <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                   <p className="text-sm text-gray-500 mb-1">Total Facturado (Mes)</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    ${invoices.reduce((acc, inv) => acc + inv.amount, 0).toLocaleString()}
+                    {formatInvoiceTotals()}
                   </p>
                 </div>
                 <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                   <p className="text-sm text-gray-500 mb-1">Total Cobrado</p>
                   <p className="text-2xl font-bold text-green-600">
-                    ${invoices.filter(i => i.status === 'Pagada').reduce((acc, inv) => acc + inv.amount, 0).toLocaleString()}
+                    {formatInvoiceTotals(i => ['pagada','pagado','paid'].includes(String(i.status ?? '').toLowerCase()))}
                   </p>
                 </div>
                 <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                   <p className="text-sm text-gray-500 mb-1">Total Pendiente</p>
                   <p className="text-2xl font-bold text-orange-500">
-                    ${invoices.filter(i => i.status === 'Pendiente').reduce((acc, inv) => acc + inv.amount, 0).toLocaleString()}
+                    {formatInvoiceTotals(i => ['pendiente','pending'].includes(String(i.status ?? '').toLowerCase()))}
                   </p>
                 </div>
                 <div className="bg-white p-5 rounded-xl border border-red-100 bg-red-50 shadow-sm">
                   <p className="text-sm text-red-600 mb-1 flex items-center gap-1"><AlertTriangle className="w-4 h-4"/> En Mora</p>
                   <p className="text-2xl font-bold text-red-700">
-                    ${invoices.filter(i => i.status === 'Vencida').reduce((acc, inv) => acc + inv.amount, 0).toLocaleString()}
+                    {formatInvoiceTotals(i => ['vencida','overdue'].includes(String(i.status ?? '').toLowerCase()))}
                   </p>
                 </div>
               </div>
