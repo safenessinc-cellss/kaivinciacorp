@@ -184,7 +184,7 @@ export default function CallSystem() {
         )}
 
         {activeTab === 'softphone' && (
-          <div className="max-w-md mx-auto">
+          <div className="w-full max-w-md min-w-0 mx-auto">
             <SoftphoneDialer
               initialPhoneNumber={dialTargetNumber}
               mode="embedded"
