@@ -40,7 +40,7 @@ export default function Dashboard() {
   const [users, setUsers] = useState<any[]>([]);
   
   // System Events Feed
-  const [events, setEvents] = useState<SystemEvent[]>([]);
+  const events: SystemEvent[] = [];
 
   const { user, loading: authLoading } = useAuth();
 
