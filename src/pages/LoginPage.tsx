@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth, db } from '../firebase';
+import { auth } from '../firebase';
 import { LOGO_FULL } from '../constants/images';
 
 export default function LoginPage() {
