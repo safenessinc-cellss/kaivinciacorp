@@ -145,6 +145,25 @@ export default function CalendarView() {
         };
       });
       syncEvents();
+      if (googleCalendar.connected && auth.currentUser) {
+        void auth.currentUser.getIdToken().then(token => Promise.all(apptSnap.docs.map(async appointment => {
+          const data = appointment.data();
+          if (!data.date) return;
+          const start = new Date(`${data.date}T${data.time || '10:00'}`);
+          if (!Number.isFinite(start.getTime())) return;
+          const end = new Date(start.getTime() + Number(data.durationMinutes || 45) * 60000);
+          const response = await fetch('/api/google-calendar?action=create-event', {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: 'Kaivincia: ' + String(data.leadName || data.title || 'Reunión'),
+              description: 'Cita de Kaivincia. Agente asignado: ' + String(data.assignedAgent || 'No asignado'),
+              start: start.toISOString(), end: end.toISOString(), sourceId: 'appointment-' + appointment.id
+            })
+          });
+          if (!response.ok) console.warn('No se pudo sincronizar cita con Google Calendar', appointment.id);
+        }))).catch(error => console.warn('Error sincronizando citas con Google Calendar', error));
+      }
     }, (error) => handleFirestoreError(error, OperationType.GET, 'appointments'));
 
     return () => {
@@ -152,7 +171,7 @@ export default function CalendarView() {
       unsubClients();
       unsubAppointments();
     };
-  }, [user, authLoading]);
+  }, [user, authLoading, googleCalendar.connected]);
 
   const handleSelectSlot = (slotInfo: { start: Date }) => {
     setSelectedDate(slotInfo.start);
