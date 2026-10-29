@@ -27,11 +27,13 @@ export default function DataModule() {
  const canManageData=isAdmin || userData?.permissions?.['data:assign']===true || userData?.permissions?.['data:import']===true;
  const uid=user?.uid || userData?.uid || '';
  useEffect(()=>{
-  const a=onSnapshot(collection(db,'dataRecords'),s=>setRecords(s.docs.map(d=>({id:d.id,...d.data()} as DataRecord))),e=>setNotice('No se pudieron cargar los registros: '+e.message));
-  const b=onSnapshot(collection(db,'dataBatches'),s=>setBatches(s.docs.map(d=>({id:d.id,...d.data()} as DataBatch))),e=>setNotice('No se pudieron cargar las bases: '+e.message));
-  const c=onSnapshot(collection(db,'users'),s=>setOperators(s.docs.map(d=>({uid:d.id,...d.data()} as Operator)).filter(u=>u.status!=='disabled'&&u.status!=='pending')),e=>console.warn('No se pudieron cargar operadores',e));
+  if(!uid)return;
+  const recordsQuery=isAdmin?collection(db,'dataRecords'):query(collection(db,'dataRecords'),where('assignedToUid','==',uid));
+  const a=onSnapshot(recordsQuery,s=>setRecords(s.docs.map(d=>({id:d.id,...d.data()} as DataRecord))),e=>setNotice('No se pudieron cargar los registros: '+e.message));
+  const b=isAdmin?onSnapshot(collection(db,'dataBatches'),s=>setBatches(s.docs.map(d=>({id:d.id,...d.data()} as DataBatch))),e=>setNotice('No se pudieron cargar las bases: '+e.message)):()=>{};
+  const c=canManageData?onSnapshot(collection(db,'users'),s=>setOperators(s.docs.map(d=>({uid:d.id,...d.data()} as Operator)).filter(u=>u.status!=='disabled'&&u.status!=='pending'),e=>console.warn('No se pudieron cargar operadores',e)):()=>{};
   return ()=>{a();b();c();};
- },[]);
+ },[uid,isAdmin,canManageData]);
  const visibleRecords=useMemo(()=>{const scoped=isAdmin?records:records.filter(r=>r.assignedToUid===uid);return scoped.filter(r=>{const q=search.toLowerCase();return (!q||[r.name,r.phone,r.email,r.city,r.region,r.campaign].some(v=>String(v||'').toLowerCase().includes(q)))&&(statusFilter==='todos'||r.status===statusFilter)&&(regionFilter==='todos'||r.region===regionFilter)&&(campaignFilter==='todos'||r.campaign===campaignFilter);});},[records,isAdmin,uid,search,statusFilter,regionFilter,campaignFilter]);
  const regions=Array.from(new Set(records.map(r=>r.region).filter(Boolean))) as string[], campaigns=Array.from(new Set(records.map(r=>r.campaign).filter(Boolean))) as string[];
  const importFile=async(file?:File)=>{if(!file)return;if(!canManageData){setNotice('No tienes permiso para importar bases.');return;}setBusy(true);setNotice('');try{
