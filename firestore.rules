@@ -263,6 +263,19 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Finance settings are explicitly scoped; do not expose the whole settings collection.
+    match /settings/billing {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /settings/payroll {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
     match /settings/appearance {
       allow read:  if true;
       allow write: if isSuperAdmin() || isAdmin();
@@ -354,6 +367,21 @@ service cloud.firestore {
       allow create: if isAuthenticated() && isValidInvoice(incoming());
       allow update: if isAuthenticated() && isValidInvoice(incoming());
       allow delete: if isAdmin();
+    }
+
+    // Expenses feed the accounting ledger and accounts payable.
+    // Reads follow invoice visibility; only finance administrators can create or settle liabilities.
+    match /expenses/{expenseId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() &&
+        incoming().amount is number && incoming().amount > 0 &&
+        incoming().get('currency', '') in ['BRL', 'USD'] &&
+        incoming().get('status', '') in ['Pendiente', 'Pagada', 'Vencida', 'Cancelada'];
+      allow update: if isAdmin() &&
+        incoming().amount is number && incoming().amount > 0 &&
+        incoming().get('currency', '') in ['BRL', 'USD'] &&
+        incoming().get('status', '') in ['Pendiente', 'Pagada', 'Vencida', 'Cancelada'];
+      allow delete: if isSuperAdmin();
     }
 
     match /time_logs/{logId} {
