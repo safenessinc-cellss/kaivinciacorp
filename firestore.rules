@@ -271,7 +271,7 @@ service cloud.firestore {
         (isAuthenticated() && existing().get('assignedToUid', '') == request.auth.uid);
       allow create: if canManageData() && incoming().get('createdBy', '') == request.auth.uid;
       allow update: if isAdmin() ||
-        (isAuthenticated() &&
+        (isAuthenticated() && (hasPermission('data:update_status') || userRole() in ['tlmk', 'sales', 'collaborator']) &&
          existing().get('assignedToUid', '') == request.auth.uid &&
          incoming().get('assignedToUid', '') == request.auth.uid &&
          incoming().diff(existing()).affectedKeys()
@@ -408,8 +408,11 @@ service cloud.firestore {
     }
 
     match /collaborators/{collaboratorId} {
-      allow read:  if isAuthenticated();
-      allow write: if isAdmin();
+      allow read: if isAdmin() ||
+        (isAuthenticated() && existing().get('authUid', '') == request.auth.uid);
+      allow create: if isAdmin() || hasPermission('recruitment:hire');
+      allow update: if isAdmin() || hasPermission('recruitment:hire');
+      allow delete: if isAdmin();
     }
 
     match /prospects/{prospectId} {
