@@ -578,11 +578,10 @@ export default function Dashboard() {
       {/* GLOBAL FOOTER METRICS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pb-10">
          {[
-           { label: 'Cloud Load', val: '14.2%', color: 'text-emerald-500' },
-           { label: 'User Synapses', val: '1,242/s', color: 'text-blue-500' },
-           { label: 'Integrity', val: '100.00%', color: 'text-emerald-500' },
-           { label: 'Latency', val: '12ms', color: 'text-blue-500' }
-         ].map((stat, i) => (
+           { label: 'Clientes registrados', val: String(clients.length), color: 'text-emerald-500' },
+           { label: 'Usuarios registrados', val: String(users.length), color: 'text-blue-500' },
+           { label: 'Usuarios pendientes', val: String(pendingUsers.length), color: 'text-emerald-500' },
+           { label: 'Datos financieros', val: chartData.length ? 'Disponibles' : 'Pendientes', color: 'text-blue-500' }         ].map((stat, i) => (
            <div key={i} className="bg-white/5 border border-white/5 px-6 py-4 rounded-2xl flex justify-between items-center transition-all hover:bg-white/10">
               <span className="text-[8px] font-black uppercase tracking-widest text-gray-600">{stat.label}</span>
               <span className={`text-[10px] font-black ${stat.color} font-mono tracking-tighter`}>{stat.val}</span>
