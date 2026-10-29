@@ -288,7 +288,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
   return (
     <div 
-      className={`crm-shell min-h-screen flex relative ${isRightSidebar ? 'flex-row-reverse' : 'flex-row'}`}
+      className={`crm-shell kaivincia-tahoe-shell min-h-screen flex relative ${isRightSidebar ? 'flex-row-reverse' : 'flex-row'}`}
       style={{ backgroundColor: 'var(--color-background)' }}
     >
       <div className="fixed inset-0 z-0 pointer-events-none">
