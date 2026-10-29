@@ -102,11 +102,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const start = new Date(body.start);
       const end = new Date(body.end);
       if (!title || title.length > 200 || !Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start) return res.status(400).json({ error: 'Título, inicio y fin válidos son obligatorios' });
-      const eventResponse = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ summary: title, description: String(body.description || '').slice(0, 4000), start: { dateTime: start.toISOString() }, end: { dateTime: end.toISOString() }, extendedProperties: { private: { kaivinciaUserId: user.uid, kaivinciaSource: 'kaivincia' } } }) });
+      const sourceId = String(body.sourceId || '').trim();
+      if (!sourceId) return res.status(400).json({ error: 'sourceId es obligatorio para garantizar sincronización idempotente' });
+      const { ref: integrationRef } = await accessToken(user.uid);
+      const mappingRef = integrationRef.collection('syncedEvents').doc(sourceId);
+      const mapping = await mappingRef.get();
+      const existingGoogleId = mapping.data()?.googleEventId;
+      const eventPayload = { summary: title, description: String(body.description || '').slice(0, 4000), start: { dateTime: start.toISOString() }, end: { dateTime: end.toISOString() }, extendedProperties: { private: { kaivinciaUserId: user.uid, kaivinciaSource: 'kaivincia', kaivinciaSourceId: sourceId } } };
+      const eventUrl = 'https://www.googleapis.com/calendar/v3/calendars/primary/events' + (existingGoogleId ? '/' + encodeURIComponent(String(existingGoogleId)) : '');
+      const eventResponse = await fetch(eventUrl, { method: existingGoogleId ? 'PATCH' : 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(eventPayload) });
       const event = await eventResponse.json() as any;
       if (!eventResponse.ok) return res.status(502).json({ error: event.error?.message || 'Google Calendar rechazó el evento' });
-      await accessToken(user.uid).then(({ ref: integrationRef }) => integrationRef.collection('syncedEvents').doc(String(body.sourceId || event.id)).set({ googleEventId: event.id, sourceId: body.sourceId || null, title, start: start.toISOString(), end: end.toISOString(), updatedAt: new Date().toISOString() }, { merge: true }));
-      return res.status(201).json({ id: event.id, htmlLink: event.htmlLink });
+      await mappingRef.set({ googleEventId: event.id, sourceId, title, start: start.toISOString(), end: end.toISOString(), updatedAt: new Date().toISOString() }, { merge: true });
+      return res.status(existingGoogleId ? 200 : 201).json({ id: event.id, htmlLink: event.htmlLink });
     }
     return res.status(405).json({ error: 'Método o acción no admitidos' });
   } catch (error: any) {
