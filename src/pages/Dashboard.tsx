@@ -290,7 +290,7 @@ export default function Dashboard() {
               <div className="flex justify-between items-start mb-4">
                  <div>
                     <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Global System Pulse</h4>
-                    <p className="text-xl font-black text-white italic tracking-tighter uppercase mt-1">Operational Health</p>
+                    <p className="text-xl font-black text-white italic tracking-tighter uppercase mt-1">Estado del CRM</p>
                  </div>
                  <Activity className="w-5 h-5 text-cyan-500 animate-pulse" />
               </div>
@@ -417,122 +417,23 @@ export default function Dashboard() {
             </div>
 
             <div className="space-y-4 h-48 overflow-y-auto pr-2 scrollbar-hide">
-               {[
-                 { name: 'Carlos Ruiz', roi: 210, impact: 'Peak' },
-                 { name: 'Ana Silva', roi: 195, impact: 'High' },
-                 { name: 'Marta García', roi: 160, impact: 'Target' },
-                 { name: 'Roberto S.', roi: 155, impact: 'Target' },
-               ].map((member, i) => (
-                 <div key={i} className="flex items-center gap-4 bg-white/5 p-3 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
-                    <div className="h-8 w-8 rounded-xl bg-gray-900 border border-white/10 flex items-center justify-center text-[10px] font-black text-white">{member.name.charAt(0)}</div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-center mb-1">
-                         <span className="text-[10px] font-bold text-white uppercase">{member.name}</span>
-                         <span className="text-[9px] font-black text-slate-500">{member.role}</span>
-                      </div>
-                      <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#4285F4]" style={{ width: `${Math.min(100, Math.max(12, member.impact.length * 7))}%` }} />
+               {users.slice(0, 6).map((item, i) => {
+                  const memberName = String(item.name || item.displayName || item.email || `Usuario ${i + 1}`);
+                  const memberRole = String(item.role || 'sin rol');
+                  const memberStatus = String(item.status || 'registrado');
+                  return (
+                    <div key={item.id || i} className="flex items-center gap-4 bg-white/5 p-3 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
+                      <div className="h-8 w-8 rounded-xl bg-gray-100 border border-white/10 flex items-center justify-center text-[10px] font-black text-slate-800">{memberName.charAt(0)}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center mb-1 gap-2">
+                          <span className="text-[10px] font-bold text-white uppercase truncate">{memberName}</span>
+                          <span className="text-[9px] font-black text-slate-500">{memberRole}</span>
+                        </div>
+                        <div className="text-[9px] text-slate-500">{memberStatus}</div>
                       </div>
                     </div>
-                 </div>
-               ))}
-            </div>
-
-            <button onClick={() => navigate('/crm/team')} className="mt-6 w-full text-center text-[9px] font-black uppercase tracking-widest text-gray-600 hover:text-white transition-colors">Audit Leaderboard →</button>
-          </motion.div>
-
-          {/* D. INTEL GROWTH HUB (ACADEMIA/SALES) */}
-          <motion.div 
-            whileHover={{ scale: 1.01 }}
-            onClick={() => navigate('/crm/academia')}
-            className="bg-[#151921] border border-white/5 rounded-[2.5rem] p-8 relative overflow-hidden group shadow-2xl cursor-pointer"
-          >
-            <div className="flex justify-between items-start mb-8 relative z-10">
-              <div>
-                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-1 italic">IV. Growth Systemic Expansion</h3>
-                <p className="text-4xl font-black text-white italic tracking-tighter">{pendingUsers.length} <span className="text-xs text-slate-500 font-bold tracking-widest uppercase ml-2">pendientes</span></p>
-              </div>
-              <div className="p-3 bg-purple-500/10 text-purple-500 rounded-2xl border border-purple-500/20">
-                <BarChart3 className="w-5 h-5" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 h-48 content-center">
-               <div className="p-5 bg-white/5 border border-white/5 rounded-3xl text-center">
-                  <BookOpen className="w-6 h-6 text-purple-400 mx-auto mb-3" />
-                  <p className="text-2xl font-black text-white tracking-widest">{pendingUsers.length}</p>
-                  <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Usuarios pendientes</p>
-               </div>
-               <div className="p-5 bg-white/5 border border-white/5 rounded-3xl text-center">
-                  <TrendingUp className="w-6 h-6 text-emerald-400 mx-auto mb-3" />
-                  <p className="text-2xl font-black text-white tracking-widest">{clients.length}</p>
-                  <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Clientes registrados</p>
-               </div>
-            </div>
-
-             <div className="mt-6 flex justify-between gap-4">
-               <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-                 <div className="h-full bg-purple-500 w-[75%]" />
-               </div>
-               <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-                 <div className="h-full bg-emerald-500 w-[45%]" />
-               </div>
-             </div>
-          </motion.div>
-
-        </div>
-
-      </div>
-
-      {/* RIGHT SIDEBAR: SYSTEMIC EVENT FEED */}
-      <div className="xl:col-span-3 space-y-8">
-          
-          <div className="bg-[#151921] border border-white/5 rounded-[2.5rem] p-8 shadow-2xl h-full flex flex-col">
-            <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
-              <History className="w-4 h-4 text-[#F59E0B]" /> Intelligence Feed
-            </h3>
-            
-            <div className="flex-1 space-y-6 overflow-y-auto pr-2 scrollbar-hide">
-              <AnimatePresence initial={false}>
-                {events.length === 0 ? <div className="rounded-2xl border border-dashed border-slate-200 bg-white/70 p-5 text-sm text-slate-500">No hay eventos operativos reales registrados todavía. Los avisos aparecerán aquí cuando estén conectados a sus módulos.</div> : events.map((event) => (
-                  <motion.div 
-                    key={event.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ type: 'spring', damping: 20 }}
-                    className="p-5 rounded-[2rem] bg-white/5 border border-white/5 relative overflow-hidden group hover:bg-white/[0.07] transition-colors"
-                  >
-                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${
-                      event.type === 'success' ? 'bg-emerald-500' : 
-                      event.type === 'warning' ? 'bg-amber-500' : 'bg-[#EF4444]'
-                    }`} />
-                    
-                    <div className="flex justify-between items-start mb-2">
-                      <span className={`text-[7px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border ${
-                        event.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 
-                        event.type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-[#EF4444]/10 border-red-500/20 text-red-500'
-                      }`}>
-                        {event.module}
-                      </span>
-                      <span className="text-[7px] font-black text-gray-600 font-mono italic">
-                        {format(event.timestamp, 'HH:mm:ss')}
-                      </span>
-                    </div>
-                    
-                    <p className="text-[10px] font-bold text-gray-200 leading-snug mb-3">
-                      {event.message}
-                    </p>
-                    
-                    <div className="flex items-center gap-2">
-                       <Layers className="w-3 h-3 text-gray-700" />
-                       <span className={`text-[9px] font-black uppercase tracking-widest ${
-                         event.type === 'error' ? 'text-red-400' : 'text-[#F59E0B]'
-                       }`}>
-                         Impact: {event.impact}
-                       </span>
-                    </div>
-                  </motion.div>
-                ))}
+                  );
+                })}
               </AnimatePresence>
             </div>
 
