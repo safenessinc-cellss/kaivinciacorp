@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, orderBy, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, updateDoc, doc, addDoc, deleteDoc, runTransaction } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType, auth } from '../firebase';
 import { 
   Video, ExternalLink, Calendar, CheckCircle, XCircle, Globe, Bot, 
@@ -160,6 +160,47 @@ export default function Recruitment() {
   }, []);
 
   // --- Candidates Logic ---
+  const hireCandidate = async (candidate: any) => {
+    if (!candidate?.id || String(candidate.id).startsWith('example-')) {
+      alert('Este candidato es una ficha de ejemplo y no se puede contratar. Selecciona un registro guardado.');
+      return;
+    }
+    try {
+      const candidateRef = doc(db, 'candidates', candidate.id);
+      const collaboratorId = 'candidate-' + candidate.id;
+      const collaboratorRef = doc(db, 'collaborators', collaboratorId);
+      await runTransaction(db, async (transaction) => {
+        const candidateSnap = await transaction.get(candidateRef);
+        if (!candidateSnap.exists()) throw new Error('El candidato ya no existe.');
+        const collaboratorSnap = await transaction.get(collaboratorRef);
+        if (!collaboratorSnap.exists()) {
+          transaction.set(collaboratorRef, {
+            candidateId: candidate.id,
+            name: candidate.name || candidateSnap.data().name || 'Nueva colaboradora',
+            email: candidate.email || candidateSnap.data().email || '',
+            phone: candidate.phone || candidateSnap.data().phone || '',
+            department: candidate.role || candidateSnap.data().role || 'Por definir',
+            role: 'collaborator',
+            status: 'pending_onboarding',
+            onboardingStatus: 'pending_documents_and_access_review',
+            createdBy: auth.currentUser?.uid || '',
+            createdAt: new Date().toISOString()
+          });
+        }
+        transaction.update(candidateRef, {
+          status: 'Contratado',
+          collaboratorId,
+          hiredAt: new Date().toISOString(),
+          hiredBy: auth.currentUser?.uid || ''
+        });
+      });
+      setSelectedCandidate({ ...candidate, status: 'Contratado', collaboratorId });
+      alert('Contratación registrada. Se creó el expediente de colaboradora en onboarding pendiente; todavía requiere revisión documental y asignación explícita de permisos.');
+    } catch (error) {
+      alert('No se pudo completar la contratación: ' + (error instanceof Error ? error.message : 'error'));
+    }
+  };
+
   const updateStage = async (candidateId: string, newStage: string) => {
     try {
       await updateDoc(doc(db, 'candidates', candidateId), { status: newStage });
@@ -1138,13 +1179,14 @@ export default function Recruitment() {
                   </div>
                </div>
 
-               <div className="p-8 border-t border-gray-50 bg-gray-50/50 flex gap-4">
-                  <button className="flex-1 h-16 bg-gray-900 text-white rounded-3xl font-black text-xs uppercase tracking-[0.2em] hover:bg-[#00F0FF] transition-all shadow-xl active:scale-95 italic">
-                     Agendar Entrevista
+               <div className="p-6 border-t border-gray-50 bg-gray-50/50 flex flex-col gap-3">
+                  <button onClick={() => void hireCandidate(selectedCandidate)} disabled={selectedCandidate.status === 'Contratado'} className="w-full h-12 bg-emerald-600 text-white rounded-2xl font-bold text-xs uppercase tracking-wider hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                     {selectedCandidate.status === 'Contratado' ? 'Contratación registrada' : 'Contratar y crear expediente'}
                   </button>
-                  <button className="h-16 w-16 bg-white border border-gray-200 text-gray-400 rounded-3xl flex items-center justify-center hover:text-red-500 hover:border-red-100 transition-all hover:bg-red-50">
-                     <Trash2 className="w-6 h-6" />
-                  </button>
+                  <div className="flex gap-3">
+                    <button className="flex-1 h-12 bg-gray-900 text-white rounded-2xl font-bold text-xs uppercase tracking-wider hover:bg-[#00F0FF] transition-all shadow-xl">Agendar entrevista</button>
+                    <button className="h-12 w-12 bg-white border border-gray-200 text-gray-400 rounded-2xl flex items-center justify-center hover:text-red-500 hover:border-red-100 transition-all hover:bg-red-50" aria-label="Eliminar candidato"><Trash2 className="w-5 h-5" /></button>
+                  </div>
                </div>
             </motion.div>
           </>
