@@ -55,7 +55,15 @@ import Integrations from './pages/Integrations';
 import CompanyAuth from './pages/b2b/CompanyAuth';
 import CompanyDashboard from './pages/b2b/CompanyDashboard';
 import CallCenterAdmin from './pages/CallCenterAdmin';
+import DataModule from './pages/DataModule';
+import AccessControlCenter from './pages/AccessControlCenter';
 import RouteGuard from "./components/RouteGuard";
+const canAccessModule = (profile: any, permission: string, fallbackRoles: string[]) => {
+  const permissions = profile?.permissions;
+  if (permissions && Object.prototype.hasOwnProperty.call(permissions, permission)) return permissions[permission] === true;
+  return fallbackRoles.includes(profile?.role || '');
+};
+
 export default function App() {
   const [user, setUser] = useState<any>(() => {
     try {
@@ -309,7 +317,9 @@ export default function App() {
           <Route path="calls" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <CallSystem />} />
           
           {/* Administrativo */}
-          <Route path="recruitment" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Recruitment />} />
+          <Route path="recruitment" element={canAccessModule(userData, 'recruitment:read', ['superadmin','admin','ceo','rrhh','gestor']) ? <Recruitment /> : <Navigate to="/crm/dashboard" replace />} />
+          <Route path="data" element={canAccessModule(userData, 'data:read', ['superadmin','admin','ceo','gestor','sales','tlmk','collaborator']) ? <DataModule /> : <Navigate to="/crm/dashboard" replace />} />
+          <Route path="access-control" element={['superadmin','admin'].includes(userData?.role || '') ? <AccessControlCenter /> : <Navigate to="/crm/dashboard" replace />} />
           <Route path="team" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <TeamManagement />} />
           <Route path="payroll" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Payroll />} />
           <Route path="accounting" element={userData?.role === 'alumno' ? <Navigate to="/crm/user-portal" /> : <Accounting />} />
