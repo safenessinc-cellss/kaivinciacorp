@@ -231,7 +231,7 @@
   .crm-main button { touch-action: manipulation; }
   .crm-main img, .crm-main video, .crm-main canvas { max-width: 100%; }
   .crm-main h1 { overflow-wrap: anywhere; }
-  .crm-main > div.min-h-screen.bg-\\[\\#0B0E14\\] { padding: .75rem; }
+  .crm-main > div.min-h-screen[class~="bg-[#0B0E14]"] { padding: .75rem; }
   .crm-main > div.max-w-7xl.mx-auto { max-width: 100%; overflow-x: clip; }
   .crm-main > div.max-w-7xl.mx-auto > div.bg-white.rounded-3xl { padding: 1rem; }
 }
