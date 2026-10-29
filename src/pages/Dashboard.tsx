@@ -425,7 +425,7 @@ export default function Dashboard() {
             </div>
           </motion.div>
 
-          {/* C. TEAM PERFORMANCE RANKING (TALENTO) */}
+          {/* C. TEAM PERFORMANCE RANKING (TALENTO) — JSX containers balanced */}
           <motion.div 
             whileHover={{ scale: 1.01 }}
             onClick={() => navigate('/crm/team')}
