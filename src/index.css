@@ -239,3 +239,92 @@
 @media (prefers-reduced-motion: reduce) {
   .crm-sidebar { transition: none !important; }
 }
+
+
+/* Kaivincia softphone: iOS-inspired glass UI, scoped to the phone only. */
+.kaivincia-softphone {
+  --phone-ink: #17181c;
+  --phone-muted: #6b7280;
+  --phone-glass: rgba(255, 255, 255, .82);
+  --phone-line: rgba(60, 60, 67, .16);
+  color: var(--phone-ink) !important;
+  background: linear-gradient(160deg, rgba(255,255,255,.97), rgba(245,246,250,.96)) !important;
+  border: 1px solid rgba(255,255,255,.88) !important;
+  border-radius: 30px !important;
+  box-shadow: 0 18px 55px rgba(15,23,42,.18), inset 0 1px 0 rgba(255,255,255,.95) !important;
+  color-scheme: light;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.kaivincia-softphone button { min-height: 40px; touch-action: manipulation; }
+.kaivincia-softphone input,
+.kaivincia-softphone textarea,
+.kaivincia-softphone select { min-width: 0; max-width: 100%; }
+.kaivincia-softphone .text-white { color: #17181c !important; }
+.kaivincia-softphone .text-slate-300,
+.kaivincia-softphone .text-slate-400,
+.kaivincia-softphone .text-slate-500 { color: #626774 !important; }
+.kaivincia-softphone .border-slate-800,
+.kaivincia-softphone .border-slate-700,
+.kaivincia-softphone .border-slate-900 { border-color: var(--phone-line) !important; }
+.kaivincia-softphone .bg-slate-950,
+.kaivincia-softphone .bg-slate-950\/95,
+.kaivincia-softphone .bg-slate-900,
+.kaivincia-softphone .bg-slate-800 { background-color: rgba(118, 118, 128, .12) !important; }
+.kaivincia-softphone .bg-cyan-500\/10 { background-color: rgba(0,122,255,.10) !important; }
+.kaivincia-softphone .text-cyan-400,
+.kaivincia-softphone .text-cyan-300 { color: #007aff !important; }
+.kaivincia-softphone .border-cyan-500\/30 { border-color: rgba(0,122,255,.25) !important; }
+.kaivincia-softphone input,
+.kaivincia-softphone textarea,
+.kaivincia-softphone select {
+  background: rgba(118,118,128,.10) !important;
+  color: #17181c !important;
+  border-color: var(--phone-line) !important;
+  border-radius: 14px !important;
+}
+.kaivincia-softphone .kaivincia-phone-primary {
+  background: #34c759 !important;
+  color: white !important;
+}
+.kaivincia-softphone .kaivincia-phone-danger {
+  background: #ff3b30 !important;
+  color: white !important;
+}
+.kaivincia-softphone-embedded { width: 100%; box-sizing: border-box; }
+.kaivincia-softphone-floating { z-index: 80 !important; }
+@media (max-width: 767px) {
+  .kaivincia-softphone-embedded {
+    width: 100%;
+    max-width: 100%;
+    padding: 1rem !important;
+    border-radius: 28px !important;
+  }
+  .kaivincia-softphone-floating {
+    position: fixed !important;
+    inset-inline: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    max-height: min(90dvh, 820px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    padding: 1rem 1rem max(1rem, env(safe-area-inset-bottom)) !important;
+    border-radius: 28px 28px 0 0 !important;
+    border-bottom: 0 !important;
+    box-shadow: 0 -14px 50px rgba(0,0,0,.22) !important;
+  }
+  .kaivincia-softphone button { min-height: 44px; }
+  .kaivincia-softphone .grid.grid-cols-4 button { min-height: 56px; }
+  .kaivincia-softphone .flex.items-center.gap-2 > button { min-height: 44px; }
+  .kaivincia-softphone .rounded-xl,
+  .kaivincia-softphone .rounded-2xl { border-radius: 16px !important; }
+  .kaivincia-softphone-floating .text-\\[10px\\],
+  .kaivincia-softphone-floating .text-\\[9px\\] { line-height: 1.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kaivincia-softphone, .kaivincia-softphone * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
