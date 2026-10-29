@@ -232,28 +232,10 @@ export default function Dashboard() {
                </div>
 
                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-                  {[
-                    { 
-                      title: 'Retención de Talento', 
-                      desc: 'Probabilidad de Burnout en Módulo de Proyectos: Baja (12%)', 
-                      icon: <Users className="w-5 h-5" />, 
-                      val: '94%',
-                      color: 'emerald'
-                    },
-                    { 
-                      title: 'Punto de Equilibrio', 
-                      desc: 'Capacidad de contratación sugerida: 2 nuevos Agentes Sr.', 
-                      icon: <TrendingUp className="w-5 h-5" />, 
-                      val: '18/05',
-                      color: 'blue'
-                    },
-                    { 
-                      title: 'Riesgo de Churn', 
-                      desc: 'Análisis de sentimiento detectó fricción en Facturación Q2.', 
-                      icon: <ShieldAlert className="w-5 h-5" />, 
-                      val: 'High Q',
-                      color: 'amber'
-                    }
+                                    {[
+                    { title: 'Base de clientes', desc: 'Clientes registrados en el CRM.', icon: <Users className="w-5 h-5" />, val: String(clients.length), color: 'emerald' },
+                    { title: 'Usuarios registrados', desc: 'Perfiles disponibles en el sistema.', icon: <TrendingUp className="w-5 h-5" />, val: String(users.length), color: 'blue' },
+                    { title: 'Accesos pendientes', desc: 'Usuarios con estado pendiente o rol sin asignar.', icon: <ShieldAlert className="w-5 h-5" />, val: String(pendingUsers.length), color: 'amber' }
                   ].map((insight, idx) => (
                     <div key={idx} className="p-6 bg-white/5 border border-white/5 rounded-3xl hover:border-[#00F0FF]/30 transition-all group/card">
                        <div className={`h-12 w-12 rounded-2xl bg-${insight.color}-500/10 text-${insight.color}-500 flex items-center justify-center mb-6 group-hover/card:scale-110 transition-transform`}>
@@ -457,10 +439,10 @@ export default function Dashboard() {
       {/* GLOBAL FOOTER METRICS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pb-10">
          {[
-           { label: 'Cloud Load', val: '14.2%', color: 'text-emerald-500' },
-           { label: 'User Synapses', val: '1,242/s', color: 'text-blue-500' },
-           { label: 'Integrity', val: '100.00%', color: 'text-emerald-500' },
-           { label: 'Latency', val: '12ms', color: 'text-blue-500' }
+           { label: 'Clientes registrados', val: String(clients.length), color: 'text-emerald-500' },
+            { label: 'Usuarios registrados', val: String(users.length), color: 'text-blue-500' },
+            { label: 'Usuarios pendientes', val: String(pendingUsers.length), color: 'text-emerald-500' },
+            { label: 'Datos financieros', val: chartData.length ? 'Disponibles' : 'Pendientes', color: 'text-blue-500' }
          ].map((stat, i) => (
            <div key={i} className="bg-white/5 border border-white/5 px-6 py-4 rounded-2xl flex justify-between items-center transition-all hover:bg-white/10">
               <span className="text-[8px] font-black uppercase tracking-widest text-gray-600">{stat.label}</span>
