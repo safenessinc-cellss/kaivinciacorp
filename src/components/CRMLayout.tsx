@@ -485,7 +485,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
-        <header className="crm-header h-16 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-6 shrink-0 z-10 shadow-sm">
+        <header className="crm-header h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
           <div className="flex flex-1 items-center gap-4">
             <button
               onClick={() => {
@@ -632,7 +632,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
           </div>
         </header>
         
-        <main className="crm-main flex-1 overflow-auto p-3 sm:p-5 lg:p-8 bg-transparent relative z-10">
+        <main className="crm-main flex-1 overflow-auto p-4 sm:p-8 bg-transparent relative z-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
