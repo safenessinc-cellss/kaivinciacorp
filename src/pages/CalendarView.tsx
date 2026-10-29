@@ -6,7 +6,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { collection, onSnapshot, addDoc } from 'firebase/firestore';
 import { useAuth } from '../hooks/useAuth';
 import { db, auth, handleFirestoreError, OperationType } from '../firebase';
-import { X } from 'lucide-react';
+import { X, CalendarDays, Link2, Unlink } from 'lucide-react';
 import { KaiCard } from '../components/design-system/NativeUI';
 
 const locales = {
@@ -36,6 +36,48 @@ export default function CalendarView() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [newTask, setNewTask] = useState({ title: '', description: '' });
+  const [googleCalendar, setGoogleCalendar] = useState<{ connected: boolean; email: string | null }>({ connected: false, email: null });
+  const [calendarNotice, setCalendarNotice] = useState('');
+  const [calendarBusy, setCalendarBusy] = useState(false);
+
+  const refreshGoogleCalendarStatus = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    try {
+      const token = await currentUser.getIdToken();
+      const response = await fetch('/api/google-calendar?action=status', { headers: { Authorization: 'Bearer ' + token } });
+      if (!response.ok) return;
+      const status = await response.json();
+      setGoogleCalendar({ connected: Boolean(status.connected), email: status.email || null });
+    } catch (error) { console.error('No se pudo consultar Google Calendar', error); }
+  };
+
+  useEffect(() => { if (!authLoading && user) void refreshGoogleCalendarStatus(); }, [user, authLoading]);
+
+  const connectGoogleCalendar = async () => {
+    setCalendarBusy(true); setCalendarNotice('');
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error('Inicia sesión para conectar Google Calendar.');
+      const token = await currentUser.getIdToken();
+      const response = await fetch('/api/google-calendar?action=start', { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' } });
+      const result = await response.json();
+      if (!response.ok || !result.url) throw new Error(result.error || 'No se pudo iniciar la conexión.');
+      window.location.assign(result.url);
+    } catch (error) { setCalendarNotice(error instanceof Error ? error.message : 'Error de conexión'); setCalendarBusy(false); }
+  };
+
+  const disconnectGoogleCalendar = async () => {
+    if (!window.confirm('¿Desconectar Google Calendar de esta cuenta?')) return;
+    setCalendarBusy(true);
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      const response = await fetch('/api/google-calendar?action=disconnect', { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' } });
+      if (!response.ok) throw new Error('No se pudo desconectar Google Calendar.');
+      setGoogleCalendar({ connected: false, email: null }); setCalendarNotice('Google Calendar desconectado.');
+    } catch (error) { setCalendarNotice(error instanceof Error ? error.message : 'Error al desconectar'); }
+    finally { setCalendarBusy(false); }
+  };
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -122,7 +164,7 @@ export default function CalendarView() {
     if (!selectedDate || !newTask.title) return;
 
     try {
-      await addDoc(collection(db, 'tasks'), {
+      const taskRef = await addDoc(collection(db, 'tasks'), {
         title: newTask.title,
         description: newTask.description,
         dueDate: selectedDate.toISOString(),
@@ -130,6 +172,16 @@ export default function CalendarView() {
         assignedTo: auth.currentUser?.uid || 'unassigned',
         createdAt: new Date().toISOString()
       });
+      if (googleCalendar.connected && auth.currentUser) {
+        try {
+          const token = await auth.currentUser.getIdToken();
+          const start = new Date(selectedDate); start.setHours(9, 0, 0, 0);
+          const end = new Date(start.getTime() + 30 * 60000);
+          const response = await fetch('/api/google-calendar?action=create-event', { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ title: 'Kaivincia: ' + newTask.title, description: newTask.description, start: start.toISOString(), end: end.toISOString(), sourceId: taskRef.id }) });
+          if (!response.ok) setCalendarNotice('La tarea se guardó en Kaivincia, pero no se pudo copiar a Google Calendar.');
+          else setCalendarNotice('Tarea guardada en Kaivincia y Google Calendar.');
+        } catch { setCalendarNotice('La tarea se guardó en Kaivincia; la sincronización con Google Calendar falló.'); }
+      }
       setIsModalOpen(false);
       setNewTask({ title: '', description: '' });
     } catch (error) {
@@ -160,9 +212,13 @@ export default function CalendarView() {
 
   return (
     <div className="space-y-6 h-[calc(100vh-8rem)]">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Agenda & Reuniones</h2>
+      <div className="flex flex-wrap justify-between items-center gap-3">
+        <div><h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Agenda & Reuniones</h2><p className="mt-1 text-sm text-gray-500">Conecta tu calendario personal con la agenda de Kaivincia.</p></div>
+        {googleCalendar.connected ? <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"><CalendarDays size={17}/><span>Conectado: {googleCalendar.email}</span><button type="button" disabled={calendarBusy} onClick={disconnectGoogleCalendar} aria-label="Desconectar Google Calendar" className="rounded-lg p-1 hover:bg-emerald-100"><Unlink size={16}/></button></div> : <button type="button" disabled={calendarBusy} onClick={connectGoogleCalendar} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"><Link2 size={16}/>{calendarBusy ? 'Conectando…' : 'Conectar Google Calendar'}</button>}
       </div>
+      {calendarNotice && <div role="status" className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-800">{calendarNotice}</div>}
+      {new URLSearchParams(window.location.search).get('googleCalendar') === 'connected' && <div role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800">Google Calendar conectado a tu cuenta. Ya puedes sincronizar las nuevas tareas.</div>}
+      {new URLSearchParams(window.location.search).get('googleCalendar') === 'email_mismatch' && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800">El correo de Google debe coincidir con el correo verificado con el que iniciaste sesión en Kaivincia.</div>}
 
       <KaiCard className="h-full">
         <Calendar
