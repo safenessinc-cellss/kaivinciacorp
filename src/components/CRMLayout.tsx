@@ -7,7 +7,7 @@ import {
   UserPlus, FileText, Receipt, GraduationCap, ShoppingCart, ChevronRight, Home,
   ChevronDown, ChevronUp, Search, Activity, Zap, Award, Bell, Eye, EyeOff, PanelLeftClose, PanelLeftOpen,
   BrainCircuit, Navigation, DollarSign, HelpCircle, HardDrive, ClipboardCheck,
-  ShieldCheck, ArrowLeft, LayoutTemplate, Share2, Palette
+  ShieldCheck, ArrowLeft, LayoutTemplate, Share2, Palette, Menu, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth } from '../firebase';
@@ -29,6 +29,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
   const [menuSearch, setMenuSearch] = useState('');
   const [ceoMode, setCeoMode] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     'Módulo Core': true,
     'Módulo de Talento': false,
@@ -57,6 +58,10 @@ export default function CRMLayout({ userData }: { userData: any }) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    setIsMobileSidebarOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -283,15 +288,19 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
   return (
     <div 
-      className={`min-h-screen flex relative ${isRightSidebar ? 'flex-row-reverse' : 'flex-row'}`}
+      className={`crm-shell min-h-screen flex relative ${isRightSidebar ? 'flex-row-reverse' : 'flex-row'}`}
       style={{ backgroundColor: 'var(--color-background)' }}
     >
       <div className="fixed inset-0 z-0 pointer-events-none">
         <img src="/images/portada.jpg" alt="Portada" className="w-full h-full object-cover opacity-[0.03] grayscale mix-blend-multiply" />
       </div>
+      {/* Overlay y navegación móvil */}
+      {isMobileSidebarOpen && (
+        <button type="button" aria-label="Cerrar menú de navegación" className="crm-mobile-overlay" onClick={() => setIsMobileSidebarOpen(false)} />
+      )}
       {/* Sidebar */}
       <div 
-        className={`text-gray-300 ${isRightSidebar ? 'border-l' : 'border-r'} border-gray-800 flex flex-col h-screen transition-all duration-300 relative z-10 ${sidebarWidthClass}`}
+        className={`crm-sidebar ${isRightSidebar ? 'crm-sidebar-right border-l' : 'border-r'} ${isMobileSidebarOpen ? 'crm-sidebar-open' : ''} text-gray-300 border-gray-800 flex flex-col h-screen transition-all duration-300 relative z-10 ${sidebarWidthClass}`}
         style={{ 
           backgroundColor: 'var(--color-sidebar-bg)', 
           color: 'var(--color-sidebar-text)' 
@@ -476,14 +485,24 @@ export default function CRMLayout({ userData }: { userData: any }) {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
+        <header className="crm-header h-16 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-6 shrink-0 z-10 shadow-sm">
           <div className="flex flex-1 items-center gap-4">
-            <button 
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
-              className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-              title={isSidebarCollapsed ? t('header.expand_menu', 'Expandir Menú') : t('header.collapse_menu', 'Colapsar Menú')}
+            <button
+              onClick={() => {
+                if (window.matchMedia('(max-width: 767px)').matches) {
+                  setIsMobileSidebarOpen((open) => !open);
+                } else {
+                  setIsSidebarCollapsed(!isSidebarCollapsed);
+                }
+              }}
+              className="p-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer shrink-0"
+              aria-label={isMobileSidebarOpen ? 'Cerrar menú' : 'Abrir menú'}
+              title={isMobileSidebarOpen ? 'Cerrar menú' : (isSidebarCollapsed ? t('header.expand_menu', 'Expandir Menú') : t('header.collapse_menu', 'Colapsar Menú'))}
             >
-              {isSidebarCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+              <span className="hidden md:inline">
+                {isSidebarCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+              </span>
+              <span className="md:hidden">{isMobileSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}</span>
             </button>
 
             {/* Componente de Navegación Histórica */}
@@ -613,7 +632,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
           </div>
         </header>
         
-        <main className="flex-1 overflow-auto p-4 sm:p-8 bg-transparent relative z-10">
+        <main className="crm-main flex-1 overflow-auto p-3 sm:p-5 lg:p-8 bg-transparent relative z-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

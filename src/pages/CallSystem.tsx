@@ -109,9 +109,9 @@ export default function CallSystem() {
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-4 sm:space-y-6 min-w-0 max-w-7xl mx-auto pb-12 overflow-x-clip">
       {/* Cabecera Principal del Sistema Telefónico */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-4 sm:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-500 shadow-[0_0_15px_rgba(0,240,255,0.15)]">
@@ -119,7 +119,7 @@ export default function CallSystem() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight italic">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight italic break-words">
                   {t('calls.title', 'Centro Telefónico & VoIP')}
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[10px] font-black uppercase flex items-center gap-1.5">
@@ -152,7 +152,7 @@ export default function CallSystem() {
       </div>
 
       {/* Navegación por Pestañas */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200 dark:border-slate-800 no-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200 dark:border-slate-800 no-scrollbar max-w-full touch-pan-x">
         {TABS.filter((tab) => !tab.adminOnly || isAdmin).map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
