@@ -443,10 +443,7 @@ export default function Dashboard() {
 
             <div className="space-y-4 h-48 overflow-y-auto pr-2 scrollbar-hide">
                {[
-                 { name: 'Carlos Ruiz', roi: 210, impact: 'Peak' },
-                 { name: 'Ana Silva', roi: 195, impact: 'High' },
-                 { name: 'Marta García', roi: 160, impact: 'Target' },
-                 { name: 'Roberto S.', roi: 155, impact: 'Target' },
+                 ...users.slice(0, 4).map((item, index) => ({ name: String(item.name || item.displayName || item.email || `Usuario ${index + 1}`), roi: 0, impact: String(item.role || item.status || 'registrado') })),
                ].map((member, i) => (
                  <div key={i} className="flex items-center gap-4 bg-white/5 p-3 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
                     <div className="h-8 w-8 rounded-xl bg-gray-900 border border-white/10 flex items-center justify-center text-[10px] font-black text-white">{member.name.charAt(0)}</div>
@@ -456,7 +453,7 @@ export default function Dashboard() {
                          <span className="text-[9px] font-black text-emerald-500">{member.impact}</span>
                       </div>
                       <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#10B981]" style={{ width: `${(member.roi/2.1)}%` }} />
+                        <div className="h-full bg-[#10B981]" style={{ width: `${Math.min(100, Math.max(12, member.impact.length * 7))}%` }} />
                       </div>
                     </div>
                  </div>
