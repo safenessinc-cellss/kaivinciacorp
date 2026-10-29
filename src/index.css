@@ -442,3 +442,97 @@
 @media (prefers-reduced-motion: reduce) {
   .kaivincia-login *, .kaivincia-login *::before, .kaivincia-login *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+
+/* Corporate blue-and-white login refresh — scoped to the sign-in screen. */
+.kaivincia-login {
+  color: #17365f;
+  background:
+    radial-gradient(ellipse at 8% 8%, rgba(207, 229, 255, .88), transparent 36%),
+    radial-gradient(ellipse at 94% 92%, rgba(190, 220, 255, .72), transparent 38%),
+    linear-gradient(135deg, #f5f9ff 0%, #ffffff 52%, #eef6ff 100%);
+}
+.kaivincia-login-orb-one {
+  width: 560px; height: 560px; top: -360px; left: -240px; right: auto;
+  background: radial-gradient(circle, rgba(113, 174, 255, .22), rgba(255,255,255,0));
+}
+.kaivincia-login-orb-two {
+  width: 620px; height: 620px; bottom: -420px; right: -260px; left: auto;
+  background: radial-gradient(circle, rgba(66, 133, 244, .16), rgba(255,255,255,0));
+}
+.kaivincia-login-brand { min-height: 70px; max-width: 280px; }
+.kaivincia-login-tagline {
+  color: #5b7598;
+  font-size: 13px;
+  line-height: 1.6;
+  letter-spacing: .01em;
+}
+.kaivincia-login-window {
+  border: 1px solid #d9e8fb;
+  border-radius: 22px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 22px 65px rgba(40, 93, 158, .12), 0 2px 8px rgba(40,93,158,.04);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+.kaivincia-login-eyebrow {
+  display: inline-block;
+  color: #3478c9;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+}
+.kaivincia-google-button {
+  min-height: 56px;
+  border: 1px solid #3478e5;
+  background: #4285f4;
+  color: #fff;
+  box-shadow: 0 5px 12px rgba(66,133,244,.20);
+  transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
+}
+.kaivincia-google-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #2f75e8;
+  box-shadow: 0 8px 18px rgba(66,133,244,.26);
+}
+.kaivincia-google-button:focus-visible {
+  outline: 3px solid rgba(66,133,244,.28);
+  outline-offset: 3px;
+}
+.kaivincia-login-divider span { height: 1px; flex: 1; background: #e1eaf6; }
+.kaivincia-login-divider p { flex: none; color: #7890b0; font-size: 9px; font-weight: 700; letter-spacing: .14em; }
+.kaivincia-login-benefit {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 5px;
+  color: #50729d;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.45;
+}
+.kaivincia-login-benefit svg { color: #4285f4; }
+.kaivincia-login-notice {
+  border: 1px solid #e0edff;
+  background: #f1f7ff;
+  color: #53739d;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.kaivincia-login-notice svg { color: #4285f4; }
+.kaivincia-login-footer {
+  border-top: 1px solid #e7eff9;
+  background: #f8fbff;
+  color: #7890b0;
+}
+.kaivincia-login-spinner {
+  width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.38);
+  border-top-color: #fff; border-radius: 50%; animation: kaivincia-login-spin .7s linear infinite;
+}
+@media (max-width: 480px) {
+  .kaivincia-login { padding: 24px 15px 32px; }
+  .kaivincia-login-window { border-radius: 20px; }
+  .kaivincia-login-benefit { font-size: 9px; padding-inline: 2px; }
+}
