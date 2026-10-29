@@ -127,7 +127,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen min-w-0 max-w-full overflow-x-clip bg-[#0B0E14] text-gray-400 font-sans p-3 sm:p-5 lg:p-10 pb-20">
+    <div className="min-h-screen bg-[#0B0E14] text-gray-400 font-sans p-6 lg:p-10 pb-20">
       
       {/* HEADER: DYNAMIC STATUS BAR */}
       <div className="flex flex-col lg:flex-row justify-between items-center mb-6 gap-6">
@@ -136,7 +136,7 @@ export default function Dashboard() {
             <Cpu className="w-8 h-8 animate-pulse" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tighter italic break-words">Nervous System</h1>
+            <h1 className="text-3xl font-black text-white uppercase tracking-tighter italic">Nervous System</h1>
             <div className="flex items-center gap-3 mt-1">
               <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> Synapse: Active
