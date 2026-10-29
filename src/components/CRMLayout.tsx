@@ -210,6 +210,10 @@ const strategyGroup = {
       return [telemarketingGroup, coreGroup, operationsGroup, clientGroup, strategyGroup, portalGroup];
     }
 
+    if (['admin', 'billing', 'accounting'].includes(userRole)) {
+      return [coreGroup, financeGroup, clientGroup, operationsGroup, portalGroup];
+    }
+
     if (userRole === 'ceo' || userRole === 'superadmin') {
       const groups = [
         telemarketingGroup,
