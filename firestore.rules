@@ -244,10 +244,31 @@ service cloud.firestore {
     // Reclutamiento
     // ===============================================================
     match /candidates/{candidateId} {
-      allow read:   if isAuthenticated();
+      allow read: if isAdmin() || userRole() == 'rrhh' || hasPermission('recruitment:read');
       allow create: if true;
-      allow update: if isAuthenticated();
+      allow update: if isAdmin() || userRole() == 'rrhh' ||
+        hasPermission('recruitment:update') || hasPermission('recruitment:hire');
       allow delete: if isAdmin();
+    }
+
+    match /candidateDocuments/{documentId} {
+      allow read: if isAdmin() || userRole() == 'rrhh' || hasPermission('recruitment:documents.read');
+      allow create: if isAdmin() || userRole() == 'rrhh' || hasPermission('recruitment:create');
+      allow update: if isAdmin() || userRole() == 'rrhh' || hasPermission('recruitment:update');
+      allow delete: if isAdmin();
+    }
+
+    match /aiEvaluations/{evaluationId} {
+      allow read: if isAdmin() || userRole() == 'rrhh' || hasPermission('recruitment:read');
+      allow create: if isAdmin() || userRole() == 'rrhh' || hasPermission('recruitment:create');
+      allow update: if isAdmin() || userRole() == 'rrhh' || hasPermission('recruitment:update');
+      allow delete: if isAdmin();
+    }
+
+    match /candidateStageHistory/{historyId} {
+      allow read: if isAdmin() || userRole() == 'rrhh' || hasPermission('recruitment:read');
+      allow create: if isAdmin() || userRole() == 'rrhh' || hasPermission('recruitment:update');
+      allow update, delete: if false;
     }
 
     match /jobs/{jobId} {
