@@ -40,6 +40,17 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    function hasPermission(permission) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+          .get('permissions', {}).get(permission, false) == true;
+    }
+
+    function canManageData() {
+      return isAdmin() || hasPermission('data:import') || hasPermission('data:assign');
+    }
+
     function incoming() {
       return request.resource.data;
     }
@@ -243,6 +254,62 @@ service cloud.firestore {
       allow get, list:      if true;
       allow create, update: if isAdmin() && isValidJob(incoming());
       allow delete:         if isAdmin();
+    }
+
+    // ===============================================================
+    // Data / telemarketing — deny by default, operator sees assigned records only
+    // ===============================================================
+    match /dataBatches/{batchId} {
+      allow read: if isAdmin();
+      allow create: if canManageData() && incoming().get('createdBy', '') == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /dataRecords/{recordId} {
+      allow get, list: if isAdmin() ||
+        (isAuthenticated() && existing().get('assignedToUid', '') == request.auth.uid);
+      allow create: if canManageData() && incoming().get('createdBy', '') == request.auth.uid;
+      allow update: if isAdmin() ||
+        (isAuthenticated() &&
+         existing().get('assignedToUid', '') == request.auth.uid &&
+         incoming().get('assignedToUid', '') == request.auth.uid &&
+         incoming().diff(existing()).affectedKeys()
+           .hasOnly(['status', 'updatedAt', 'lastUpdatedBy', 'lastCallAt']));
+      allow delete: if isAdmin();
+    }
+
+    match /dataAssignments/{assignmentId} {
+      allow read: if isAdmin() ||
+        (isAuthenticated() && existing().get('operatorUid', '') == request.auth.uid);
+      allow create: if canManageData() && incoming().get('assignedBy', '') == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /regions/{regionId} {
+      allow read: if isAdmin() || hasPermission('data:read');
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /campaigns/{campaignId} {
+      allow read: if isAdmin() || hasPermission('data:read');
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Custom roles and permission definitions are administrator-managed only.
+    match /customRoles/{roleId} {
+      allow read, create, update, delete: if isSuperAdmin();
+    }
+
+    match /roleAssignments/{assignmentId} {
+      allow read: if isAdmin() || existing().get('userUid', '') == request.auth.uid;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() && incoming().get('actorUid', '') == request.auth.uid;
+      allow update, delete: if false;
     }
 
     // ===============================================================
