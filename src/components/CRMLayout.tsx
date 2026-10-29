@@ -91,9 +91,9 @@ export default function CRMLayout({ userData }: { userData: any }) {
     const coreGroup = {
       title: t('nav.groups.nervous', 'SISTEMA NERVIOSO'),
       items: [
-        { name: t('nav.nervous_system', 'Nervous System'), href: '/crm/nervous', icon: BrainCircuit, highlight: true, color: 'text-[#22D3EE]' },
+        { name: t('nav.nervous_system', 'Sistema Nervioso'), href: '/crm/nervous', icon: BrainCircuit, highlight: true, color: 'text-[#22D3EE]' },
         { name: t('nav.master_dashboard', 'Panel Maestro'), href: '/crm/dashboard', icon: Home, highlight: true, color: 'text-cyan-500' },
-        { name: t('nav.neural_chat', 'Neural Chat'), href: '/crm/chat', icon: MessageSquare, badge: '9+', color: 'text-[#A855F7]' },
+        { name: t('nav.neural_chat', 'Chat Neural'), href: '/crm/chat', icon: MessageSquare, badge: '9+', color: 'text-[#A855F7]' },
         { name: t('nav.members_roles', 'Miembros / Roles'), href: '/crm/chat?view=contacts', icon: Users, color: 'text-emerald-400' },
       ]
     };
@@ -101,7 +101,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
         const financeGroup = {
       title: t('nav.groups.finance', 'FINANZAS & CONTROL'),
       items: [
-        { name: 'Dashboard financiero', href: '/crm/accounting', icon: Calculator, color: 'text-[#4285F4]' },
+        { name: 'Panel financiero', href: '/crm/accounting', icon: Calculator, color: 'text-[#4285F4]' },
         { name: 'Facturación y cobros', href: '/crm/billing', icon: Receipt, color: 'text-[#34A853]' },
         { name: 'Nómina', href: '/crm/payroll', icon: Wallet, color: 'text-[#FBBC04]' },
         { name: 'Informes financieros', href: '/crm/reports', icon: BarChart3, color: 'text-[#EA4335]' },
@@ -165,7 +165,7 @@ const strategyGroup = {
       title: t('nav.groups.portal', 'PORTAL PERSONAL'),
       items: [
         { name: t('nav.my_portal', 'Mi Portal'), href: '/crm/user-portal', icon: UserCircle, color: 'text-gray-400' },
-        { name: t('nav.billing', 'Facturación GPS'), href: '/crm/billing', icon: Receipt, color: 'text-cyan-600' },
+        { name: t('nav.billing', 'Facturación'), href: '/crm/billing', icon: Receipt, color: 'text-cyan-600' },
       ]
     };
 
@@ -178,7 +178,7 @@ const strategyGroup = {
           items: [
             { name: t('nav.my_portal', 'Mi Portal'), href: '/crm/user-portal', icon: UserCircle, color: 'text-gray-400' },
             { name: t('nav.billing', 'Pagos y Facturas'), href: '/crm/billing', icon: Receipt, color: 'text-cyan-600' },
-            { name: t('nav.digital_products', 'Academy Store'), href: '/crm/digital-products', icon: ShoppingCart, color: 'text-gray-400' },
+            { name: t('nav.digital_products', 'Tienda de la Academia'), href: '/crm/digital-products', icon: ShoppingCart, color: 'text-gray-400' },
           ]
         }
       ];
@@ -196,7 +196,7 @@ const strategyGroup = {
           items: [
             { name: t('nav.master_dashboard', 'Panel Operativo'), href: '/crm/dashboard', icon: Home, color: 'text-cyan-500' },
             { name: t('nav.tasks', 'Tareas Asignadas'), href: '/crm/tasks', icon: ClipboardCheck, color: 'text-blue-400' },
-            { name: t('nav.neural_chat', 'Neural Chat'), href: '/crm/chat', icon: MessageSquare, color: 'text-[#A855F7]' },
+            { name: t('nav.neural_chat', 'Chat Neural'), href: '/crm/chat', icon: MessageSquare, color: 'text-[#A855F7]' },
             { name: t('nav.sop_manuals', 'Manuales SOP'), href: '/crm/manuales', icon: BookOpen, color: 'text-emerald-400' },
           ]
         },
@@ -245,7 +245,7 @@ const strategyGroup = {
             { name: t('nav.superadmin', 'SuperAdmin'), href: '/crm/superadmin', icon: ShieldAlert },
             { name: 'Usuarios, roles y permisos', href: '/crm/access-control', icon: Users, color: 'text-blue-400' },
             { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[#EC4899]' },
-            { name: t('nav.security_center', 'Security Center'), href: '/crm/security', icon: ShieldCheck, color: 'text-[#FACC15]' },
+            { name: t('nav.security_center', 'Centro de Seguridad'), href: '/crm/security', icon: ShieldCheck, color: 'text-[#FACC15]' },
             { name: t('nav.automations', 'Automatizaciones'), href: '/crm/automations', icon: Zap },
             { name: t('nav.form_templates', 'Plantillas de Ficha'), href: '/crm/form-templates', icon: LayoutTemplate, color: 'text-[#00F0FF]' },
             { name: t('nav.integrations', 'Integraciones Externas'), href: '/crm/integrations', icon: Share2, color: 'text-violet-400' },
