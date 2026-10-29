@@ -562,3 +562,32 @@
 .kaivincia-softphone button { transition:transform .16s ease,box-shadow .16s ease,background-color .16s ease; }
 .kaivincia-softphone button:active { transform:scale(.97); }
 @media (max-width:640px) { .kaivincia-tahoe-dashboard { padding:16px !important; } .kaivincia-softphone { border-radius:26px 26px 0 0 !important; } }
+
+
+/* Kaivincia Native Design System — additive rollout; legacy pages stay compatible. */
+:root {
+  --kai-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
+  --kai-space-1:4px; --kai-space-2:8px; --kai-space-3:12px; --kai-space-4:16px; --kai-space-5:20px; --kai-space-6:24px; --kai-space-8:32px; --kai-space-10:40px;
+  --kai-radius-sm:8px; --kai-radius-md:12px; --kai-radius-lg:16px; --kai-radius-xl:22px;
+  --kai-glass-light:rgba(255,255,255,.76); --kai-glass-dark:rgba(28,28,30,.72);
+  --kai-border-light:rgba(60,60,67,.16); --kai-border-dark:rgba(255,255,255,.14);
+  --kai-shadow-window:0 20px 60px rgba(0,0,0,.16),0 2px 8px rgba(0,0,0,.06);
+}
+:root[data-kai-theme="light"] { --kai-bg:#f5f5f7; --kai-surface:#fff; --kai-surface-secondary:#f0f0f2; --kai-text:#1d1d1f; --kai-muted:#6e6e73; --kai-border:var(--kai-border-light); --kai-accent:#007aff; --kai-success:#248a3d; --kai-warning:#9a6700; --kai-danger:#d70015; --kai-glass:var(--kai-glass-light); }
+:root[data-kai-theme="dark"] { --kai-bg:#1c1c1e; --kai-surface:#2c2c2e; --kai-surface-secondary:#3a3a3c; --kai-text:#f5f5f7; --kai-muted:#a1a1a6; --kai-border:var(--kai-border-dark); --kai-accent:#0a84ff; --kai-success:#30d158; --kai-warning:#ffd60a; --kai-danger:#ff453a; --kai-glass:var(--kai-glass-dark); }
+.crm-shell { font-family:var(--kai-font); }
+.crm-shell .crm-sidebar { -webkit-backdrop-filter:blur(28px) saturate(1.5); backdrop-filter:blur(28px) saturate(1.5); }
+.crm-shell header { -webkit-backdrop-filter:blur(24px) saturate(1.5); backdrop-filter:blur(24px) saturate(1.5); }
+.kai-glass { background:var(--kai-glass,rgba(255,255,255,.76)); border:1px solid var(--kai-border,rgba(60,60,67,.16)); box-shadow:var(--kai-shadow-window); -webkit-backdrop-filter:blur(24px) saturate(1.5); backdrop-filter:blur(24px) saturate(1.5); }
+.kai-card { background:var(--kai-surface,#fff); color:var(--kai-text,#1d1d1f); border:1px solid var(--kai-border,rgba(60,60,67,.16)); border-radius:var(--kai-radius-lg); box-shadow:0 1px 2px rgba(0,0,0,.04); }
+.kai-control { min-height:36px; border:1px solid var(--kai-border,rgba(60,60,67,.16)); border-radius:var(--kai-radius-sm); background:var(--kai-surface,#fff); color:var(--kai-text,#1d1d1f); transition:border-color 140ms,box-shadow 140ms,transform 140ms; }
+.kai-control:focus-visible { outline:2px solid var(--kai-accent,#007aff); outline-offset:2px; }
+.kai-button-primary { background:var(--kai-accent,#007aff); color:white; border-radius:var(--kai-radius-sm); transition:filter 140ms,transform 140ms; }
+.kai-button-primary:hover { filter:brightness(1.06); } .kai-button-primary:active { transform:scale(.98); } .kai-button-primary:disabled { opacity:.45; cursor:not-allowed; }
+.kai-table { width:100%; border-collapse:separate; border-spacing:0; color:var(--kai-text,#1d1d1f); }
+.kai-table th { color:var(--kai-muted,#6e6e73); font-size:11px; letter-spacing:.04em; text-transform:uppercase; font-weight:600; text-align:left; }
+.kai-table th,.kai-table td { padding:12px 16px; border-bottom:1px solid var(--kai-border,rgba(60,60,67,.16)); }
+.kai-table tbody tr:hover { background:color-mix(in srgb,var(--kai-accent,#007aff) 5%,transparent); }
+.kai-overlay { position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:20px; background:rgba(0,0,0,.28); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+.kai-toast { border:1px solid var(--kai-border,rgba(60,60,67,.16)); background:var(--kai-glass,rgba(255,255,255,.9)); color:var(--kai-text,#1d1d1f); border-radius:var(--kai-radius-md); box-shadow:var(--kai-shadow-window); -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px); }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
