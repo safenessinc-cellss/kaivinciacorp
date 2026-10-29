@@ -279,9 +279,9 @@ export default function Dashboard() {
               
               <div className="space-y-4">
                  {[
-                   { label: 'Uso de API GenAI', value: '88%', color: 'bg-cyan-500' },
-                   { label: 'Sincronización GPS', value: 'Active', color: 'bg-emerald-500' },
-                   { label: 'Latencia de Nodo', value: '14ms', color: 'bg-[#A855F7]' }
+                   { label: 'Sesión CRM', value: user ? 'Activa' : 'Inactiva', color: 'bg-cyan-500' },
+                   { label: 'Clientes cargados', value: String(clients.length), color: 'bg-emerald-500' },
+                   { label: 'Usuarios cargados', value: String(users.length), color: 'bg-[#A855F7]' }
                  ].map(stat => (
                    <div key={stat.label} className="flex flex-col gap-1.5">
                       <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-gray-500">
@@ -371,11 +371,11 @@ export default function Dashboard() {
                <div className="flex gap-4">
                  <div className="flex items-center gap-1.5">
                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-                   <span className="text-[8px] font-black uppercase tracking-widest">Normal</span>
+                   <span className="text-[8px] font-black uppercase tracking-widest">Datos CRM</span>
                  </div>
                  <div className="flex items-center gap-1.5">
                    <div className="w-1.5 h-1.5 bg-[#EF4444] rounded-full" />
-                   <span className="text-[8px] font-black uppercase tracking-widest">Error Node</span>
+                   <span className="text-[8px] font-black uppercase tracking-widest">Sin telemetría</span>
                  </div>
                </div>
                <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Sin monitor de riesgo conectado</span>
