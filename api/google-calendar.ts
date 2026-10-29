@@ -1,4 +1,3 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createCipheriv, createDecipheriv, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { adminAuth, adminDb } from '../server/_lib/firebaseAdmin.js';
 
@@ -62,7 +61,7 @@ async function accessToken(uid: string) {
   return { token: result.access_token as string, email: data.googleEmail as string, ref, data };
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store');
   const action = String(req.query.action || (req.method === 'GET' ? 'status' : ''));
   try {
