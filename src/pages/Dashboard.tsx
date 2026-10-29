@@ -221,7 +221,7 @@ export default function Dashboard() {
                      Predicciones <br/> Algorítmicas
                   </h2>
                   <p className="text-xs text-gray-500 font-medium leading-relaxed max-w-sm mb-8">
-                     Nuestro motor RAG analiza el Banco de Datos y flujos de sentimiento para anticipar cuellos de botella operativos antes de que ocurran.
+                     Resumen descriptivo de los datos registrados. Las predicciones se habilitarán cuando estén conectadas las señales operativas y los modelos correspondientes.
                   </p>
                   <button 
                     onClick={() => navigate('/crm/reports')}
@@ -303,12 +303,12 @@ export default function Dashboard() {
           {/* A. FLOW OF CAPITAL (FINANCE) */}
           <motion.div 
             whileHover={{ scale: 1.01 }}
-            onClick={() => navigate('/crm/commissions')}
+            onClick={() => navigate('/crm/accounting')}
             className="bg-[#151921] border border-white/5 rounded-[2.5rem] p-8 relative overflow-hidden group shadow-2xl cursor-pointer"
           >
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
-                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-1 italic">I. Cash Flow Analytics</h3>
+                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-1 italic">I. Importe registrado en clientes</h3>
                 <p className="text-4xl font-black text-white italic tracking-tighter">${recordedAmount.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} <span className="text-xs text-slate-500 font-bold tracking-widest uppercase ml-2">registrado</span></p>
               </div>
               <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl border border-emerald-500/20">
@@ -341,7 +341,7 @@ export default function Dashboard() {
           {/* B. CLIENT HEALTH HEATMAP (CRM/PROJECTS) */}
           <motion.div 
             whileHover={{ scale: 1.01 }}
-            onClick={() => navigate('/crm/operations')}
+            onClick={() => navigate('/crm/clients')}
             className="bg-[#151921] border border-white/5 rounded-[2.5rem] p-8 relative overflow-hidden group shadow-2xl cursor-pointer"
           >
             <div className="flex justify-between items-start mb-8 relative z-10">
@@ -359,8 +359,7 @@ export default function Dashboard() {
                 <div 
                   key={i} 
                   className={`h-full w-full rounded-lg transition-all duration-500 cursor-pointer hover:scale-110 active:scale-95 border ${
-                    i === 3 || i === 12 ? 'bg-[#EF4444] border-red-500/50' : 
-                    i % 5 === 0 ? 'bg-[#F59E0B22] border-amber-500/30' : 'bg-[#10B98122] border-emerald-500/30'
+                    'bg-blue-500/10 border-blue-500/20'
                   }`}
                   title="Indicador visual, sin telemetría de salud conectada"
                 />
