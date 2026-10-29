@@ -52,6 +52,16 @@ function applyCssVariablesToRoot(config: AppearanceConfig) {
   if (typeof document === 'undefined') return;
 
   const root = document.documentElement;
+  // Expose the active palette as a semantic theme for shared UI components.
+  const background = (config.colors.background || '').toLowerCase();
+  const darkBackgrounds = new Set(['#05070a', '#09090b', '#0b1118', '#121215', '#18181b', '#1c1c1e', '#242426', '#2c2c2e']);
+  const isDarkPalette = darkBackgrounds.has(background) || (
+    /^#[0-9a-f]{6}$/.test(background) &&
+    parseInt(background.slice(1, 3), 16) * 0.2126 +
+    parseInt(background.slice(3, 5), 16) * 0.7152 +
+    parseInt(background.slice(5, 7), 16) * 0.0722 < 105
+  );
+  root.setAttribute('data-theme-mode', isDarkPalette ? 'dark' : 'light');
 
   // 1. Tipografía
   ensureGoogleFontLoaded(config.fonts.family);
