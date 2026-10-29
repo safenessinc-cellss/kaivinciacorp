@@ -244,7 +244,7 @@ service cloud.firestore {
     // Reclutamiento
     // ===============================================================
     match /candidates/{candidateId} {
-      allow read: if isAdmin() || userRole() == 'rrhh' || hasPermission('recruitment:read');
+      allow read: if isAdmin() || userRole() == 'rrhh' || hasPermission('recruitment:read') || hasPermission('recruitment:hire');
       allow create: if true;
       allow update: if isAdmin() || userRole() == 'rrhh' ||
         hasPermission('recruitment:update') || hasPermission('recruitment:hire');
@@ -429,7 +429,7 @@ service cloud.firestore {
     }
 
     match /collaborators/{collaboratorId} {
-      allow read: if isAdmin() ||
+      allow read: if isAdmin() || hasPermission('recruitment:hire') ||
         (isAuthenticated() && existing().get('authUid', '') == request.auth.uid);
       allow create: if isAdmin() || hasPermission('recruitment:hire');
       allow update: if isAdmin() || hasPermission('recruitment:hire');
