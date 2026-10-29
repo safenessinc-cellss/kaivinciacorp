@@ -213,7 +213,16 @@ const strategyGroup = {
     }
 
     if (['admin', 'billing', 'accounting'].includes(userRole)) {
-      return [coreGroup, financeGroup, clientGroup, operationsGroup, portalGroup];
+      const groups: any[] = [coreGroup, financeGroup, clientGroup, operationsGroup, portalGroup];
+      if (userRole === 'admin') groups.push({
+        title: t('nav.groups.config', 'CONFIGURACIÓN'),
+        items: [
+          { name: 'Usuarios, roles y permisos', href: '/crm/access-control', icon: Users, color: 'text-blue-400' },
+          { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[#EC4899]' },
+          { name: t('nav.integrations', 'Integraciones Externas'), href: '/crm/integrations', icon: Share2, color: 'text-violet-400' },
+        ]
+      });
+      return groups;
     }
 
     if (userRole === 'ceo' || userRole === 'superadmin') {
