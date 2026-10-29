@@ -98,7 +98,17 @@ export default function CRMLayout({ userData }: { userData: any }) {
       ]
     };
 
-    const strategyGroup = {
+        const financeGroup = {
+      title: t('nav.groups.finance', 'FINANZAS & CONTROL'),
+      items: [
+        { name: 'Dashboard financiero', href: '/crm/accounting', icon: Calculator, color: 'text-[#4285F4]' },
+        { name: 'Facturación y cobros', href: '/crm/billing', icon: Receipt, color: 'text-[#34A853]' },
+        { name: 'Nómina', href: '/crm/payroll', icon: Wallet, color: 'text-[#FBBC04]' },
+        { name: 'Informes financieros', href: '/crm/reports', icon: BarChart3, color: 'text-[#EA4335]' },
+      ]
+    };
+
+const strategyGroup = {
       title: t('nav.groups.strategy', 'ESTRATEGIA & KPIS'),
       items: [
         { name: t('nav.strategic_kpis', 'KPIs Estratégicos'), href: '/crm/reports', icon: BarChart3, color: 'text-white' },
@@ -206,6 +216,7 @@ export default function CRMLayout({ userData }: { userData: any }) {
         coreGroup,
         clientGroup,
         operationsGroup,
+        financeGroup,
         talentGroup,
         strategyGroup,
         academyGroup,
