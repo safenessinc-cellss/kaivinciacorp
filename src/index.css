@@ -182,3 +182,58 @@
   .text-cyan-300, .text-cyan-400, .text-\[\#00F0FF\] { color: #111827 !important; }
   .border-\[\#00F0FF\], .border-cyan-500\/30 { border-color: #e5e7eb !important; }
 }
+
+
+/* Responsive shell for the CRM: prevent desktop navigation and wide modules from breaking on phones. */
+.crm-shell { width: 100%; max-width: 100vw; min-width: 0; overflow-x: clip; }
+.crm-sidebar { flex: 0 0 auto; min-width: 0; }
+.crm-main { min-width: 0; width: 100%; max-width: 100%; box-sizing: border-box; }
+.crm-main > * { min-width: 0; }
+.crm-header { min-width: 0; gap: .5rem; }
+.crm-mobile-overlay { display: none; }
+
+@media (max-width: 767px) {
+  html, body, #root { width: 100%; max-width: 100%; min-width: 0; overflow-x: clip; }
+  body { -webkit-text-size-adjust: 100%; }
+  .crm-sidebar {
+    position: fixed !important;
+    inset-block: 0;
+    left: 0;
+    z-index: 60 !important;
+    width: min(86vw, 320px) !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-width: 100vw;
+    transform: translateX(-105%);
+    transition: transform .22s ease-in-out;
+    box-shadow: none;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .crm-sidebar.crm-sidebar-right { left: auto; right: 0; transform: translateX(105%); }
+  .crm-sidebar.crm-sidebar-open { transform: translateX(0); box-shadow: 0 0 0 1px rgba(15, 23, 42, .12), 12px 0 40px rgba(0,0,0,.22); }
+  .crm-sidebar.crm-sidebar-right.crm-sidebar-open { box-shadow: -12px 0 40px rgba(0,0,0,.22); }
+  .crm-mobile-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: rgba(2, 6, 23, .52);
+    padding: 0;
+    margin: 0;
+  }
+  .crm-header { padding-inline: .5rem; padding-top: env(safe-area-inset-top); }
+  .crm-main { padding-left: max(.75rem, env(safe-area-inset-left)); padding-right: max(.75rem, env(safe-area-inset-right)); padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  .crm-main .grid { min-width: 0; }
+  .crm-main table { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .crm-main input, .crm-main select, .crm-main textarea { max-width: 100%; min-width: 0; }
+  .crm-main button { touch-action: manipulation; }
+  .crm-main img, .crm-main video, .crm-main canvas { max-width: 100%; }
+  .crm-main h1 { overflow-wrap: anywhere; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crm-sidebar { transition: none !important; }
+}
