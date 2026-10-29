@@ -92,7 +92,7 @@ export default function SoftphoneDialer({
   const isFloating = mode === 'floating';
 
   // Detección responsive para móvil vs tablet/desktop
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 640);
@@ -886,7 +886,7 @@ export default function SoftphoneDialer({
           } catch {}
         }
       }}
-      className={`bg-slate-950/95 backdrop-blur-xl text-white border border-slate-800 shadow-2xl transition-all ${
+      className={`kaivincia-softphone ${isFloating ? 'kaivincia-softphone-floating' : 'kaivincia-softphone-embedded'} bg-slate-950/95 backdrop-blur-xl text-white border border-slate-800 shadow-2xl transition-all ${
         isFloating
           ? isMobile
             ? 'fixed bottom-0 left-0 right-0 w-full rounded-t-3xl rounded-b-none border-b-0 border-x-0 border-t border-slate-800 p-4 z-50 shadow-[0_-10px_35px_rgba(0,0,0,0.85)]'
