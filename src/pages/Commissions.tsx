@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../hooks/useAuth';
 import { 
@@ -30,14 +30,13 @@ export default function Commissions() {
       setProspects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (err) => console.warn('Commissions prospects listener handled:', err?.message));
 
-    const unsubRules = onSnapshot(collection(db, 'settings'), (snapshot) => {
-      const payrollDoc = snapshot.docs.find(doc => doc.id === 'payroll');
-      if (payrollDoc) {
-        setPaymentRules(payrollDoc.data() as any);
-      }
+    // Read only the payroll settings document; querying the whole settings
+    // collection is intentionally disallowed by the Firestore security rules.
+    const unsubRules = onSnapshot(doc(db, 'settings', 'payroll'), (snapshot) => {
+      if (snapshot.exists()) setPaymentRules(current => ({ ...current, ...snapshot.data() }) as any);
       setLoading(false);
     }, (err) => {
-      console.warn('Commissions settings listener handled:', err?.message);
+      console.warn('Commissions payroll settings listener handled:', err?.message);
       setLoading(false);
     });
 
