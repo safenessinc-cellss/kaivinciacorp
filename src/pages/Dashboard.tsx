@@ -40,32 +40,7 @@ export default function Dashboard() {
   const [users, setUsers] = useState<any[]>([]);
   
   // System Events Feed
-  const [events, setEvents] = useState<SystemEvent[]>([
-    { 
-      id: '1', 
-      module: 'Proyectos', 
-      type: 'warning', 
-      message: 'Retraso detectado en Proyecto TechCorp v2', 
-      timestamp: new Date(), 
-      impact: '-12% Liquidez Proyectada' 
-    },
-    { 
-      id: '2', 
-      module: 'Talento', 
-      type: 'success', 
-      message: 'Carlos Ruiz alcanzó ROI de 210%', 
-      timestamp: new Date(Date.now() - 1000 * 60 * 15), 
-      impact: 'Bono Nómina Aplicado' 
-    },
-    { 
-      id: '3', 
-      module: 'Seguridad', 
-      type: 'error', 
-      message: 'Palabra clave de riesgo "Reembolso" en Chat #402', 
-      timestamp: new Date(Date.now() - 1000 * 60 * 45), 
-      impact: 'Log CISO Generado' 
-    }
-  ]);
+  const [events, setEvents] = useState<SystemEvent[]>([]);
 
   const { user, loading: authLoading } = useAuth();
 
@@ -95,36 +70,18 @@ export default function Dashboard() {
   }, [user, authLoading]);
 
   // Intelligence Pulse Metrics
-  const mrr = useMemo(() => clients.reduce((acc, c) => acc + (Number(c.amount) || 0), 0), [clients]);
-  const avgHealth = 88; 
-  const teamROI = 185; 
-  const academyGrowth = 24;
+  const recordedAmount = useMemo(() => clients.reduce((total, client) => total + (Number(client.amount) || 0), 0), [clients]);
+  const chartData = useMemo(() => [...clients]
+    .filter(client => Number(client.amount) > 0)
+    .sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0))
+    .slice(0, 7)
+    .map((client, index) => ({ name: String(client.name || client.companyName || client.company || `Cliente ${index + 1}`).slice(0, 18), revenue: Number(client.amount) || 0 })), [clients]);
 
   const handleAiOptimization = () => {
     setIsOptimizing(true);
-    setTimeout(() => {
-      setIsOptimizing(false);
-      const newEvent: SystemEvent = {
-        id: Math.random().toString(),
-        module: 'Talento',
-        type: 'success',
-        message: 'Optimización IA: Carga redistribuida según certificaciones Academia',
-        timestamp: new Date(),
-        impact: '+15% Eficiencia Operativa'
-      };
-      setEvents([newEvent, ...events.slice(0, 4)]);
-    }, 2000);
+    // No ejecutar ni registrar una optimización ficticia: esta acción solo prepara la interfaz.
+    window.setTimeout(() => setIsOptimizing(false), 400);
   };
-
-  const chartData = [
-    { name: 'Lun', revenue: 4000, expenses: 2400 },
-    { name: 'Mar', revenue: 3000, expenses: 1398 },
-    { name: 'Mie', revenue: 2000, expenses: 9800 },
-    { name: 'Jue', revenue: 2780, expenses: 3908 },
-    { name: 'Vie', revenue: 1890, expenses: 4800 },
-    { name: 'Sab', revenue: 2390, expenses: 3800 },
-    { name: 'Dom', revenue: 3490, expenses: 4300 },
-  ];
 
   return (
     <div className="kaivincia-tahoe-dashboard min-h-screen bg-[#F5F7FB] text-slate-700 font-sans p-6 lg:p-10 pb-20">
@@ -396,7 +353,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
                 <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-1 italic">I. Cash Flow Analytics</h3>
-                <p className="text-4xl font-black text-white italic tracking-tighter">${(mrr > 0 ? mrr/1000 : 57.2).toFixed(1)}K <span className="text-xs text-emerald-500 font-bold tracking-widest uppercase ml-2">+12.4%</span></p>
+                <p className="text-4xl font-black text-white italic tracking-tighter">${recordedAmount.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} <span className="text-xs text-slate-500 font-bold tracking-widest uppercase ml-2">registrado</span></p>
               </div>
               <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl border border-emerald-500/20">
                 <Wallet className="w-5 h-5" />
@@ -420,8 +377,8 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </div>
             <div className="mt-6 flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-gray-500">
-               <span>Operativo: $45,200</span>
-               <span className="text-emerald-500">Neto: +$12,400</span>
+               <span>Fuente: clientes registrados</span>
+               <span className="text-slate-500">{chartData.length ? `${chartData.length} registros` : "Sin datos financieros"}</span>
             </div>
           </motion.div>
 
@@ -434,7 +391,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
                 <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-1 italic">II. Customer Nervous Health</h3>
-                <p className="text-4xl font-black text-white italic tracking-tighter">{avgHealth}% <span className="text-xs text-amber-500 font-bold tracking-widest uppercase ml-2">-2% Risk</span></p>
+                <p className="text-4xl font-black text-white italic tracking-tighter">{clients.length} <span className="text-xs text-slate-500 font-bold tracking-widest uppercase ml-2">clientes</span></p>
               </div>
               <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl border border-amber-500/20">
                 <Activity className="w-5 h-5" />
@@ -478,7 +435,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
                 <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-1 italic">III. Performance Node Score</h3>
-                <p className="text-4xl font-black text-white italic tracking-tighter">{teamROI}% <span className="text-xs text-emerald-500 font-bold tracking-widest uppercase ml-2">+15% Efficient</span></p>
+                <p className="text-4xl font-black text-white italic tracking-tighter">{users.length} <span className="text-xs text-slate-500 font-bold tracking-widest uppercase ml-2">usuarios</span></p>
               </div>
               <div className="p-3 bg-blue-500/10 text-blue-500 rounded-2xl border border-blue-500/20">
                 <Users className="w-5 h-5" />
@@ -519,7 +476,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
                 <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-1 italic">IV. Growth Systemic Expansion</h3>
-                <p className="text-4xl font-black text-white italic tracking-tighter">+{academyGrowth}% <span className="text-xs text-blue-500 font-bold tracking-widest uppercase ml-2">Scale Active</span></p>
+                <p className="text-4xl font-black text-white italic tracking-tighter">{pendingUsers.length} <span className="text-xs text-slate-500 font-bold tracking-widest uppercase ml-2">pendientes</span></p>
               </div>
               <div className="p-3 bg-purple-500/10 text-purple-500 rounded-2xl border border-purple-500/20">
                 <BarChart3 className="w-5 h-5" />
@@ -563,7 +520,7 @@ export default function Dashboard() {
             
             <div className="flex-1 space-y-6 overflow-y-auto pr-2 scrollbar-hide">
               <AnimatePresence initial={false}>
-                {events.map((event) => (
+                {events.length === 0 ? <div className="rounded-2xl border border-dashed border-slate-200 bg-white/70 p-5 text-sm text-slate-500">No hay eventos operativos reales registrados todavía. Los avisos aparecerán aquí cuando estén conectados a sus módulos.</div> : events.map((event) => (
                   <motion.div 
                     key={event.id}
                     initial={{ opacity: 0, x: 20 }}
