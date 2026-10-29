@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Trello, CheckSquare, MessageSquare, LogOut, Wallet,
   ShieldAlert, BookOpen, MonitorPlay, PhoneCall, Briefcase, Calculator,
-  Settings, Megaphone, FolderKanban, BarChart3, UserCircle, Users2, Calendar,
+  Settings, Megaphone, FolderKanban, BarChart3, UserCircle, Users2, Calendar, Database,
   UserPlus, FileText, Receipt, GraduationCap, ShoppingCart, ChevronRight, Home,
   ChevronDown, ChevronUp, Search, Activity, Zap, Award, Bell, Eye, EyeOff, PanelLeftClose, PanelLeftOpen,
   BrainCircuit, Navigation, DollarSign, HelpCircle, HardDrive, ClipboardCheck,
@@ -122,6 +122,7 @@ const strategyGroup = {
       items: [
         { name: t('nav.pipeline', 'Marketing (Oportunidades)'), href: '/crm/pipeline', icon: Navigation, highlight: true, color: 'text-[#00F0FF]', badge: 'Meta Ads' },
         { name: t('nav.voip_softphone', 'Discador & VoIP Softphone'), href: '/crm/calls', icon: PhoneCall, highlight: true, color: 'text-emerald-400' },
+        { name: 'Data · Carteras TLMK', href: '/crm/data', icon: Database, color: 'text-blue-400' },
         { name: t('nav.clients', 'Base de Clientes'), href: '/crm/clients', icon: Users, color: 'text-emerald-500' },
         { name: t('nav.calendar', 'Agenda & Reuniones'), href: '/crm/calendar', icon: Calendar, color: 'text-cyan-400' },
         { name: t('nav.debt_collection', 'Cobranza GPS'), href: '/crm/cobranza', icon: DollarSign, color: 'text-amber-500' },
@@ -133,6 +134,7 @@ const strategyGroup = {
       items: [
         { name: t('nav.pipeline', 'Marketing (Oportunidades)'), href: '/crm/pipeline', icon: Navigation, highlight: true, color: 'text-[#00F0FF]', badge: 'Meta Ads' },
         { name: t('nav.voip_softphone', 'Discador & VoIP Softphone'), href: '/crm/calls', icon: PhoneCall, highlight: true, color: 'text-emerald-400' },
+        { name: 'Data · Carteras TLMK', href: '/crm/data', icon: Database, color: 'text-blue-400' },
         { name: t('nav.calendar', 'Agenda & Reuniones'), href: '/crm/calendar', icon: Calendar, color: 'text-cyan-400' },
         { name: t('nav.clients', 'Base de Clientes'), href: '/crm/clients', icon: Users, color: 'text-emerald-500' },
         { name: t('nav.debt_collection', 'Cobranza GPS & Feedback'), href: '/crm/cobranza', icon: DollarSign, color: 'text-amber-400' },
@@ -211,7 +213,16 @@ const strategyGroup = {
     }
 
     if (['admin', 'billing', 'accounting'].includes(userRole)) {
-      return [coreGroup, financeGroup, clientGroup, operationsGroup, portalGroup];
+      const groups: any[] = [coreGroup, financeGroup, clientGroup, operationsGroup, portalGroup];
+      if (userRole === 'admin') groups.push({
+        title: t('nav.groups.config', 'CONFIGURACIÓN'),
+        items: [
+          { name: 'Usuarios, roles y permisos', href: '/crm/access-control', icon: Users, color: 'text-blue-400' },
+          { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[#EC4899]' },
+          { name: t('nav.integrations', 'Integraciones Externas'), href: '/crm/integrations', icon: Share2, color: 'text-violet-400' },
+        ]
+      });
+      return groups;
     }
 
     if (userRole === 'ceo' || userRole === 'superadmin') {
@@ -232,6 +243,7 @@ const strategyGroup = {
           title: t('nav.groups.config', 'CONFIGURACIÓN'),
           items: [
             { name: t('nav.superadmin', 'SuperAdmin'), href: '/crm/superadmin', icon: ShieldAlert },
+            { name: 'Usuarios, roles y permisos', href: '/crm/access-control', icon: Users, color: 'text-blue-400' },
             { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[#EC4899]' },
             { name: t('nav.security_center', 'Security Center'), href: '/crm/security', icon: ShieldCheck, color: 'text-[#FACC15]' },
             { name: t('nav.automations', 'Automatizaciones'), href: '/crm/automations', icon: Zap },
