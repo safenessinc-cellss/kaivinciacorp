@@ -46,6 +46,7 @@ export default function Billing() {
   const [newInvoice, setNewInvoice] = useState({
     client: '',
     amount: '',
+    currency: 'USD',
     type: 'Fijo',
     description: ''
   });
@@ -62,6 +63,7 @@ export default function Billing() {
 
     if (!client) errors.client = "El cliente es obligatorio";
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) errors.amount = "Monto inválido";
+    if (!['BRL', 'USD'].includes(newInvoice.currency)) errors.currency = "Selecciona una moneda válida";
     if (!description) errors.description = "El concepto es obligatorio";
 
     if (Object.keys(errors).length > 0) {
@@ -70,9 +72,9 @@ export default function Billing() {
     }
 
     setFormErrors({});
-    generateAutomaticInvoice(newInvoice.client, Number(newInvoice.amount), newInvoice.type);
+    generateAutomaticInvoice(newInvoice.client, Number(newInvoice.amount), newInvoice.type, newInvoice.currency);
     setIsInvoiceModalOpen(false);
-    setNewInvoice({ client: '', amount: '', description: '', type: 'Fijo' });
+    setNewInvoice({ client: '', amount: '', currency: 'USD', description: '', type: 'Fijo' });
   };
 
   useEffect(() => {
@@ -205,6 +207,7 @@ export default function Billing() {
             clientName: client.name,
             company: client.company,
             amount,
+            currency: String(client.currency ?? client.currencyCode ?? globalRules.currency ?? 'USD').toUpperCase(),
             status: 'Pendiente',
             type: 'Cierre Mensual',
             billingModel: client.billingModel,
@@ -236,11 +239,12 @@ export default function Billing() {
     }
   };
 
-  const generateAutomaticInvoice = async (clientName: string, amount: number, type: string) => {
+  const generateAutomaticInvoice = async (clientName: string, amount: number, type: string, currency = 'USD') => {
     try {
       const newInv = {
         client: clientName,
         amount,
+        currency,
         status: 'Pendiente',
         date: new Date().toISOString().split('T')[0],
         type,
@@ -616,7 +620,7 @@ export default function Billing() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <input 
-                      placeholder="Monto (USD)"
+                      placeholder={`Monto (${newInvoice.currency})`}
                       type="number"
                       value={newInvoice.amount}
                       onChange={e => {
@@ -627,6 +631,15 @@ export default function Billing() {
                     />
                     {formErrors.amount && <p className="text-[10px] text-red-500 font-bold uppercase mt-1 ml-2">{formErrors.amount}</p>}
                   </div>
+                  <select
+                    aria-label="Moneda de la factura"
+                    value={newInvoice.currency}
+                    onChange={e => setNewInvoice({...newInvoice, currency: e.target.value})}
+                    className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#00F0FF] bg-gray-50 transition-all font-medium text-sm"
+                  >
+                    <option value="BRL">BRL · Real brasileño</option>
+                    <option value="USD">USD · Dólar</option>
+                  </select>
                   <select 
                     value={newInvoice.type}
                     onChange={e => setNewInvoice({...newInvoice, type: e.target.value})}
