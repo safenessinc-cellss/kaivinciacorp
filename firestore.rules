@@ -48,7 +48,9 @@ service cloud.firestore {
     }
 
     function canManageData() {
-      return isAdmin() || hasPermission('data:import') || hasPermission('data:assign');
+      // Bulk imports and assignments require an administrator until server-side
+      // transactional endpoints are enabled; custom roles remain scoped to read/status actions.
+      return isAdmin();
     }
 
     function incoming() {
