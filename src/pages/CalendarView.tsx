@@ -7,6 +7,7 @@ import { collection, onSnapshot, addDoc } from 'firebase/firestore';
 import { useAuth } from '../hooks/useAuth';
 import { db, auth, handleFirestoreError, OperationType } from '../firebase';
 import { X } from 'lucide-react';
+import { KaiCard } from '../components/design-system/NativeUI';
 
 const locales = {
   'es': es,
@@ -163,7 +164,7 @@ export default function CalendarView() {
         <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Agenda & Reuniones</h2>
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-full">
+      <KaiCard className="h-full">
         <Calendar
           localizer={localizer}
           events={events}
@@ -189,7 +190,7 @@ export default function CalendarView() {
             noEventsInRange: "No hay eventos en este rango."
           }}
         />
-      </div>
+      </KaiCard>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
