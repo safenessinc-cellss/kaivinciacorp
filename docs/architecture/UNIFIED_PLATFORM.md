@@ -110,3 +110,25 @@ Guardar `effectiveFrom/effectiveTo`, `priority`, `version`, `scope`, `formulaTyp
 - Fuga de tokens Google: cifrado backend, scopes mínimos y revocación.
 - Permisos excesivos: pruebas negativas entre usuarios.
 - Regresión visual: estilos aditivos, migración módulo a módulo.
+
+
+## Implementação inicial Google Calendar (API + UI)
+Endpoint implementado em `api/google-calendar.ts`:
+- `GET /api/google-calendar?action=status`: status do vínculo para o usuário Firebase autenticado.
+- `POST /api/google-calendar?action=start`: cria URL OAuth usando estado HMAC com validade de 10 minutos.
+- `GET /api/google-calendar?action=callback`: valida o estado, troca o código, exige que o email Google verificado corresponda ao email verificado do usuário Kaivincia e guarda o refresh token cifrado.
+- `POST /api/google-calendar?action=create-event`: cria ou atualiza (upsert) eventos no calendário primary do próprio usuário; a chave `sourceId` evita duplicação.
+- `POST /api/google-calendar?action=disconnect`: remove o vínculo e o refresh token cifrado de Kaivincia.
+
+### Configuração necessária no ambiente Vercel
+Configurar como variáveis server-side (Production e Preview conforme ambiente):
+- `GOOGLE_CLIENT_ID`: OAuth client ID do tipo Web.
+- `GOOGLE_CLIENT_SECRET`: segredo do OAuth client; nunca usar prefixo `VITE_`.
+- `GOOGLE_REDIRECT_URI`: URI exata cadastrada no Google Cloud; por padrão `https://www.kaivinciacorp.com/api/google-calendar?action=callback`.
+- `GOOGLE_OAUTH_STATE_SECRET`: segredo aleatório forte, distinto do client secret.
+- `GOOGLE_TOKEN_ENCRYPTION_KEY`: chave aleatória de 32 bytes codificada en base64 (AES-256-GCM). Generar con `openssl rand -base64 32`.
+
+En Google Cloud habilitar Google Calendar API, configurar OAuth consent screen y registrar exactamente el redirect URI. Probar con usuarios de prueba mientras la app OAuth no esté publicada. No desplegar estos secretos al cliente.
+
+### Alcance y límites actuales
+La pantalla de Agenda ofrece conectar/desconectar la cuenta y consulta el estado. Las nuevas tareas se reflejan como eventos a las 09:00 durante 30 minutos y las citas de `appointments` se sincronizan mediante upsert con su fecha/hora/duración. La sincronización es Kaivincia → Google Calendar; la importación bidireccional, borrado propagado y webhooks de cambios externos todavía requieren una fase adicional. Si Google falla, el registro original de Kaivincia se conserva. Las operaciones de sync son idempotentes por `sourceId`, pero el worker/outbox con reintentos durables es trabajo pendiente.
