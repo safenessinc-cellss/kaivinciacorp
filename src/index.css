@@ -536,3 +536,29 @@
   .kaivincia-login-window { border-radius: 20px; }
   .kaivincia-login-benefit { font-size: 9px; padding-inline: 2px; }
 }
+
+
+/* Kaivincia Corp — Tahoe / Google-inspired CRM surfaces */
+:root { --color-primary:#4285F4; --color-secondary:#e8eef8; --color-background:#f4f7fb; --color-surface:#fff; --color-text-primary:#202124; --color-text-secondary:#5f6368; --color-sidebar-bg:rgba(255,255,255,.82); --color-sidebar-text:#3c4043; --color-sidebar-active:#1a73e8; --color-header-bg:rgba(255,255,255,.84); --border-radius:16px; --card-shadow:0 8px 30px rgba(60,64,67,.08); }
+.crm-shell.kaivincia-tahoe-shell { background:radial-gradient(ellipse at 12% 0%,#e8f0fe 0,transparent 42%),#f6f8fc !important; color:#202124; }
+.kaivincia-tahoe-shell [class*="bg-[#05070a]"],.kaivincia-tahoe-shell [class*="bg-[#070b10]"],.kaivincia-tahoe-shell [class*="bg-[#111]"],.kaivincia-tahoe-shell [class*="bg-gray-950"],.kaivincia-tahoe-shell [class*="bg-gray-900"],.kaivincia-tahoe-shell [class*="bg-slate-950"] { background-color:rgba(255,255,255,.88) !important; }
+.kaivincia-tahoe-shell [class*="border-gray-800"],.kaivincia-tahoe-shell [class*="border-slate-800"] { border-color:#e5eaf2 !important; }
+.kaivincia-tahoe-shell [class*="text-gray-500"],.kaivincia-tahoe-shell [class*="text-gray-400"],.kaivincia-tahoe-shell [class*="text-slate-400"],.kaivincia-tahoe-shell [class*="text-slate-500"] { color:#5f6368 !important; }
+.kaivincia-tahoe-shell input,.kaivincia-tahoe-shell select,.kaivincia-tahoe-shell textarea { background-color:#fff !important; color:#202124 !important; border-color:#dadce0 !important; }
+.kaivincia-tahoe-dashboard { background:radial-gradient(ellipse at 10% 0%,#e8f0fe 0,transparent 40%),#f6f8fc !important; color:#3c4043 !important; }
+.kaivincia-tahoe-dashboard [class*="bg-[#0B0E14]"],.kaivincia-tahoe-dashboard [class*="bg-white/5"],.kaivincia-tahoe-dashboard [class*="bg-white/10"] { background-color:rgba(255,255,255,.9) !important; }
+.kaivincia-tahoe-dashboard [class*="border-white/10"],.kaivincia-tahoe-dashboard [class*="border-white/5"] { border-color:#e3e8f0 !important; }
+.kaivincia-tahoe-dashboard [class*="text-white"] { color:#202124 !important; }
+.kaivincia-tahoe-dashboard [class*="text-gray-400"],.kaivincia-tahoe-dashboard [class*="text-gray-500"],.kaivincia-tahoe-dashboard [class*="text-gray-600"] { color:#5f6368 !important; }
+.kaivincia-tahoe-dashboard [class*="rounded-3xl"],.kaivincia-tahoe-dashboard [class*="rounded-2xl"] { border-radius:20px; }
+.kaivincia-softphone { background:rgba(255,255,255,.88) !important; color:#202124 !important; border:1px solid rgba(218,220,224,.92) !important; border-radius:28px !important; box-shadow:0 18px 55px rgba(60,64,67,.18) !important; backdrop-filter:blur(28px) saturate(1.5) !important; -webkit-backdrop-filter:blur(28px) saturate(1.5) !important; }
+.kaivincia-softphone [class*="bg-slate-950"],.kaivincia-softphone [class*="bg-slate-900"],.kaivincia-softphone [class*="bg-slate-800"] { background-color:rgba(241,243,244,.9) !important; }
+.kaivincia-softphone [class*="border-slate-800"],.kaivincia-softphone [class*="border-slate-700"] { border-color:#dadce0 !important; }
+.kaivincia-softphone [class*="text-white"] { color:#202124 !important; }
+.kaivincia-softphone [class*="text-slate-400"],.kaivincia-softphone [class*="text-slate-500"],.kaivincia-softphone [class*="text-slate-300"] { color:#5f6368 !important; }
+.kaivincia-softphone input,.kaivincia-softphone select,.kaivincia-softphone textarea { background:rgba(255,255,255,.94) !important; color:#202124 !important; border-color:#dadce0 !important; }
+.kaivincia-softphone [class*="bg-cyan-500"] { background-color:#4285f4 !important; color:#fff !important; }
+.kaivincia-softphone [class*="text-cyan-"] { color:#1a73e8 !important; }
+.kaivincia-softphone button { transition:transform .16s ease,box-shadow .16s ease,background-color .16s ease; }
+.kaivincia-softphone button:active { transform:scale(.97); }
+@media (max-width:640px) { .kaivincia-tahoe-dashboard { padding:16px !important; } .kaivincia-softphone { border-radius:26px 26px 0 0 !important; } }
