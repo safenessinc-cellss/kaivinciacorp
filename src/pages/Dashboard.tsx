@@ -425,7 +425,7 @@ export default function Dashboard() {
                   <div className="relative z-10 flex flex-col items-center gap-4">
                      <Network className="w-8 h-8 text-white opacity-20" />
                      <p className="text-[9px] font-black uppercase tracking-widest text-center text-gray-500 leading-relaxed">
-                        Red Neuronal Kaivincia <br/> <span className="text-white">Active Node: Austin-Cluster-01</span>
+                        Red Neuronal Kaivincia <br/> <span className="text-white">Conexiones según módulos disponibles</span>
                      </p>
                   </div>
                </div>
