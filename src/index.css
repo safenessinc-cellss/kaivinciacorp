@@ -184,18 +184,16 @@
 }
 
 
-/* Responsive shell for the CRM: prevent desktop navigation and wide modules from breaking on phones. */
-.crm-shell { width: 100%; max-width: 100vw; min-width: 0; overflow-x: clip; }
-.crm-sidebar { flex: 0 0 auto; min-width: 0; }
-.crm-main { min-width: 0; width: 100%; max-width: 100%; box-sizing: border-box; }
-.crm-main > * { min-width: 0; }
-.crm-header { min-width: 0; gap: .5rem; }
+/* Responsive behavior is intentionally scoped to phones so desktop keeps its original layout. */
 .crm-mobile-overlay { display: none; }
 
 @media (max-width: 767px) {
   html, body, #root { width: 100%; max-width: 100%; min-width: 0; overflow-x: clip; }
   body { -webkit-text-size-adjust: 100%; }
+  .crm-shell { width: 100%; max-width: 100vw; min-width: 0; overflow-x: clip; }
   .crm-sidebar {
+    flex: 0 0 auto;
+    min-width: 0;
     position: fixed !important;
     inset-block: 0;
     left: 0;
@@ -224,14 +222,18 @@
     padding: 0;
     margin: 0;
   }
-  .crm-header { padding-inline: .5rem; padding-top: env(safe-area-inset-top); }
-  .crm-main { padding-left: max(.75rem, env(safe-area-inset-left)); padding-right: max(.75rem, env(safe-area-inset-right)); padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  .crm-header { min-width: 0; gap: .5rem; padding-inline: .5rem; padding-top: env(safe-area-inset-top); }
+  .crm-main { min-width: 0; width: 100%; max-width: 100%; box-sizing: border-box; padding-left: max(.75rem, env(safe-area-inset-left)); padding-right: max(.75rem, env(safe-area-inset-right)); padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  .crm-main > * { min-width: 0; }
   .crm-main .grid { min-width: 0; }
   .crm-main table { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .crm-main input, .crm-main select, .crm-main textarea { max-width: 100%; min-width: 0; }
   .crm-main button { touch-action: manipulation; }
   .crm-main img, .crm-main video, .crm-main canvas { max-width: 100%; }
   .crm-main h1 { overflow-wrap: anywhere; }
+  .crm-main > div.min-h-screen[class~="bg-[#0B0E14]"] { padding: .75rem; }
+  .crm-main > div.max-w-7xl.mx-auto { max-width: 100%; overflow-x: clip; }
+  .crm-main > div.max-w-7xl.mx-auto > div.bg-white.rounded-3xl { padding: 1rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
