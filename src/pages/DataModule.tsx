@@ -24,7 +24,7 @@ export default function DataModule() {
  const [notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[isAssignOpen,setIsAssignOpen]=useState(false);
  const [selectedBatch,setSelectedBatch]=useState(''),[operatorUid,setOperatorUid]=useState(''),[region,setRegion]=useState(''),[campaign,setCampaign]=useState(''),[strategy,setStrategy]=useState('manual'),[capacity,setCapacity]=useState(50);
  const isAdmin=ADMIN_ROLES.includes(userData?.role || '');
- const canManageData=isAdmin || userData?.permissions?.['data:assign']===true || userData?.permissions?.['data:import']===true;
+ const canManageData=isAdmin;
  const uid=user?.uid || userData?.uid || '';
  useEffect(()=>{
   if(!uid)return;
