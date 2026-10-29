@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import './styles/kaivincia-design-system.css';
 import { AuthProvider } from './contexts/AuthContext';
 import { GlobalProvider } from './contexts/GlobalContext';
 import { LanguageProvider } from './contexts/LanguageContext';
