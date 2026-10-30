@@ -698,11 +698,24 @@ export default function SoftphoneDialer({
 
     if (isTelnyxCarrier) {
       try {
-        console.log(`[SoftphoneDialer] Llamando vía Telnyx SDK a ${dialNum} con Caller ID ${selectedCallerId}`);
-        const call = await telnyxWebRTCService.makeCall(dialNum, selectedCallerId);
+        const firebaseUser = auth.currentUser || user;
+        if (!firebaseUser) throw new Error('Sesión no autenticada. Vuelve a iniciar sesión.');
+        const idToken = await firebaseUser.getIdToken();
+        const authorization = await fetch('/api/telnyx/authorize-call', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + idToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callerId: selectedCallerId })
+        });
+        const authorizationData = await authorization.json().catch(() => ({}));
+        if (!authorization.ok || !authorizationData.authorized || !authorizationData.callerId) {
+          throw new Error(authorizationData.error || 'El Caller ID seleccionado no está autorizado para tu usuario.');
+        }
+        const authorizedCallerId = authorizationData.callerId as string;
+        console.log(`[SoftphoneDialer] Llamando vía Telnyx SDK a ${dialNum} con Caller ID autorizado ${authorizedCallerId}`);
+        const call = await telnyxWebRTCService.makeCall(dialNum, authorizedCallerId);
         setSipLogs(prev => [
           `[${new Date().toLocaleTimeString()}] ✅ Llamada Telnyx iniciada (ID: ${call?.id || 'unknown'})`,
-          `[${new Date().toLocaleTimeString()}] Caller ID: ${selectedCallerId}`,
+          `[${new Date().toLocaleTimeString()}] Caller ID: ${authorizedCallerId}`,
           ...prev.slice(0, 30)
         ]);
         onCallStart?.(dialNum);
