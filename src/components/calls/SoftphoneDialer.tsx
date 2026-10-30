@@ -696,7 +696,7 @@ export default function SoftphoneDialer({
         const firebaseUser = auth.currentUser;
         if (!firebaseUser) throw new Error('Sesión no autenticada. Vuelve a iniciar sesión.');
         const idToken = await firebaseUser.getIdToken();
-        const authorization = await fetch('/api/telnyx/authorize-call', {
+        const authorization = await fetch('/api/telnyx-token', {
           method: 'POST',
           headers: { 'Authorization': 'Bearer ' + idToken, 'Content-Type': 'application/json' },
           body: JSON.stringify({ callerId: selectedCallerId })
