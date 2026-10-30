@@ -3,7 +3,7 @@ import {
   Phone, PhoneOff, Mic, MicOff, Pause, Play, Disc, Volume2, VolumeX, X, Zap, Sparkles, AlertCircle, Maximize2, Minimize2, GripHorizontal, Copy, ClipboardPaste, RotateCcw, Radio, Check, RefreshCw, Settings, Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { collection, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, doc, onSnapshot, addDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -18,7 +18,7 @@ import SoftphoneKeypad from './SoftphoneKeypad';
 import SoftphoneConfig from './SoftphoneConfig';
 import SoftphoneSipConsole from './SoftphoneSipConsole';
 import { telnyxWebRTCService } from '../../services/telnyxWebRTCService';
-import { isPrivilegedRole } from '../../constants/roles';
+import { isSuperAdminRole } from '../../constants/roles';
 
 interface SoftphoneDialerProps {
   mode?: 'embedded' | 'floating';
@@ -363,7 +363,7 @@ export default function SoftphoneDialer({
     let assignmentData: any | null = null;
     let allTelnyxNumbers: string[] = [];
     const recomputeAuthorizedCallerIds = () => {
-      const isPrivileged = isPrivilegedRole(userData?.role);
+      const isPrivileged = isSuperAdminRole(userData?.role);
 
       if (isPrivileged) {
         setAuthorizedCallerIds(allTelnyxNumbers);
@@ -384,7 +384,7 @@ export default function SoftphoneDialer({
       }
     };
 
-    const isPrivilegedUser = isPrivilegedRole(userData?.role);
+    const isPrivilegedUser = isSuperAdminRole(userData?.role);
 
     let unsubNumbers: (() => void) | null = null;
     if (isPrivilegedUser) {
@@ -402,18 +402,11 @@ export default function SoftphoneDialer({
       });
     }
 
-    const unsubAssignments = onSnapshot(collection(db, 'telnyx_agent_assignments'), (snapshot) => {
-      if (!snapshot.empty) {
-        const found = snapshot.docs.find(d => d.id === user.uid || d.data().agentEmail === user.email);
-        if (found) {
-          assignmentData = found.data();
-          setAgentAssignment(assignmentData);
-          setAuthorizedZones(assignmentData.authorizedZones || []);
-        } else {
-          assignmentData = null;
-          setAgentAssignment(null);
-          setAuthorizedZones([]);
-        }
+    const unsubAssignments = onSnapshot(doc(db, 'telnyx_agent_assignments', user.uid), (assignmentDoc) => {
+      if (assignmentDoc.exists()) {
+        assignmentData = assignmentDoc.data();
+        setAgentAssignment(assignmentData);
+        setAuthorizedZones(assignmentData.authorizedZones || []);
       } else {
         assignmentData = null;
         setAgentAssignment(null);
@@ -421,8 +414,10 @@ export default function SoftphoneDialer({
       }
       recomputeAuthorizedCallerIds();
     }, (err) => {
-      console.warn('Could not read agent assignments:', err);
+      console.warn('Could not read agent assignment:', err);
       assignmentData = null;
+      setAgentAssignment(null);
+      setAuthorizedZones([]);
       recomputeAuthorizedCallerIds();
     });
 
@@ -698,11 +693,24 @@ export default function SoftphoneDialer({
 
     if (isTelnyxCarrier) {
       try {
-        console.log(`[SoftphoneDialer] Llamando vía Telnyx SDK a ${dialNum} con Caller ID ${selectedCallerId}`);
-        const call = await telnyxWebRTCService.makeCall(dialNum, selectedCallerId);
+        const firebaseUser = auth.currentUser;
+        if (!firebaseUser) throw new Error('Sesión no autenticada. Vuelve a iniciar sesión.');
+        const idToken = await firebaseUser.getIdToken();
+        const authorization = await fetch('/api/telnyx-token', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + idToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callerId: selectedCallerId })
+        });
+        const authorizationData = await authorization.json().catch(() => ({}));
+        if (!authorization.ok || !authorizationData.authorized || !authorizationData.callerId) {
+          throw new Error(authorizationData.error || 'El Caller ID seleccionado no está autorizado para tu usuario.');
+        }
+        const authorizedCallerId = authorizationData.callerId as string;
+        console.log(`[SoftphoneDialer] Llamando vía Telnyx SDK a ${dialNum} con Caller ID autorizado ${authorizedCallerId}`);
+        const call = await telnyxWebRTCService.makeCall(dialNum, authorizedCallerId);
         setSipLogs(prev => [
           `[${new Date().toLocaleTimeString()}] ✅ Llamada Telnyx iniciada (ID: ${call?.id || 'unknown'})`,
-          `[${new Date().toLocaleTimeString()}] Caller ID: ${selectedCallerId}`,
+          `[${new Date().toLocaleTimeString()}] Caller ID: ${authorizedCallerId}`,
           ...prev.slice(0, 30)
         ]);
         onCallStart?.(dialNum);

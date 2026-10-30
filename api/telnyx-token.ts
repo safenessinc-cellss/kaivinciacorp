@@ -3,10 +3,86 @@ import { TelnyxBackendService } from '../server/telnyxBackend.js';
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
 
   if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
+
+  // Validate the selected outbound Caller ID without creating an additional serverless function.
+  if (req.method === 'POST') {
+    try {
+      const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+      const authUser = await TelnyxBackendService.verifyAuthToken(authHeader);
+      if (!authUser?.uid) {
+        res.statusCode = 401;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ authorized: false, error: 'Sesión no autenticada.' }));
+        return;
+      }
+      const callerId = String(req.body?.callerId || '').trim();
+      if (!/^\+[1-9]\d{7,14}$/.test(callerId)) {
+        res.statusCode = 400;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ authorized: false, error: 'Caller ID inválido.' }));
+        return;
+      }
+      const operatorSnap = await adminDb.collection('operadores').doc(authUser.uid).get();
+      if (!operatorSnap.exists) {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ authorized: false, error: 'No existe un perfil de operador activo.' }));
+        return;
+      }
+      const operator = operatorSnap.data() || {};
+      const userSnap = await adminDb.collection('users').doc(authUser.uid).get();
+      const userProfile = userSnap.data() || {};
+      const role = String(userProfile.role || operator.rol || operator.role || '').toLowerCase();
+      const privileged = role === 'superadmin';
+      if (operator.activo === false || (!privileged && operator.permiteSalientes === false)) {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ authorized: false, error: operator.activo === false ? 'Cuenta desactivada.' : 'Tu perfil no tiene permiso para llamadas salientes.' }));
+        return;
+      }
+      const numbersSnap = await adminDb.collection('telnyx_phone_numbers').where('phoneNumber', '==', callerId).limit(1).get();
+      if (numbersSnap.empty) {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ authorized: false, error: 'El Caller ID no pertenece a los números Telnyx sincronizados.' }));
+        return;
+      }
+      const numberDoc = numbersSnap.docs[0];
+      const number = numberDoc.data();
+      if (['disabled', 'deleted'].includes(String(number.status || '').toLowerCase())) {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ authorized: false, error: 'Este número Telnyx está deshabilitado.' }));
+        return;
+      }
+      if (!privileged) {
+        const assignmentSnap = await adminDb.collection('telnyx_agent_assignments').doc(authUser.uid).get();
+        const allowed = assignmentSnap.exists && Array.isArray(assignmentSnap.data()?.authorizedNumbers)
+          ? assignmentSnap.data()!.authorizedNumbers : [];
+        if (!allowed.includes(callerId)) {
+          res.statusCode = 403;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ authorized: false, error: 'No tienes asignado este Caller ID. Solicita autorización a un administrador.' }));
+          return;
+        }
+      }
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ authorized: true, callerId, numberId: numberDoc.id }));
+      return;
+    } catch (error: any) {
+      console.error('[telnyx-token] Caller ID authorization failed:', error?.message || error);
+      res.statusCode = 401;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ authorized: false, error: 'No se pudo validar la autorización de llamada.' }));
+      return;
+    }
+  }
+
   if (req.method !== 'GET') {
     res.statusCode = 405;
     res.setHeader('Content-Type', 'application/json');
@@ -112,13 +188,24 @@ export default async function handler(req: any, res: any) {
       ultimaActividad: new Date().toISOString(),
     });
 
+    const role = String(operadorData.rol || operadorData.role || '').toLowerCase();
+    const privileged = ['superadmin', 'admin', 'owner', 'ceo', 'gestor'].includes(role);
     const numerosAsignados: any[] = [];
-    if (operadorData.numerosAsignados && operadorData.numerosAsignados.length > 0) {
-      for (const numId of operadorData.numerosAsignados) {
-        const numDoc = await db.collection('telnyx_phone_numbers').doc(numId).get();
-        if (numDoc.exists) {
-          numerosAsignados.push({ id: numDoc.id, ...numDoc.data() });
+    if (privileged) {
+      const allNumbers = await db.collection('telnyx_phone_numbers').get();
+      allNumbers.forEach((numDoc) => {
+        const number = numDoc.data();
+        if (number.phoneNumber && !['disabled', 'deleted'].includes(String(number.status || '').toLowerCase())) {
+          numerosAsignados.push({ id: numDoc.id, ...number });
         }
+      });
+    } else {
+      const assignmentDoc = await db.collection('telnyx_agent_assignments').doc(authUser.uid).get();
+      const allowedNumbers: string[] = assignmentDoc.exists && Array.isArray(assignmentDoc.data()?.authorizedNumbers)
+        ? assignmentDoc.data()!.authorizedNumbers : [];
+      for (const phoneNumber of allowedNumbers) {
+        const matches = await db.collection('telnyx_phone_numbers').where('phoneNumber', '==', phoneNumber).limit(1).get();
+        matches.forEach((numDoc) => numerosAsignados.push({ id: numDoc.id, ...numDoc.data() }));
       }
     }
 
