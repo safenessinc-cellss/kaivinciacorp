@@ -20,7 +20,7 @@ export default async function handler(req: any, res: any) {
         return;
       }
       const callerId = String(req.body?.callerId || '').trim();
-      if (!/^\\+[1-9]\\d{7,14}$/.test(callerId)) {
+      if (!/^\+[1-9]\d{7,14}$/.test(callerId)) {
         res.statusCode = 400;
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ authorized: false, error: 'Caller ID inválido.' }));
