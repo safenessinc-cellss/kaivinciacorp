@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { Users, Phone, Key, RefreshCw } from 'lucide-react';
 
@@ -7,7 +7,7 @@ export default function CallCenterAdmin() {
   const [activeTab, setActiveTab] = useState('operadores');
   const [operadores, setOperadores] = useState([]);
   const [numeros, setNumeros] = useState([]);
-  const [credenciales, setCredenciales] = useState([]);
+  const [credenciales, setCredenciales] = useState([]);\n  const [assignments, setAssignments] = useState({});\n  const [savingAssignment, setSavingAssignment] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState(null);
@@ -28,6 +28,43 @@ export default function CallCenterAdmin() {
 
     return () => { unsub1(); unsub2(); unsub3(); };
   }, []);
+
+  const toggleAssignedNumber = (uid, phoneNumber, checked) => {
+    setAssignments((current) => {
+      const existing = current[uid] || {};
+      const authorizedNumbers = Array.isArray(existing.authorizedNumbers) ? existing.authorizedNumbers : [];
+      const nextNumbers = checked
+        ? Array.from(new Set([...authorizedNumbers, phoneNumber]))
+        : authorizedNumbers.filter((n) => n !== phoneNumber);
+      return { ...current, [uid]: { ...existing, authorizedNumbers: nextNumbers,
+        defaultCallerId: nextNumbers.includes(existing.defaultCallerId) ? existing.defaultCallerId : (nextNumbers[0] || '') } };
+    });
+  };
+
+  const saveAssignment = async (op) => {
+    setSavingAssignment(op.id);
+    setError(null);
+    try {
+      const assignment = assignments[op.id] || {};
+      const authorizedNumbers = Array.isArray(assignment.authorizedNumbers) ? assignment.authorizedNumbers : [];
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error('La sesión administrativa ha expirado.');
+      await setDoc(doc(db, 'telnyx_agent_assignments', op.id), {
+        agentUid: op.id,
+        agentEmail: op.email || '',
+        authorizedNumbers,
+        defaultCallerId: authorizedNumbers.includes(assignment.defaultCallerId)
+          ? assignment.defaultCallerId : (authorizedNumbers[0] || ''),
+        authorizedZones: Array.isArray(assignment.authorizedZones) ? assignment.authorizedZones : [],
+        updatedAt: new Date().toISOString(),
+        updatedBy: currentUser.uid
+      }, { merge: true });
+    } catch (err) {
+      setError(err?.message || 'No se pudo guardar la asignación. Verifica que tu usuario sea administrador.');
+    } finally {
+      setSavingAssignment('');
+    }
+  };
 
   const handleSync = async () => {
     setIsSyncing(true);
@@ -97,7 +134,24 @@ export default function CallCenterAdmin() {
                 <span className={'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ' + (op.disponible ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-200 text-slate-500')}>{op.disponible ? 'Disp.' : 'Offline'}</span>
               </div>
               <p className="text-xs text-slate-500 truncate">{op.email}</p>
-              <p className="text-[10px] text-slate-400">Rol: {op.rol || 'agente'}</p>
+              <p className="text-[10px] text-slate-400">Rol: {op.rol || op.role || 'agente'}</p>
+              <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">Caller IDs autorizados</p>
+                {numeros.filter((num) => num.phoneNumber && !['disabled', 'deleted'].includes(String(num.status || '').toLowerCase())).length === 0 ? (
+                  <p className="text-xs text-slate-400">Sin números Telnyx sincronizados.</p>
+                ) : numeros.filter((num) => num.phoneNumber && !['disabled', 'deleted'].includes(String(num.status || '').toLowerCase())).map((num) => {
+                  const assigned = (assignments[op.id]?.authorizedNumbers || []).includes(num.phoneNumber);
+                  return <label key={num.id} className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+                    <input type="checkbox" checked={assigned} onChange={(e) => toggleAssignedNumber(op.id, num.phoneNumber, e.target.checked)} className="accent-cyan-500" />
+                    <span className="font-mono">{num.phoneNumber}</span>
+                    <span className="text-[10px] text-slate-400 truncate">{num.friendlyName || ''}</span>
+                  </label>;
+                })}
+                <button onClick={() => saveAssignment(op)} disabled={savingAssignment === op.id}
+                  className="w-full mt-2 px-3 py-2 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 text-xs font-black rounded-lg cursor-pointer">
+                  {savingAssignment === op.id ? 'Guardando…' : 'Guardar números asignados'}
+                </button>
+              </div>
             </div>
           ))}
         </div>
