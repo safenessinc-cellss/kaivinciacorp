@@ -204,6 +204,7 @@ export default function VoipProviderModal({
 
   // SIPs cargados desde Firestore (telnyx_sip_credentials)
   const [availableSips, setAvailableSips] = useState<TelnyxSipCredential[]>([]);
+  const [availableCallerIds, setAvailableCallerIds] = useState<string[]>([]);
   const [selectedSipId, setSelectedSipId] = useState<string>('');
   const [isLoadingSips, setIsLoadingSips] = useState<boolean>(true);
   const [sipAppliedMessage, setSipAppliedMessage] = useState<string | null>(null);
@@ -265,7 +266,7 @@ export default function VoipProviderModal({
           dtmfType: 'RFC2833',
           username: '',
           password: '',
-          callerId: '+1 (305) 555-0100',
+          callerId: '',
           callerName: 'KaiVincia Outbound',
           apiKey: '',
           apiSecret: '',
@@ -278,6 +279,24 @@ export default function VoipProviderModal({
     setTestReport(null);
     setActiveTab('sip');
   }, [isOpen, provider]);
+
+  // Cargar DID reales habilitados de Telnyx para el selector Caller ID.
+  // Los números proceden exclusivamente de Firestore; no se generan ni se inventan.
+  useEffect(() => {
+    if (!isOpen || !isAdmin) return;
+    const unsub = onSnapshot(collection(db, 'telnyx_phone_numbers'), (snapshot) => {
+      const numbers = Array.from(new Set(snapshot.docs
+        .map((d) => d.data())
+        .filter((n: any) => n.status !== 'disabled' && n.status !== 'released' && typeof n.phoneNumber === 'string')
+        .map((n: any) => n.phoneNumber.trim())
+        .filter((n: string) => /^\\+[1-9]\\d{7,14}$/.test(n))));
+      setAvailableCallerIds(numbers.sort((a, b) => a.localeCompare(b)));
+    }, (err) => {
+      console.warn('No se pudieron cargar los DID de Telnyx:', err);
+      setAvailableCallerIds([]);
+    });
+    return () => unsub();
+  }, [isOpen, isAdmin]);
 
   // Sincronizar SIPs de Telnyx desde Firestore en tiempo real y sembrar las 9 iniciales si está vacía
   useEffect(() => {
@@ -346,7 +365,7 @@ export default function VoipProviderModal({
         domain: targetSip.sipDomain || prev?.credentials?.domain || 'sip.telnyx.com',
         port: targetSip.sipPort || prev?.credentials?.port || 5060,
         transport: targetSip.transport || prev?.credentials?.transport || 'WSS',
-        callerId: targetSip.callerId || prev?.credentials?.callerId || '+1 (305) 555-0199'
+        callerId: targetSip.callerId || prev?.credentials?.callerId || ''
       }
     }));
 
@@ -820,16 +839,30 @@ export default function VoipProviderModal({
                     <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">
                       Caller ID Saliente (Número DID)
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={form.credentials?.callerId || ''}
                       onChange={(e) => setForm({
                         ...form,
                         credentials: { ...form.credentials, callerId: e.target.value }
                       })}
-                      placeholder="+1 (305) 555-0199"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 font-mono text-slate-200 text-xs focus:outline-none focus:border-cyan-400"
-                    />
+                      disabled={!isAdmin || availableCallerIds.length === 0}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 font-mono text-slate-200 text-xs focus:outline-none focus:border-cyan-400 disabled:opacity-60"
+                    >
+                      <option value="">
+                        {availableCallerIds.length ? 'Selecciona un número DID autorizado' : 'No hay números DID disponibles'}
+                      </option>
+                      {form.credentials?.callerId && !availableCallerIds.includes(form.credentials.callerId) && (
+                        <option value={form.credentials.callerId}>
+                          {form.credentials.callerId} (configuración actual; verificar autorización)
+                        </option>
+                      )}
+                      {availableCallerIds.map((number) => (
+                        <option key={number} value={number}>{number}</option>
+                      ))}
+                    </select>
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Lista en tiempo real de números habilitados en Telnyx. Solo selecciona un DID autorizado para llamadas salientes.
+                    </p>
                   </div>
                 </div>
               </div>
