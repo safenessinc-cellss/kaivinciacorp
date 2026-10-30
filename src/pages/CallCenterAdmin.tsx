@@ -25,8 +25,13 @@ export default function CallCenterAdmin() {
     const unsub3 = onSnapshot(collection(db, 'telnyx_sip_credentials'), (snap) => {
       setCredenciales(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
+    const unsub4 = onSnapshot(collection(db, 'telnyx_agent_assignments'), (snap) => {
+      const next = {};
+      snap.docs.forEach((d) => { next[d.id] = d.data(); });
+      setAssignments(next);
+    }, (err) => setError(err.message));
 
-    return () => { unsub1(); unsub2(); unsub3(); };
+    return () => { unsub1(); unsub2(); unsub3(); unsub4(); };
   }, []);
 
   const toggleAssignedNumber = (uid, phoneNumber, checked) => {
