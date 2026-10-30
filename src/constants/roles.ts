@@ -38,3 +38,8 @@ export const canManageUsers = (r?: string | null) => hasMinLevel(r, 90);
 export const canManageBilling = (r?: string | null) => hasMinLevel(r, 85);
 export const canSeeAllCallerIds = (r?: string | null) => hasMinLevel(r, 80);
 export const canSuperviseAgents = (r?: string | null) => hasMinLevel(r, 60);
+
+// Acceso telefónico irrestricto reservado exclusivamente al superadministrador.
+export function isSuperAdminRole(role?: string | null): boolean {
+  return String(role || '').toLowerCase().trim() === 'superadmin';
+}
