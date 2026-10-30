@@ -38,7 +38,7 @@ export default async function handler(req: any, res: any) {
       const userProfile = userSnap.data() || {};
       const role = String(userProfile.role || operator.rol || operator.role || '').toLowerCase();
       const privileged = role === 'superadmin';
-      if (operator.activo === false || operator.permiteSalientes === false) {
+      if (operator.activo === false || (!privileged && operator.permiteSalientes === false)) {
         res.statusCode = 403;
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ authorized: false, error: operator.activo === false ? 'Cuenta desactivada.' : 'Tu perfil no tiene permiso para llamadas salientes.' }));
