@@ -199,7 +199,7 @@ service cloud.firestore {
     }
 
     match /telnyx_agent_assignments/{assignmentId} {
-      allow read:  if isAdmin() || existing().get('agentUid', '') == request.auth.uid;
+      allow read:  if isAdmin() || (isAuthenticated() && assignmentId == request.auth.uid);
       allow write: if isAdmin();
     }
 
