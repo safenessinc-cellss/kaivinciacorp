@@ -37,7 +37,7 @@ export default async function handler(req: any, res: any) {
       const userSnap = await adminDb.collection('users').doc(authUser.uid).get();
       const userProfile = userSnap.data() || {};
       const role = String(userProfile.role || operator.rol || operator.role || '').toLowerCase();
-      const privileged = ['superadmin', 'admin', 'ceo', 'gestor'].includes(role);
+      const privileged = role === 'superadmin';
       if (operator.activo === false || operator.permiteSalientes === false) {
         res.statusCode = 403;
         res.setHeader('Content-Type', 'application/json');
