@@ -193,7 +193,8 @@ service cloud.firestore {
     }
 
     match /telnyx_phone_numbers/{numberId} {
-      allow read:  if isAuthenticated();
+      // Caller ID inventory is admin-only; agents receive assigned numbers via their own assignment document.
+      allow read:  if isAdmin();
       allow write: if isAdmin();
     }
 
