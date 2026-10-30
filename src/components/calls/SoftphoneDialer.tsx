@@ -693,7 +693,7 @@ export default function SoftphoneDialer({
 
     if (isTelnyxCarrier) {
       try {
-        const firebaseUser = auth.currentUser || user;
+        const firebaseUser = auth.currentUser;
         if (!firebaseUser) throw new Error('Sesión no autenticada. Vuelve a iniciar sesión.');
         const idToken = await firebaseUser.getIdToken();
         const authorization = await fetch('/api/telnyx/authorize-call', {
