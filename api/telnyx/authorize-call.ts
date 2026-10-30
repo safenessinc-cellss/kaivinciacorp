@@ -26,7 +26,7 @@ export default async function handler(req: any, res: any) {
     const operator = operatorSnap.data() || {};
     const userSnap = await adminDb.collection('users').doc(decoded.uid).get();
     const userProfile = userSnap.data() || {};
-    const role = String(operator.rol || operator.role || userProfile.role || '').toLowerCase();
+    const role = String(userProfile.role || operator.rol || operator.role || '').toLowerCase();
     const privileged = ['superadmin', 'admin', 'ceo', 'gestor'].includes(role);
     if (operator.activo === false) return send(res, 403, { authorized: false, error: 'Cuenta desactivada.' });
     if (operator.permiteSalientes === false) return send(res, 403, { authorized: false, error: 'Tu perfil no tiene permiso para llamadas salientes.' });
