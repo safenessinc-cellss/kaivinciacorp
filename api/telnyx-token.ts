@@ -112,13 +112,24 @@ export default async function handler(req: any, res: any) {
       ultimaActividad: new Date().toISOString(),
     });
 
+    const role = String(operadorData.rol || operadorData.role || '').toLowerCase();
+    const privileged = ['superadmin', 'admin', 'owner', 'ceo', 'gestor'].includes(role);
     const numerosAsignados: any[] = [];
-    if (operadorData.numerosAsignados && operadorData.numerosAsignados.length > 0) {
-      for (const numId of operadorData.numerosAsignados) {
-        const numDoc = await db.collection('telnyx_phone_numbers').doc(numId).get();
-        if (numDoc.exists) {
-          numerosAsignados.push({ id: numDoc.id, ...numDoc.data() });
+    if (privileged) {
+      const allNumbers = await db.collection('telnyx_phone_numbers').get();
+      allNumbers.forEach((numDoc) => {
+        const number = numDoc.data();
+        if (number.phoneNumber && !['disabled', 'deleted'].includes(String(number.status || '').toLowerCase())) {
+          numerosAsignados.push({ id: numDoc.id, ...number });
         }
+      });
+    } else {
+      const assignmentDoc = await db.collection('telnyx_agent_assignments').doc(authUser.uid).get();
+      const allowedNumbers: string[] = assignmentDoc.exists && Array.isArray(assignmentDoc.data()?.authorizedNumbers)
+        ? assignmentDoc.data()!.authorizedNumbers : [];
+      for (const phoneNumber of allowedNumbers) {
+        const matches = await db.collection('telnyx_phone_numbers').where('phoneNumber', '==', phoneNumber).limit(1).get();
+        matches.forEach((numDoc) => numerosAsignados.push({ id: numDoc.id, ...numDoc.data() }));
       }
     }
 
