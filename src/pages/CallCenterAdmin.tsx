@@ -8,7 +8,8 @@ export default function CallCenterAdmin() {
   const [operadores, setOperadores] = useState([]);
   const [numeros, setNumeros] = useState([]);
   const [credenciales, setCredenciales] = useState([]);
-  const [assignments, setAssignments] = useState({});\n  const [savingAssignment, setSavingAssignment] = useState('');
+  const [assignments, setAssignments] = useState({});
+  const [savingAssignment, setSavingAssignment] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState(null);
