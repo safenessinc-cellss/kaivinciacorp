@@ -24,8 +24,10 @@ export default async function handler(req: any, res: any) {
     const operatorSnap = await operatorRef.get();
     if (!operatorSnap.exists) return send(res, 403, { authorized: false, error: 'No existe un perfil de operador activo.' });
     const operator = operatorSnap.data() || {};
-    const role = String(operator.rol || operator.role || '').toLowerCase();
-    const privileged = ['superadmin', 'admin', 'owner', 'ceo', 'gestor'].includes(role);
+    const userSnap = await adminDb.collection('users').doc(decoded.uid).get();
+    const userProfile = userSnap.data() || {};
+    const role = String(operator.rol || operator.role || userProfile.role || '').toLowerCase();
+    const privileged = ['superadmin', 'admin', 'ceo', 'gestor'].includes(role);
     if (operator.activo === false) return send(res, 403, { authorized: false, error: 'Cuenta desactivada.' });
     if (operator.permiteSalientes === false) return send(res, 403, { authorized: false, error: 'Tu perfil no tiene permiso para llamadas salientes.' });
 
