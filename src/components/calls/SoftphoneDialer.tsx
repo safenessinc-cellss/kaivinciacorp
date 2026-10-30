@@ -3,7 +3,7 @@ import {
   Phone, PhoneOff, Mic, MicOff, Pause, Play, Disc, Volume2, VolumeX, X, Zap, Sparkles, AlertCircle, Maximize2, Minimize2, GripHorizontal, Copy, ClipboardPaste, RotateCcw, Radio, Check, RefreshCw, Settings, Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { collection, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, doc, onSnapshot, addDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -402,18 +402,11 @@ export default function SoftphoneDialer({
       });
     }
 
-    const unsubAssignments = onSnapshot(collection(db, 'telnyx_agent_assignments'), (snapshot) => {
-      if (!snapshot.empty) {
-        const found = snapshot.docs.find(d => d.id === user.uid || d.data().agentEmail === user.email);
-        if (found) {
-          assignmentData = found.data();
-          setAgentAssignment(assignmentData);
-          setAuthorizedZones(assignmentData.authorizedZones || []);
-        } else {
-          assignmentData = null;
-          setAgentAssignment(null);
-          setAuthorizedZones([]);
-        }
+    const unsubAssignments = onSnapshot(doc(db, 'telnyx_agent_assignments', user.uid), (assignmentDoc) => {
+      if (assignmentDoc.exists()) {
+        assignmentData = assignmentDoc.data();
+        setAgentAssignment(assignmentData);
+        setAuthorizedZones(assignmentData.authorizedZones || []);
       } else {
         assignmentData = null;
         setAgentAssignment(null);
@@ -421,8 +414,10 @@ export default function SoftphoneDialer({
       }
       recomputeAuthorizedCallerIds();
     }, (err) => {
-      console.warn('Could not read agent assignments:', err);
+      console.warn('Could not read agent assignment:', err);
       assignmentData = null;
+      setAgentAssignment(null);
+      setAuthorizedZones([]);
       recomputeAuthorizedCallerIds();
     });
 
