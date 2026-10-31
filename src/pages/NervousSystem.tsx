@@ -96,7 +96,7 @@ export default function NervousSystem() {
   }, []);
 
   return (
-    <div className="h-full min-h-[calc(100vh-4rem)] bg-[#020617] text-white p-6 md:p-10 space-y-10 flex flex-col relative overflow-hidden font-sans selection:bg-[#00F0FF]/30 selection:text-white">
+    <div className="kaivincia-tahoe-module h-full min-h-[calc(100vh-4rem)] bg-[#020617] text-white p-6 md:p-10 space-y-10 flex flex-col relative overflow-hidden font-sans selection:bg-[#00F0FF]/30 selection:text-white">
       {/* Background Neural Grid */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 pointer-events-none" />
       <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF]/50 to-transparent" />
