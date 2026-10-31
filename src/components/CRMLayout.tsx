@@ -264,9 +264,9 @@ const strategyGroup = {
   const filteredMenuGroups = useMemo(() => {
     if (!menuSearch) return menuGroups;
     const lowerSearch = menuSearch.toLowerCase();
-    return menuGroups.map(group => ({
+    return (Array.isArray(menuGroups) ? menuGroups : []).filter(group => group && Array.isArray(group.items)).map(group => ({
       ...group,
-      items: group.items.filter(item => item.name.toLowerCase().includes(lowerSearch))
+      items: group.items.filter(item => item && String(item.name || '').toLowerCase().includes(lowerSearch))
     })).filter(group => group.items.length > 0);
   }, [menuGroups, menuSearch]);
 
@@ -280,7 +280,7 @@ const strategyGroup = {
 
     const breadcrumbs = [{ name: t('header.home', 'Inicio'), href: '/crm' }];
     let currentPath = '';
-    const allItems = menuGroups.flatMap(g => g.items);
+    const allItems = (Array.isArray(menuGroups) ? menuGroups : []).flatMap(g => Array.isArray(g?.items) ? g.items : []);
 
     pathnames.forEach((name, index) => {
       currentPath += `/${name}`;
@@ -377,7 +377,7 @@ const strategyGroup = {
         )}
         
         <div className="flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-gray-800">
-          {filteredMenuGroups.map((group, idx) => {
+          {(Array.isArray(filteredMenuGroups) ? filteredMenuGroups : []).map((group, idx) => {
             const isExpanded = isSidebarCollapsed ? false : (menuSearch ? true : expandedGroups[group.title] !== false);
             return (
               <div key={idx} className={`mb-2 ${isSidebarCollapsed ? 'px-2' : 'px-3'}`}>
@@ -397,7 +397,7 @@ const strategyGroup = {
                 
                 {(isExpanded || isSidebarCollapsed) && (
                   <nav className={`space-y-1 ${!isSidebarCollapsed ? 'mt-1' : ''}`}>
-                    {group.items.map((item: any) => {
+                    {(Array.isArray(group?.items) ? group.items : []).map((item: any) => {
                       const isActive = location.pathname === item.href;
                       return (
                         <Link
