@@ -212,3 +212,85 @@ body {
 .crm-main :is(.glass-panel,.rounded-xl,.rounded-2xl,.rounded-3xl) {
   border-color: rgba(60,60,67,.12);
 }
+
+/* Final cross-module light-mode enforcement.
+   Also covers modal/portal layers mounted directly under body (outside CRMLayout). */
+:root, html, body {
+  color-scheme: light !important;
+  background-color: #f5f6f8 !important;
+  color: #202124 !important;
+}
+body:has(.crm-shell) {
+  --color-background: #f5f6f8 !important;
+  --color-surface: #ffffff !important;
+  --color-text-primary: #202124 !important;
+  --color-text-secondary: #5f6368 !important;
+  --color-sidebar-bg: #eceef2 !important;
+  --color-sidebar-text: #344054 !important;
+  --color-header-bg: rgba(255,255,255,.92) !important;
+  background: #f5f6f8 !important;
+  color: #202124 !important;
+}
+.crm-shell, .crm-shell *, body:has(.crm-shell) [data-radix-portal],
+body:has(.crm-shell) [data-portal],
+body:has(.crm-shell) [role="dialog"] {
+  color-scheme: light;
+}
+.crm-shell .crm-main {
+  background: #f5f6f8 !important;
+  background-image: none !important;
+  color: #202124 !important;
+}
+/* Opaque legacy black/graphite Tailwind and arbitrary utility surfaces. */
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-black"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-gray-9"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-gray-8"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-slate-9"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-slate-8"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-zinc-9"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-neutral-9"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-[#050"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-[#070"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-[#090"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-[#0b"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-[#0B"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-[#111"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-white/"][class*="bg-white/0"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-white/"][class*="bg-white/5"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,form,table)[class*="bg-white/"][class*="bg-white/10"] {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #202124 !important;
+}
+/* Explicit dark inline styles used by legacy modal and widget implementations. */
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav)[style*="background-color: rgb(0, 0, 0)"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav)[style*="background: rgb(0, 0, 0)"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav)[style*="#05070a"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav)[style*="#05070A"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav)[style*="#09090b"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav)[style*="#0b1118"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav)[style*="#0B0E14"],
+body:has(.crm-shell) :is(div,section,article,main,aside,header,footer,nav)[style*="rgb(5, 7, 10)"] {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #202124 !important;
+}
+/* Dark text on light surfaces; leave semantic/action buttons and badges alone. */
+body:has(.crm-shell) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,em,td,th,li,dt,dd,div):not(button):not([role="button"]):is([class~="text-white"],[class~="text-gray-100"],[class~="text-gray-200"],[class~="text-slate-100"],[class~="text-slate-200"],[class~="text-zinc-100"],[class~="text-zinc-200"]) {
+  color: #202124 !important;
+}
+body:has(.crm-shell) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,td,th,li,div):not(button):not([role="button"]):is([class~="text-gray-300"],[class~="text-gray-400"],[class~="text-slate-300"],[class~="text-slate-400"],[class~="text-zinc-300"],[class~="text-zinc-400"]) {
+  color: #596579 !important;
+}
+body:has(.crm-shell) :is(input,select,textarea) {
+  background: #ffffff !important;
+  color: #202124 !important;
+  border-color: #d8dee8 !important;
+  color-scheme: light !important;
+}
+body:has(.crm-shell) :is(input,select,textarea)::placeholder { color: #8993a3 !important; }
+body:has(.crm-shell) :is(.border-gray-700,.border-gray-800,.border-slate-700,.border-slate-800,.border-zinc-700,.border-zinc-800,[class*="border-white/"]) {
+  border-color: rgba(60,60,67,.14) !important;
+}
+body:has(.crm-shell) .crm-sidebar { background: rgba(238,240,244,.96) !important; color: #344054 !important; }
+body:has(.crm-shell) .crm-header { background: rgba(255,255,255,.9) !important; color: #202124 !important; }
