@@ -591,3 +591,32 @@
 .kai-overlay { position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:20px; background:rgba(0,0,0,.28); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
 .kai-toast { border:1px solid var(--kai-border,rgba(60,60,67,.16)); background:var(--kai-glass,rgba(255,255,255,.9)); color:var(--kai-text,#1d1d1f); border-radius:var(--kai-radius-md); box-shadow:var(--kai-shadow-window); -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px); }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
+
+
+/* Kaivincia · Automatizaciones: tema claro macOS Tahoe, aislado de otros módulos */
+.automations-light { color:#202124 !important; background:#f5f6f8 !important; color-scheme:light; }
+.automations-light [class*="bg-[#06080C]"],
+.automations-light [class*="bg-slate-950"],
+.automations-light [class*="bg-slate-900"],
+.automations-light [class*="bg-slate-800"],
+.automations-light [class*="bg-black"] { background-color:#fff !important; background-image:none !important; }
+.automations-light [class*="bg-slate-950/"],
+.automations-light [class*="bg-slate-900/"],
+.automations-light [class*="bg-black/"] { background-color:#f8fafc !important; }
+.automations-light [class*="text-white"],
+.automations-light [class*="text-slate-100"],
+.automations-light [class*="text-slate-200"] { color:#202124 !important; }
+.automations-light [class*="text-slate-300"] { color:#475467 !important; }
+.automations-light [class*="text-slate-400"],
+.automations-light [class*="text-slate-500"] { color:#667085 !important; }
+.automations-light [class*="border-slate-800"],
+.automations-light [class*="border-slate-900"],
+.automations-light [class*="border-white/"] { border-color:#e5e7eb !important; }
+.automations-light input,.automations-light select,.automations-light textarea {
+ color:#202124 !important; background-color:#fff !important; border-color:#d0d5dd !important;
+}
+.automations-light input::placeholder,.automations-light textarea::placeholder { color:#98a2b3 !important; }
+.automations-light button[class*="bg-slate-900"],
+.automations-light button[class*="bg-slate-800"] { background-color:#f2f4f7 !important; color:#344054 !important; }
+.automations-light button[class*="text-white"] { color:#202124 !important; }
+.automations-light .shadow-2xl,.automations-light .shadow-xl { box-shadow:0 8px 28px rgba(16,24,40,.08) !important; }
