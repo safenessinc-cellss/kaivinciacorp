@@ -156,7 +156,7 @@ export default function NotificationCenter() {
                 </div>
               ) : (
                 <div className="divide-y divide-gray-50">
-                  {notifications.map((notif) => (
+                  {(Array.isArray(notifications) ? notifications : []).map((notif) => (
                     <button
                       key={notif.id}
                       onClick={() => {
