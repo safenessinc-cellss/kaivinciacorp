@@ -93,7 +93,7 @@ export default function Dashboard() {
             <Cpu className="w-8 h-8 animate-pulse" />
           </div>
           <div>
-            <h1 className="text-3xl font-black text-white uppercase tracking-tighter italic">Nervous System</h1>
+            <h1 className="text-3xl font-black text-white uppercase tracking-tighter italic">Panel Maestro</h1>
             <div className="flex items-center gap-3 mt-1">
               <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> Synapse: Active
