@@ -30,7 +30,10 @@ const DEPARTMENTS = [
   { id: 'KV-PRO-VOIP', name: 'Voz & Telecomunicaciones', color: 'text-orange-500' },
   { id: 'KV-PRO-VTA', name: 'Ventas / Setters', color: 'text-cyan-500' },
   { id: 'KV-PRO-FIELD', name: 'Despliegue Táctico', color: 'text-emerald-500' },
+  { id: 'KV-PRO-CRM', name: 'Plataforma CRM · Manual por módulo', color: 'text-blue-500' },
 ];
+
+const PLATFORM_MODULES: Array<{id:string;title:string;route:string;owner:string;objective:string;steps:string[];controls:string[];evidence:string}> = [["DASH","Panel Maestro","/crm/dashboard","Dirección y gerencia","Consolidar actividad, cartera, desempeño y alertas; es una vista de gestión, no sustituye los registros fuente.",["Acceder con perfil autorizado y revisar periodo y filtros.","Identificar indicadores fuera de objetivo y consultar su definición y fuente.","Abrir el módulo de origen antes de corregir cifras o estados.","Asignar responsable y fecha a cada desviación.","Verificar que el indicador refleje el dato corregido."],["No tomar decisiones con indicadores sin periodo o fuente.","No editar cifras agregadas para corregir el registro fuente.","Contrastar totales con Clientes, Pipeline y Finanzas."],"Registro fuente corregido, responsable y comentario de seguimiento."],["NER","Sistema Nervioso Central","/crm/nervous","Administración CRM y operaciones","Supervisar señales, eventos, alertas e incidencias. Confirmar procedencia antes de tratar una señal como evento real.",["Delimitar periodo y categoría del evento.","Comprobar identificador, fecha, usuario, módulo de origen y detalle.","Clasificar la señal según evidencia e impacto.","Derivar al responsable técnico o funcional.","Documentar resolución y comprobar recurrencia."],["No asumir que una tarjeta predictiva es un evento auditado sin fuente.","No alterar evidencias de una incidencia.","Escalar pérdida de datos, acceso indebido o indisponibilidad."],"Identificador, referencia o captura, análisis, responsable y resolución."],["CLI","Base de Clientes","/crm/clients","Ventas, setters y account management","Mantener un registro único, íntegro y actualizado de empresas y contactos.",["Buscar por empresa, teléfono, correo y dominio antes de crear.","Crear o importar usando plantilla y campos disponibles.","Normalizar razón social, país, zona horaria y datos de contacto.","Asignar propietario, origen, segmento y estado.","Registrar interacción y próxima acción."],["No crear registros duplicados sin verificación.","Tratar datos personales solo para fines autorizados.","Corregir en el registro fuente y conservar trazabilidad."],"Ficha, origen, propietario, historial y próxima acción."],["PIP","Pipeline de Ventas","/crm/pipeline","Líder comercial, setters y closers","Gestionar oportunidades por etapa con criterios verificables y previsión consistente.",["Abrir oportunidad vinculada al cliente correcto.","Validar necesidad, decisor, presupuesto y plazo cuando aplique.","Mover etapa solo al cumplir criterio de salida.","Registrar importe, probabilidad, fecha y próxima actividad.","Cerrar ganada, perdida o aplazada con motivo."],["No avanzar etapas para inflar el embudo.","No duplicar oportunidades por cada contacto.","Toda oportunidad abierta debe tener responsable y siguiente acción."],"Ficha, etapa, importe, motivo de cambio y actividad."],["CAL","Agenda y Reuniones","/crm/calendar","Equipo comercial y coordinación","Coordinar reuniones, llamadas y visitas con zona horaria y seguimiento correctos.",["Crear evento desde cliente u oportunidad cuando sea posible.","Indicar asunto, participantes, fecha, duración, zona horaria y objetivo.","Confirmar disponibilidad y enviar invitación por canal habilitado.","Registrar resultado, acuerdos y tareas posteriores.","Reprogramar o cancelar informando el motivo."],["Confirmar zona horaria del cliente.","No registrar como celebrada una reunión sin resultado.","No exponer información confidencial en títulos públicos."],"Evento, participantes, confirmación, minuta y tareas."],["CHAT","Chat Neural y Contactos","/crm/chat","Usuarios habilitados y supervisión","Centralizar comunicaciones internas y con clientes según canales y permisos.",["Seleccionar equipo, grupo, conversación privada o cliente.","Verificar destinatario y clasificación antes de enviar.","Mantener comunicación profesional y vinculada al asunto.","Convertir compromisos en tareas o notas del registro.","Usar vista de contactos para localizar usuarios."],["No compartir credenciales ni datos de pago.","Comprobar destinatarios antes de adjuntar archivos.","Respetar confidencialidad y retención aplicables."],"Conversación, referencia al asunto y tarea derivada."],["VOIP","Discador, Llamadas y VoIP","/crm/calls","Agentes, supervisores y administrador VoIP","Realizar y documentar comunicaciones mediante proveedor y configuración autorizados.",["Verificar usuario, extensión, dispositivo y proveedor.","Seleccionar número saliente permitido para rol y campaña.","Validar contacto, finalidad y horario local.","Registrar resultado, disposición y notas.","Ante fallo, conservar hora, identificador y mensaje técnico y escalar."],["Caller ID depende de proveedor, número verificado y enrutamiento; confirmar con prueba autorizada.","No prometer grabación o transcripción sin confirmar soporte.","Cumplir consentimiento, exclusiones y normativa de destino."],"Call ID, fecha/hora, número autorizado, disposición y ticket."],["DATA","Data y Carteras TLMK","/crm/data","Data steward y supervisores TLMK","Administrar lotes de prospectos con calidad, asignación y trazabilidad.",["Identificar origen, propietario, fecha y base legal.","Validar estructura, formato, duplicados y campos mínimos.","Asignar cartera, campaña y responsable.","Monitorear cobertura, contacto y registros no válidos.","Depurar según política de conservación."],["No mezclar carteras con finalidades distintas.","No importar sin revisar duplicados y calidad.","Conservar referencia del archivo de origen."],"Archivo, validación, lote, asignación y reporte."],["INT","Integraciones Externas","/crm/integrations","Administrador de sistemas y propietarios de proveedor","Gestionar conexiones externas con control de credenciales, permisos y fallos.",["Definir caso de uso, propietario y datos intercambiados.","Verificar proveedor, entorno y permisos mínimos.","Configurar secretos en mecanismo seguro aprobado.","Probar conexión, ida/vuelta, errores y límites.","Documentar versión, responsable y revocación."],["Nunca copiar claves API en manuales o chats.","Separar pruebas y producción.","Ante incidente, revocar credencial y activar contingencia."],"Ficha de integración, propietario, alcance y prueba."],["AUT","Automatizaciones","/crm/automations","Operaciones y administrador de automatizaciones","Estandarizar tareas repetitivas con control humano sobre acciones sensibles.",["Definir disparador, condición, acción y resultado esperado.","Validar excepciones, duplicidad, límites y consentimiento.","Probar con datos controlados.","Activar con responsable y mecanismo de pausa.","Revisar fallos, volumen y efectos."],["No automatizar envíos masivos sin autorización.","Toda automatización crítica necesita propietario y registro.","No asumir ejecución sin verificar resultado."],"Especificación, aprobación, prueba y log."],["DRIVE","SGI Drive y Documentos","/crm/drive","Gestores documentales, calidad y legal","Clasificar, revisar y controlar documentos corporativos.",["Elegir categoría y confidencialidad adecuadas.","Subir archivo con nombre, versión, propietario y fecha.","Solicitar revisión al responsable.","Distribuir solo versión vigente a usuarios autorizados.","Archivar versiones obsoletas con trazabilidad."],["La vista puede incluir datos de ejemplo; verificar persistencia real.","No subir secretos ni documentos personales innecesarios.","Un borrador no es procedimiento vigente."],"Archivo almacenado, metadatos, versión y aprobación."],["SOP","Manuales y Procedimientos","/crm/manuales","Calidad documental y propietarios de proceso","Publicar versiones controladas de procedimientos y guías.",["Consultar código, versión, estado y fecha de revisión.","Leer alcance, responsables, pasos y controles.","Registrar dudas o desviaciones por soporte.","Solicitar actualización si cambia el proceso o pantalla.","Retirar copias locales obsoletas."],["Solo versión aprobada y vigente es instrucción oficial.","Cambios requieren autor, revisor, aprobador y fecha efectiva.","El manual no sustituye formación ni autorización."],"Código, versión, aprobación e historial de revisión."],["TASK","Gestión de Tareas","/crm/tasks","Todos los responsables y supervisores","Convertir compromisos en trabajo asignado, medible y verificable.",["Crear tarea con acción, resultado y contexto.","Asignar responsable y fecha límite.","Definir prioridad y vínculo con cliente o proyecto.","Actualizar estado y bloqueos.","Cerrar al referenciar el resultado."],["No dejar tareas sin responsable o vencimiento.","Reasignar formalmente si cambia el propietario.","Escalar tareas vencidas de alto impacto."],"Tarea, responsable, plazo, historial y entregable."],["PROJ","Proyectos Activos","/crm/projects","Project manager y patrocinador","Planificar entregables, recursos, riesgos y avance.",["Crear ficha con objetivo, alcance y patrocinador.","Desglosar hitos, tareas, responsables y dependencias.","Registrar riesgos, decisiones y cambios.","Actualizar avance con evidencia.","Obtener aceptación, cerrar y archivar."],["No reportar avance por percepción.","Cambios de alcance requieren aprobación.","Riesgos críticos necesitan dueño y fecha."],"Acta, plan, hitos, riesgos y aceptación."],["REP","Informes y Analítica","/crm/reports","Finanzas, operaciones y responsables KPI","Producir informes reproducibles para decisiones.",["Definir pregunta, periodo, población y fuente.","Comprobar filtros, moneda y zona horaria.","Contrastar totales con módulos transaccionales.","Explicar variaciones separando hechos e hipótesis.","Publicar fecha de corte, autor y limitaciones."],["No comparar definiciones distintas sin advertirlo.","No presentar proyecciones como resultados reales.","Restringir datos personales y financieros."],"Informe, filtros, fuentes, fecha de corte y validación."],["STR","Informe Predictivo","/crm/strategic-report","Dirección y analistas","Apoyar decisiones con tendencias y supuestos explícitos.",["Definir decisión y horizonte.","Verificar calidad y actualidad de datos.","Separar hechos, estimaciones y recomendaciones automatizadas.","Contrastar escenarios con responsables.","Registrar decisión y revisar resultados."],["Un pronóstico no es garantía.","Documentar supuestos e incertidumbre.","No utilizar datos no autorizados."],"Informe, fuentes, supuestos y decisión."],["FIN","Contabilidad y Panel Financiero","/crm/accounting","Finanzas y contabilidad autorizada","Consolidar información financiera y facilitar conciliación.",["Verificar periodo, entidad, moneda y permisos.","Revisar movimientos según procedimiento aprobado.","Conciliar saldos con soportes.","Investigar diferencias antes del cierre.","Obtener revisión y aprobación."],["No sustituye el sistema contable legal ni asesoría fiscal.","Separar preparación y revisión cuando sea posible.","Conservar comprobantes."],"Registros, comprobantes, conciliación y aprobación."],["BILL","Facturación y Cobros","/crm/billing","Administración financiera y cobranzas","Controlar emisión, envío, vencimiento y cobro.",["Verificar cliente, entidad, datos fiscales y condiciones.","Validar concepto, importe, moneda e impuestos.","Emitir y enviar por canal autorizado.","Registrar pagos solo con soporte verificable.","Conciliar diferencias y saldos vencidos."],["No marcar pagado sin confirmación.","Cambios de importe requieren autorización.","Proteger datos fiscales y bancarios."],"Factura, aprobación, comprobante y conciliación."],["PAY","Nómina","/crm/payroll","RRHH y finanzas con acceso restringido","Administrar remuneración con confidencialidad y doble control.",["Confirmar periodo, altas, bajas y novedades.","Verificar conceptos e incidencias aprobadas.","Revisar cálculos y diferencias.","Obtener aprobación independiente.","Archivar recibos con acceso restringido."],["Datos salariales son confidenciales.","Verificar cambios de datos bancarios.","Cumplir legislación laboral y fiscal aplicable."],"Novedades, revisión, autorización y comprobantes."],["TEAM","Gestión de Equipo","/crm/team","RRHH y líderes de área","Gestionar estructura, asignaciones y ciclo de vida de usuarios.",["Solicitar alta con identidad, responsable y función.","Aprobar accesos según matriz de permisos.","Asignar equipo, cartera y objetivos.","Revisar accesos ante cambios de puesto.","Revocar acceso al finalizar la relación."],["No compartir cuentas.","Aplicar mínimo privilegio.","Registrar autorización de acceso."],"Solicitud, aprobación, rol, asignaciones y baja."],["REC","Reclutamiento","/crm/recruitment","RRHH y responsables solicitantes","Gestionar candidaturas de forma confidencial y objetiva.",["Aprobar requisición, perfil y criterios.","Registrar candidatura y consentimiento aplicable.","Evaluar con criterios relacionados con el puesto.","Coordinar entrevistas y retroalimentación.","Comunicar decisión y aplicar retención."],["No utilizar atributos protegidos como criterio.","Limitar acceso a expedientes.","La puntuación automatizada no decide por sí sola."],"Requisición, criterios, evaluaciones y decisión."],["ACL","Centro de Control de Accesos","/crm/access-control","Superadministración y seguridad","Administrar roles y permisos granulares de forma auditable.",["Recibir solicitud con usuario, módulo y justificación.","Validar necesidad con propietario del proceso.","Aprobar mínimo privilegio y duración.","Probar acceso efectivo.","Revisar o revocar en cambios de función."],["Elevación requiere aprobación explícita.","No compartir credenciales.","Separar concesión y revisión cuando sea posible."],"Solicitud, aprobador, permiso, prueba y revisión."],["SEC","Centro de Seguridad","/crm/security","Responsable de seguridad y superadministración","Gestionar controles, alertas y respuesta a incidentes.",["Clasificar evento por impacto y alcance.","Contener sin destruir evidencia.","Registrar sistemas, usuarios y tiempos.","Escalar a seguridad o proveedor.","Recuperar servicio y documentar lecciones."],["No investigar desde una cuenta posiblemente comprometida.","Preservar logs y evidencias.","Comunicar por canales aprobados."],"Ticket, cronología, evidencia, contención y cierre."],["AUD","Auditorías SGI","/crm/audits","Calidad y auditores internos","Planificar auditorías, hallazgos y eficacia de acciones.",["Definir alcance, criterios y agenda.","Recopilar evidencia objetiva.","Clasificar hallazgos con referencia al requisito.","Asignar causa, acción, responsable y plazo.","Verificar implementación y eficacia."],["No emitir hallazgos sin evidencia.","Mantener independencia y confidencialidad.","No cerrar acciones solo por declaración."],"Plan, checklist, evidencias, informe y verificación."],["HELP","Helpdesk y Soporte","/crm/helpdesk","Mesa de ayuda y responsables técnicos","Resolver solicitudes e incidentes con trazabilidad.",["Registrar usuario, módulo, hora y pasos reproducibles.","Clasificar impacto y prioridad.","Adjuntar evidencia sin secretos.","Diagnosticar y comunicar solución.","Confirmar con solicitante y documentar causa."],["Nunca solicitar contraseñas o códigos MFA.","Incidentes de seguridad se escalan inmediatamente.","No cerrar sin validación."],"Ticket, prioridad, diagnóstico, solución y confirmación."],["UP","Mi Portal / Portal Personal","/crm/user-portal","Cada usuario y soporte","Permitir consulta de información propia según perfil.",["Ingresar con cuenta individual y verificar perfil.","Consultar tareas y datos habilitados.","Actualizar solo campos permitidos.","Solicitar correcciones maestras por canal formal.","Cerrar sesión en dispositivos compartidos."],["Acceso limitado a datos propios.","No cargar documentos sensibles sin finalidad.","Reportar datos ajenos visibles."],"Solicitud de cambio, confirmación o ticket."],["CP","Portal de Clientes","/crm/client-portal","Account manager y soporte","Facilitar acceso limitado a recursos expresamente habilitados.",["Verificar identidad y relación contractual.","Asignar acceso al ámbito del cliente.","Orientar sobre documentos y solicitudes disponibles.","Registrar incidencias.","Revocar acceso cuando termina autorización."],["Aislar datos entre clientes.","No compartir enlaces públicos confidenciales.","Verificar identidad antes de cambios contractuales."],"Autorización, cuenta, permisos y baja."],["ACA","Academia Interna","/crm/academy-internal","RRHH y formación","Asignar y supervisar formación interna.",["Definir competencia y público objetivo.","Asignar curso y criterio de aprobación.","Comunicar recursos e instrucciones.","Registrar asistencia y evaluación cuando el módulo lo soporte.","Programar refuerzo si hay brechas."],["No declarar competencia sin evaluación.","Restringir datos de evaluación.","Mantener contenido vigente."],"Plan, asistencia, evaluación y constancia."],["ACAE","Academia Externa","/crm/academy-external","Responsable académico y comercial","Gestionar experiencia formativa externa.",["Validar curso, alcance, precio y condiciones.","Comprobar materiales y acceso.","Gestionar inscripción según flujo habilitado.","Comunicar cambios y cancelaciones.","Recoger evaluación y gestionar incidencias."],["No garantizar certificaciones no acreditadas.","No publicar oferta sin aprobación.","Proteger datos de alumnos."],"Ficha aprobada, inscripción y evaluación."],["TACT","Despliegue Táctico y Visitas","/crm/tactical","Coordinador de campo y supervisor","Estandarizar preparación, ejecución y cierre de visitas.",["Confirmar orden, cliente, dirección, contacto y objetivo.","Revisar riesgos, permisos y EPP.","Registrar check-in real, sin simular ubicación u hora.","Documentar hallazgos autorizados y evidencias necesarias.","Emitir informe, registrar resultado y pendientes."],["La versión actual contiene datos demostrativos y GPS simulado; no usar como evidencia real hasta validar persistencia y GPS real.","Cumplir normas EHS y LOTO del cliente.","No cerrar sin evidencia verificable."],"Orden, check-in validado, evidencias, informe y aceptación."],["OPS","Operaciones","/crm/operations","Dirección de operaciones","Coordinar capacidad, ejecución y cumplimiento de procesos.",["Revisar objetivos, capacidad y compromisos.","Asignar recursos y responsables.","Monitorear bloqueos y dependencias.","Escalar desviaciones.","Cerrar periodo con resultados y acciones."],["Usar indicadores con fuente aprobada.","Registrar cambios de prioridad.","No ocultar desviaciones."],"Plan, asignaciones, incidencias y cierre."],["MKT","Marketing","/crm/marketing","Marketing y dirección comercial","Planificar campañas, audiencias y resultados.",["Aprobar objetivo, audiencia, presupuesto y canal.","Validar consentimiento y exclusiones.","Revisar contenido y enlaces.","Lanzar prueba y campaña autorizada.","Medir entregas, respuestas y conversiones."],["No contactar sin base legal.","Respetar bajas y exclusiones.","Separar atribución estimada de ventas confirmadas."],"Brief, aprobación, audiencia y reporte."],["COM","Comisiones","/crm/commissions","Finanzas y dirección comercial","Calcular incentivos con reglas aprobadas y trazables.",["Consultar política y elegibilidad.","Verificar ventas, cobros y atribución.","Aplicar fórmula y topes vigentes.","Resolver discrepancias con revisión.","Aprobar y comunicar resultado."],["No cambiar reglas retroactivamente sin autorización.","No liquidar operaciones no elegibles.","Restringir datos de remuneración."],"Política, cálculo, conciliación y aprobación."],["COL","Cobranza","/crm/cobranza","Cobranzas y account management","Gestionar compromisos de pago con respeto y documentación.",["Verificar saldo y soporte.","Contactar titular por canal autorizado.","Registrar resultado y compromiso.","Escalar disputas.","Conciliar pago y actualizar fuente financiera."],["No divulgar deuda a terceros.","GPS requiere finalidad y autorización.","No marcar pago sin conciliación."],"Saldo, contacto, compromiso y comprobante."],["FORM","Plantillas de Ficha","/crm/form-templates","Propietarios de proceso y administrador CRM","Estandarizar captura y reducir errores.",["Definir finalidad, campos y propietario.","Eliminar campos redundantes o sensibles innecesarios.","Probar validaciones y permisos.","Publicar versión aprobada.","Revisar calidad y retirar versiones obsoletas."],["Solicitar solo datos necesarios.","Versionar cambios.","Probar antes de publicar."],"Especificación, versión, pruebas y aprobación."],["CM","Gestión de Clientes","/crm/client-management","Account managers","Gestionar relación, salud de cuenta, renovaciones y compromisos.",["Validar contrato, alcance y contactos clave.","Establecer plan de cuenta y cadencia.","Registrar solicitudes, incidencias y acuerdos.","Coordinar entrega con operaciones.","Revisar satisfacción, renovación y expansión."],["No prometer alcance no aprobado.","Registrar cambios contractuales formalmente.","Escalar riesgo de churn con evidencia."],"Plan de cuenta, reuniones, incidencias y renovación."],["MASTER","Formularios Maestros","/crm/turs","Administración y propietarios de proceso","Gestionar formularios y registros normalizados.",["Seleccionar formulario y versión vigente.","Completar desde fuente fiable.","Validar campos y aprobaciones.","Enviar al flujo de revisión.","Corregir observaciones y conservar referencia."],["No crear formularios paralelos sin autorización.","Restringir campos sensibles.","Verificar vigencia."],"Registro, versión y aprobaciones."],["DIG","Productos Digitales","/crm/digital-products","Academia y administración comercial","Administrar catálogo, contenido y condiciones.",["Validar descripción, titularidad, precio y condiciones.","Comprobar materiales y permisos.","Publicar tras aprobación.","Atender incidencias y cambios.","Retirar contenido vencido o sin derechos."],["No publicar materiales sin licencia.","No cambiar precios sin aprobación.","Informar limitaciones."],"Ficha, aprobación, versión y cambios."],["STRAT","Estrategia Intel","/crm/strategy-blog","Dirección y estrategia","Documentar análisis, hipótesis y decisiones.",["Definir tema, objetivo y audiencia.","Distinguir datos, supuestos y opinión.","Revisar fuentes y confidencialidad.","Solicitar revisión.","Registrar decisión y fecha de revisión."],["No publicar datos confidenciales.","Citar fuentes y fecha de corte.","Revisar vigencia."],"Documento, fuentes, aprobación y acción."],["COMM","Comunicaciones","/crm/communications","Comunicaciones y responsables de área","Coordinar avisos corporativos consistentes.",["Definir audiencia, propósito, canal y responsable.","Validar exactitud y confidencialidad.","Aprobar mensajes sensibles.","Enviar por canal autorizado.","Conservar versión y recepción cuando aplique."],["No difundir datos internos a audiencias no autorizadas.","No usar canales personales para información crítica.","Corregir mensajes erróneos."],"Mensaje aprobado, audiencia, canal y fecha."]];
 
 const DOCUMENTS: Record<string, SOPDocument[]> = {
   'KV-PRO-ADM': [
@@ -68,6 +71,39 @@ const DOCUMENTS: Record<string, SOPDocument[]> = {
             { id: 'c3', text: 'Actualizar las etapas del Pipeline diariamente para mantener la precisión del embudo y del panel de control.' },
             { id: 'c4', text: 'Revisar la consola del Sistema Nervioso para verificar eventos inusuales o fallos en Webhooks.' }
           ]
+        },
+        {
+          type: 'callout',
+          title: 'Gobierno de datos, seguridad y responsabilidades',
+          items: [
+            'Cada usuario opera con una cuenta individual. Los permisos se conceden por función y necesidad; no se comparten contraseñas ni sesiones.',
+            'El dato se corrige en el módulo que lo origina. Los paneles e informes consumen datos y no deben utilizarse para corregir registros transaccionales.',
+            'La información de clientes, candidatos, empleados, llamadas y finanzas se utiliza únicamente para fines autorizados y se comparte con el mínimo de personas necesario.',
+            'Toda operación relevante debe permitir identificar quién actuó, cuándo, sobre qué registro y cuál fue el resultado. Si el módulo no ofrece trazabilidad suficiente, se registra un ticket.',
+            'La disponibilidad de una pantalla no demuestra que una acción se haya guardado. Confirmar el resultado en la ficha o registro correspondiente.'
+          ]
+        },
+        {
+          type: 'steps',
+          title: 'Ciclo de gestión y control de la plataforma',
+          steps: [
+            { label: 'Planificar', desc: 'Definir objetivo, propietario del proceso, usuarios, datos necesarios y resultado esperado.', type: 'cyan' },
+            { label: 'Autorizar', desc: 'Validar rol, permisos, aprobación y alcance antes de crear, exportar o modificar información.', type: 'violet' },
+            { label: 'Ejecutar', desc: 'Operar en el módulo de origen siguiendo el procedimiento y las validaciones visibles.', type: 'emerald' },
+            { label: 'Verificar', desc: 'Comprobar persistencia, integridad, destinatario y consistencia con módulos relacionados.', type: 'normal' },
+            { label: 'Mejorar', desc: 'Registrar incidencias, analizar causa, asignar acciones y revisar eficacia.', type: 'cyan' }
+          ]
+        },
+        {
+          type: 'checklist',
+          title: 'Control de cierre diario del responsable',
+          checklistItems: [
+            { id: 'g1', text: 'Revisar oportunidades sin responsable o sin próxima acción.' },
+            { id: 'g2', text: 'Revisar llamadas, reuniones y conversaciones pendientes de documentar.' },
+            { id: 'g3', text: 'Comprobar tareas vencidas, incidencias críticas y solicitudes de acceso.' },
+            { id: 'g4', text: 'Verificar que los documentos publicados correspondan a versiones aprobadas.' },
+            { id: 'g5', text: 'Escalar fallos de integración, datos inconsistentes o accesos indebidos.' }
+          ]
         }
       ]
     }
@@ -81,7 +117,7 @@ const DOCUMENTS: Record<string, SOPDocument[]> = {
       sections: [
         {
           type: 'callout',
-          title: 'El Sistema Click-to-Call y la Zona Horaria de EE.UU.',
+          title: 'El Sistema Click-to-Call, el proveedor VoIP y la Zona Horaria',
           items: [
             'Antes de iniciar cualquier llamada, el sistema valida el código de área del lead (por ejemplo, 213, 720, 631) para calcular su hora local actual.',
             'Regulación Estricta: Las llamadas telefónicas solo se permiten en el Horario Seguro (9:00 AM - 8:00 PM hora local del lead).',
@@ -90,7 +126,7 @@ const DOCUMENTS: Record<string, SOPDocument[]> = {
         },
         {
           type: 'flowchart',
-          title: 'Protocolo de Validación de Zona Horaria (Zadarma API Gateway)',
+          title: 'Protocolo de Validación de Zona Horaria y proveedor configurado',
           steps: [
             { label: 'Agente presiona "Llamar"', desc: 'Se intercepta el evento de llamada en el CRM.', type: 'normal' },
             { label: 'Extracción de Código de Área', desc: 'Se analizan los 3 primeros dígitos del número telefónico de EE.UU. (ej: California 213, New York 631).', type: 'cyan' },
@@ -109,9 +145,9 @@ const DOCUMENTS: Record<string, SOPDocument[]> = {
           title: 'Checklist de Configuración de Audio & SIP',
           checklistItems: [
             { id: 'v1', text: 'Tener micrófono habilitado en el navegador con los permisos de iframe otorgados.' },
-            { id: 'v2', text: 'Validar que la extensión SIP de Zadarma aparezca con estado "ONLINE / REGISTERED" en la consola del operador.' },
+            { id: 'v2', text: 'Validar que la extensión SIP o sesión WebRTC del proveedor configurado aparezca con estado "ONLINE / REGISTERED" en la consola del operador.' },
             { id: 'v3', text: 'Verificar la calidad de la señal de red en el indicador de latencia del Sistema Nervioso (óptimo < 100ms).' },
-            { id: 'v4', text: 'Al colgar, cerciorarse de que el webhook de Zadarma haya subido automáticamente el audio grabado al call_log.' }
+            { id: 'v4', text: 'Al colgar, cerciorarse de que el evento de cierre esté registrado y la grabación exista solo si el proveedor y la configuración la soportan.' }
           ]
         }
       ]
@@ -253,7 +289,33 @@ const DOCUMENTS: Record<string, SOPDocument[]> = {
         }
       ]
     }
-  ]
+  ],
+  'KV-PRO-CRM': PLATFORM_MODULES.map(module => ({
+    id: 'KV-MOD-' + module.id,
+    title: module.title,
+    desc: 'Procedimiento operativo de ' + module.route + '. Propietario: ' + module.owner + '. ' + module.objective,
+    image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80',
+    sections: [
+      { type: 'callout' as const, title: 'Propósito, alcance y responsabilidad', items: [
+        module.objective,
+        'Responsable del proceso: ' + module.owner + '.',
+        'Acceso: ingresar desde ' + module.route + ' con cuenta individual y permisos asignados. Las opciones dependen del rol y de la configuración vigente.'
+      ]},
+      { type: 'steps' as const, title: 'Procedimiento estándar de operación', steps: module.steps.map((desc,index) => ({
+        label: ['Preparar','Validar','Ejecutar','Registrar','Cerrar y verificar'][index] || ('Paso ' + (index + 1)),
+        desc,
+        type: (['cyan','violet','emerald','normal','cyan'][index] || 'normal') as 'cyan' | 'violet' | 'emerald' | 'normal'
+      }))},
+      { type: 'callout' as const, title: 'Controles obligatorios y puntos de atención', items: module.controls },
+      { type: 'checklist' as const, title: 'Lista de verificación antes de cerrar', checklistItems: [
+        { id: module.id + '-c1', text: 'He utilizado mi cuenta individual y tengo autorización para esta operación.' },
+        { id: module.id + '-c2', text: 'He verificado identidad, integridad y origen de los datos.' },
+        { id: module.id + '-c3', text: 'He registrado el resultado y no he alterado evidencias.' },
+        { id: module.id + '-c4', text: 'He asignado responsable y fecha a los pendientes.' },
+        { id: module.id + '-c5', text: 'Evidencia mínima: ' + module.evidence }
+      ]}
+    ]
+  }))
 };
 
 export default function SOPManuals() {
@@ -275,19 +337,19 @@ export default function SOPManuals() {
   const doc = currentDeptDocs.find(d => d.id === activeDoc) || currentDeptDocs[0];
 
   return (
-    <div className="kaivincia-tahoe-module min-h-screen bg-[#0B0E14] text-white flex">
+    <div className="kaivincia-tahoe-module min-h-screen bg-[#F5F6F8] text-[#202124] flex">
       {/* Sidebar Navigation */}
-      <div className="w-80 border-r border-white/5 bg-[#080B10] flex flex-col hidden lg:flex shrink-0">
-        <div className="p-8 border-b border-white/5">
-          <div className="h-10 w-10 bg-[#161B22] rounded-xl border border-white/10 flex items-center justify-center text-cyan-400 mb-4 shadow-[0_0_15px_rgba(34,211,238,0.1)]">
+      <div className="w-80 border-r border-[#E5EAF2] bg-white flex flex-col hidden lg:flex shrink-0">
+        <div className="p-8 border-b border-[#E5EAF2]">
+          <div className="h-10 w-10 bg-[#EAF2FF] rounded-xl border border-[#D8E5FA] flex items-center justify-center text-[#1A73E8] mb-4">
             <BookOpen className="w-5 h-5" />
           </div>
-          <h2 className="text-sm font-black uppercase italic tracking-widest text-white">Manuales Kaivincia</h2>
-          <p className="text-[10px] text-gray-500 font-mono mt-1">Sistemas & Protocolos Operativos</p>
+          <h2 className="text-sm font-black uppercase tracking-widest text-[#202124]">Manuales Kaivincia</h2>
+          <p className="text-[10px] text-[#667085] font-mono mt-1">Sistemas & Protocolos Operativos</p>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <p className="text-[9px] font-mono uppercase text-gray-500 tracking-wider px-2">Departamentos</p>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+          <p className="text-[9px] font-mono uppercase text-[#667085] tracking-wider px-2">Departamentos</p>
           <div className="space-y-1">
             {DEPARTMENTS.map(dept => (
               <button 
@@ -295,17 +357,17 @@ export default function SOPManuals() {
                 onClick={() => handleDeptChange(dept.id)}
                 className={`flex items-center gap-3 text-[10px] font-black uppercase tracking-widest w-full text-left p-3 rounded-xl transition-all ${
                   activeDept === dept.id 
-                    ? 'bg-white/5 text-white border border-white/10 shadow-lg' 
-                    : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                    ? 'bg-[#EAF2FF] text-[#174EA6] border border-[#D8E5FA] shadow-sm' 
+                    : 'text-[#667085] hover:text-[#202124] hover:bg-[#F5F6F8]'
                 }`}
               >
-                <div className={`w-2 h-2 rounded-full ${activeDept === dept.id ? dept.color.replace('text-', 'bg-') : 'bg-gray-700'}`} />
+                <div className={`w-2 h-2 rounded-full ${activeDept === dept.id ? dept.color.replace('text-', 'bg-') : 'bg-[#CBD2DC]'}`} />
                 {dept.name}
               </button>
             ))}
           </div>
 
-          <div className="h-px bg-white/5 my-4" />
+          <div className="h-px bg-[#E5EAF2] my-4" />
 
           {currentDeptDocs.length > 0 && (
             <div className="space-y-2">
@@ -317,8 +379,8 @@ export default function SOPManuals() {
                     onClick={() => setActiveDoc(d.id)}
                     className={`w-full text-left p-3 text-[10px] uppercase font-mono rounded-xl transition-all border flex items-center justify-between group ${
                       activeDoc === d.id 
-                        ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 shadow-[0_0_15px_rgba(34,211,238,0.05)]' 
-                        : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
+                        ? 'bg-[#EAF2FF] text-[#174EA6] border-[#D8E5FA] shadow-sm' 
+                        : 'text-[#667085] hover:text-[#202124] hover:bg-[#F5F6F8] border-transparent'
                     }`}
                   >
                     <span className="truncate pr-2">{d.title}</span>
@@ -332,32 +394,32 @@ export default function SOPManuals() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto relative bg-[#0B0E14] min-h-screen">
+      <div className="flex-1 overflow-y-auto relative bg-[#F5F6F8] min-h-screen">
         {/* Dynamic Background Glow */}
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 pointer-events-none" />
 
         <div className="max-w-4xl mx-auto p-6 md:p-12 space-y-10 relative z-10">
           
           {doc ? (
             <>
               {/* Document Header */}
-              <header className="border-b border-white/5 pb-6">
+              <header className="border-b border-[#E5EAF2] pb-6">
                 <div className="flex items-center gap-3 mb-4">
                   <span className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase tracking-widest rounded-full font-mono">
                     {doc.id}
                   </span>
-                  <span className="text-[10px] text-gray-500 uppercase tracking-widest font-mono">Kaivincia Standard v2.3.1</span>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-widest font-mono">Kaivincia Standard v2.4 · Revisión operativa 31-10-2026</span>
                 </div>
-                <h1 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter shadow-cyan-500/20 drop-shadow-lg text-white">
+                <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#202124]">
                   {doc.title}
                 </h1>
-                <p className="text-gray-400 mt-3 max-w-2xl text-sm leading-relaxed">
+                <p className="text-[#667085] mt-3 max-w-2xl text-sm leading-relaxed">
                   {doc.desc}
                 </p>
               </header>
 
               {/* Hero Illustration */}
-              <div className="w-full aspect-[21/9] rounded-3xl overflow-hidden relative border border-white/10 group shadow-2xl">
+              <div className="w-full aspect-[21/9] rounded-3xl overflow-hidden relative border border-[#E5EAF2] group shadow-sm">
                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E14] via-transparent to-transparent z-10" />
                  <img 
                    src={doc.image} 
@@ -366,7 +428,7 @@ export default function SOPManuals() {
                  />
                  <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_#22D3EE] animate-pulse" />
-                    <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-[0.2em]">Visual Module Rendered</span>
+                    <span className="text-[10px] font-mono text-white uppercase tracking-[0.2em]">Visual Module Rendered</span>
                  </div>
               </div>
 
@@ -496,7 +558,7 @@ export default function SOPManuals() {
                 }
               })}
 
-              <footer className="pt-12 text-center text-[10px] uppercase font-mono text-gray-600 tracking-[0.2em] opacity-50 pb-12">
+              <footer className="pt-12 text-center text-[10px] uppercase font-mono text-[#8993A3] tracking-[0.2em] pb-12">
                  Propiedad de Kaivincia Corp // Distribución Restringida // © 2026 Kaivincia CRM
               </footer>
             </>
