@@ -50,7 +50,7 @@ export default function CommandBar({ isOpen, onClose }: { isOpen: boolean, onClo
     { id: 'c8', type: 'command', title: '/integraciones', subtitle: 'Meta Ads, WhatsApp, Webhooks & APIs', icon: Share2, action: () => { navigate('/crm/integrations'); onClose(); } },
   ];
 
-  const clientResults: CommandResult[] = clients.map(c => ({
+  const clientResults: CommandResult[] = (Array.isArray(clients) ? clients : []).map(c => ({
     id: `client-${c.id}`,
     type: 'client',
     title: c.companyName || c.contactName || 'Sin Nombre',
@@ -59,7 +59,7 @@ export default function CommandBar({ isOpen, onClose }: { isOpen: boolean, onClo
     path: '/crm/client-management'
   }));
 
-  const taskResults: CommandResult[] = tasks.map(t => ({
+  const taskResults: CommandResult[] = (Array.isArray(tasks) ? tasks : []).map(t => ({
     id: `task-${t.id}`,
     type: 'task',
     title: t.title || 'Sin Título',
@@ -245,7 +245,7 @@ export default function CommandBar({ isOpen, onClose }: { isOpen: boolean, onClo
                             <Navigation className="w-3 h-3" /> Accesos Rápidos Tácticos
                           </div>
                         )}
-                        {filteredResults.map((result) => (
+                        {(Array.isArray(filteredResults) ? filteredResults : []).map((result) => (
                           <button
                             key={result.id}
                             onClick={() => {
