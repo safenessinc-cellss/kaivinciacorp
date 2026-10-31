@@ -560,7 +560,7 @@ export default function HelpDrawer() {
                         Flujo de Ejecución Estándar
                       </h3>
                       <div className="space-y-2.5">
-                        {currentSOP.steps.map((st) => (
+                        {(Array.isArray(currentSOP?.steps) ? currentSOP.steps : []).map((st) => (
                           <div
                             key={st.num}
                             className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800 flex items-start gap-3"
@@ -589,7 +589,7 @@ export default function HelpDrawer() {
                           <span>Reglas y Políticas Críticas</span>
                         </div>
                         <ul className="space-y-1.5 text-xs text-amber-200/90 list-disc list-inside">
-                          {currentSOP.criticalRules.map((rule, idx) => (
+                          {(Array.isArray(currentSOP?.criticalRules) ? currentSOP.criticalRules : []).map((rule, idx) => (
                             <li key={idx} className="leading-relaxed">
                               {rule[currentLang]}
                             </li>
