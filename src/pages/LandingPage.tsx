@@ -313,7 +313,7 @@ export default function LandingPage({ onGuestMode }: LandingPageProps) {
         </div>
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-           {courses.map((course) => (
+           {(Array.isArray(courses) ? courses : []).map((course) => (
              <motion.div 
                key={course.id}
                whileHover={{ y: -10 }}
