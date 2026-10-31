@@ -367,3 +367,97 @@ body:has(.crm-shell) .crm-header {
   color: var(--tahoe-ink) !important;
   box-shadow: 0 1px 0 rgba(15,23,42,.025) !important;
 }
+
+
+/* Route-level Tahoe cleanup for legacy modules that still ship hard-coded
+   graphite surfaces. Scoped to CRM content so the login and public site keep
+   their own visual identity. */
+body:has(.crm-shell) .crm-main .kaivincia-tahoe-module,
+body:has(.crm-shell) .crm-main .kaivincia-tahoe-dashboard {
+  background: #f5f6f8 !important;
+  background-color: #f5f6f8 !important;
+  background-image: none !important;
+  color: #202124 !important;
+  color-scheme: light !important;
+}
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) {
+  --module-window: #f5f6f8;
+  --module-card: #ffffff;
+  --module-line: #e5eaf2;
+  --module-ink: #202124;
+  --module-muted: #667085;
+}
+/* Known legacy dark backgrounds in Nervous System, Chat, Drive, Manuals,
+   User Portal and Dashboard. Semantic accent colors are intentionally kept. */
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,main,footer,nav,form,button)[class~="bg-black"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,main,footer,nav,form)[class~="bg-gray-900"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,main,footer,nav,form)[class~="bg-gray-800"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,main,footer,nav,form)[class~="bg-slate-950"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,main,footer,nav,form)[class~="bg-slate-900"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,main,footer,nav,form)[class~="bg-slate-800"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,main,footer,nav,form)[class~="bg-zinc-950"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,main,footer,nav,form)[class~="bg-zinc-900"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,main,footer,nav,form)[class~="bg-zinc-800"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#020617"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#0f172a"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#0B0E14"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#0b0e14"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#0a0a0a"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#050505"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#080808"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#0c0f1d"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#080B10"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#080b10"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#161B22"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#12161E"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#151921"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#1E293B"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#1e293b"],
+body:has(.crm-shell) .crm-main :is(div,section,article,aside,header,main,footer,nav,form)[class*="bg-[#334155"] {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #202124 !important;
+  border-color: #e5eaf2 !important;
+  box-shadow: 0 8px 24px rgba(15,23,42,.055) !important;
+}
+/* Frosted white surfaces used in legacy chat/dashboard cards. */
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,nav)[class~="bg-white/5"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(div,section,article,aside,header,nav)[class~="bg-white/10"] {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #202124 !important;
+  border-color: #e5eaf2 !important;
+}
+/* Dark text on all light legacy surfaces; preserve white labels on colored buttons. */
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,em,td,th,li,dt,dd,div)[class~="text-white"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,em,td,th,li,dt,dd,div)[class~="text-gray-100"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,em,td,th,li,dt,dd,div)[class~="text-gray-200"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,em,td,th,li,dt,dd,div)[class~="text-slate-100"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,em,td,th,li,dt,dd,div)[class~="text-slate-200"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,em,td,th,li,dt,dd,div)[class~="text-zinc-100"],
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,em,td,th,li,dt,dd,div)[class~="text-zinc-200"] {
+  color: #202124 !important;
+}
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(.border-white/5,.border-white/10,.border-gray-700,.border-gray-800,.border-slate-700,.border-slate-800,.border-zinc-700) {
+  border-color: #e5eaf2 !important;
+}
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(input,select,textarea) {
+  background: #ffffff !important;
+  color: #202124 !important;
+  border-color: #d8dee8 !important;
+  color-scheme: light !important;
+}
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) :is(input,select,textarea)::placeholder {
+  color: #8993a3 !important;
+}
+body:has(.crm-shell) .crm-main .kaivincia-tahoe-module :is(.bg-gradient-to-br)[class*="from-gray-900"][class*="to-black"] {
+  background-image: linear-gradient(135deg,#f8fafc,#eef2f7) !important;
+  background-color: #f8fafc !important;
+  border-color: #e5eaf2 !important;
+  box-shadow: 0 8px 24px rgba(15,23,42,.055) !important;
+}
+body:has(.crm-shell) .crm-main .kaivincia-tahoe-module :is(div,section,article,aside,header,nav)[class*="bg-[#020617]/"] {
+  background: rgba(245,246,248,.96) !important;
+  color: #202124 !important;
+}
