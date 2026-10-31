@@ -275,7 +275,7 @@ export default function SOPManuals() {
   const doc = currentDeptDocs.find(d => d.id === activeDoc) || currentDeptDocs[0];
 
   return (
-    <div className="min-h-screen bg-[#0B0E14] text-white flex">
+    <div className="kaivincia-tahoe-module min-h-screen bg-[#0B0E14] text-white flex">
       {/* Sidebar Navigation */}
       <div className="w-80 border-r border-white/5 bg-[#080B10] flex flex-col hidden lg:flex shrink-0">
         <div className="p-8 border-b border-white/5">
