@@ -47,9 +47,9 @@ const DOCUMENTS: Record<string, SOPDocument[]> = {
           type: 'callout',
           title: 'Arquitectura de Operación Unificada',
           items: [
-            'Kaivincia CRM conecta de forma segura la Base de Datos de Clientes, el Pipeline Inteligente en tiempo real y la Consola VoIP de Zadarma.',
-            'Cualquier cambio de estado en un Lead se propaga de inmediato a toda la plataforma mediante enlaces dinámicos en la base de datos de Firebase.',
-            'El sistema cuenta con un Sistema Nervioso Central que audita y registra de forma automatizada cada interacción y evento operativo.'
+            'Kaivincia CRM reúne módulos de clientes, oportunidades, comunicaciones, telefonía, operaciones y control. La disponibilidad de cada integración depende del proveedor, los permisos y la configuración activa.',
+            'Los cambios se reflejan en los módulos conectados cuando la persistencia y el flujo de datos están habilitados. Después de editar, confirmar el guardado en el registro fuente y revisar los módulos relacionados.',
+            'El Sistema Nervioso presenta señales e indicadores operativos. Solo debe tratarse como registro de auditoría aquello que muestre identificador, fecha, usuario, origen y detalle trazable; las tarjetas demostrativas no constituyen evidencia.'
           ]
         },
         {
@@ -57,9 +57,9 @@ const DOCUMENTS: Record<string, SOPDocument[]> = {
           title: 'Flujo de Trabajo del CRM de Kaivincia',
           steps: [
             { label: 'Carga de Leads Inteligente', desc: 'Sube registros manualmente en "Base de Clientes" o arrastra archivos CSV/TXT. El formateador inteligente impulsado por IA normalizará campos, autodetectará zonas horarias y preparará los datos.', type: 'cyan' },
-            { label: 'Clasificación Automatizada', desc: 'La IA pre-clasifica el estado de salud del cliente en Activo, En Riesgo, Lead, o Inactivo basándose en la actividad reciente.', type: 'violet' },
-            { label: 'Estrategia en Pipeline', desc: 'Usa el Pipeline de Ventas para arrastrar y soltar oportunidades (Kanban). El valor del contrato y el estado se actualizan de manera síncrona en la ficha del cliente.', type: 'emerald' },
-            { label: 'Ejecución del Call-Center', desc: 'Llama con un clic desde el CRM usando la Consola de VoIP Zadarma, respetando los horarios seguros sugeridos por el sistema de zona horaria.', type: 'normal' }
+            { label: 'Clasificación Automatizada', desc: 'Revisa el estado del cliente y su historial de actividad. Si existe una clasificación asistida por IA habilitada, verifica sus datos de entrada y valida la recomendación antes de modificar el estado.', type: 'violet' },
+            { label: 'Estrategia en Pipeline', desc: 'Usa el Pipeline de Ventas para gestionar oportunidades por etapa. Después de cada cambio, verifica que la oportunidad y la ficha del cliente muestren la información correcta; no des por hecha la sincronización sin comprobarla.', type: 'emerald' },
+            { label: 'Ejecución del Call-Center', desc: 'Llama desde la consola del proveedor VoIP configurado, siempre que el usuario, el número saliente y la campaña estén autorizados. Verifica la zona horaria y la política de contacto aplicable antes de iniciar.', type: 'normal' }
           ]
         },
         {
@@ -120,8 +120,8 @@ const DOCUMENTS: Record<string, SOPDocument[]> = {
           title: 'El Sistema Click-to-Call, el proveedor VoIP y la Zona Horaria',
           items: [
             'Antes de iniciar cualquier llamada, el sistema valida el código de área del lead (por ejemplo, 213, 720, 631) para calcular su hora local actual.',
-            'Regulación Estricta: Las llamadas telefónicas solo se permiten en el Horario Seguro (9:00 AM - 8:00 PM hora local del lead).',
-            'Si intentas llamar fuera de esta ventana horaria, el CRM mostrará una advertencia crítica con la opción de cancelar, forzar continuación o agendar cita para horario recomendado.'
+            'Regulación: los horarios permitidos dependen de la jurisdicción, tipo de llamada, consentimiento, listas de exclusión y política corporativa vigente. Aplicar la regla más restrictiva y consultar a cumplimiento ante dudas.',
+            'Si el contacto está fuera del horario permitido o no se puede confirmar su zona horaria, no iniciar la llamada. Registrar la incidencia y programar un contacto dentro de la ventana autorizada.'
           ]
         },
         {
@@ -130,7 +130,7 @@ const DOCUMENTS: Record<string, SOPDocument[]> = {
           steps: [
             { label: 'Agente presiona "Llamar"', desc: 'Se intercepta el evento de llamada en el CRM.', type: 'normal' },
             { label: 'Extracción de Código de Área', desc: 'Se analizan los 3 primeros dígitos del número telefónico de EE.UU. (ej: California 213, New York 631).', type: 'cyan' },
-            { label: 'Consulta de Zona Horaria', desc: 'Se busca en la base de datos de area_code_schedules si es zona PT, MT, CT o ET.', type: 'violet' },
+            { label: 'Consulta de Zona Horaria', desc: 'Se determina la zona horaria con una fuente fiable y se confirma la ubicación actual del contacto; el código de área por sí solo no siempre representa su ubicación actual.', type: 'violet' },
             { label: 'Evaluación de Horario Seguro', desc: 'Si la hora actual local del lead está entre 9:00 AM y 8:00 PM, se autoriza la llamada directamente.', type: 'emerald' },
             { label: 'Bloqueo / Alerta de Horario', desc: 'Si es fuera de horario, se activa el escudo protector mostrando la advertencia dinámica en pantalla.', type: 'red' }
           ]
