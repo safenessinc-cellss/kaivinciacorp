@@ -461,3 +461,14 @@ body:has(.crm-shell) .crm-main .kaivincia-tahoe-module :is(div,section,article,a
   background: rgba(245,246,248,.96) !important;
   color: #202124 !important;
 }
+
+/* Remove legacy dark texture images from the light-theme module canvases. */
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) [class*="bg-[url("] {
+  background-image: none !important;
+}
+body:has(.crm-shell) .crm-main :is(.kaivincia-tahoe-module,.kaivincia-tahoe-dashboard) [class*="bg-[#111]"] {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #202124 !important;
+  border-color: #e5eaf2 !important;
+}
