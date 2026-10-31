@@ -321,6 +321,7 @@ const DOCUMENTS: Record<string, SOPDocument[]> = {
 export default function SOPManuals() {
   const [activeDept, setActiveDept] = useState('KV-PRO-ADM');
   const [activeDoc, setActiveDoc] = useState('KV-PRO-ADM-01');
+  const [completedChecks, setCompletedChecks] = useState<Record<string, boolean>>({});
 
   // Asegurar que haya un documento seleccionado por defecto cuando cambia el departamento
   const handleDeptChange = (deptId: string) => {
@@ -338,7 +339,18 @@ export default function SOPManuals() {
 
   return (
     <div className="kaivincia-tahoe-module min-h-screen bg-[#F5F6F8] text-[#202124] flex">
-      {/* Sidebar Navigation */}
+      {/* Mobile navigation: the desktop sidebar is intentionally hidden below lg. */}
+      <div className="lg:hidden w-full absolute top-0 left-0 z-30 bg-white border-b border-[#E5EAF2] p-3 shadow-sm">
+        <div className="grid grid-cols-2 gap-2">
+          <select aria-label="Seleccionar departamento" value={activeDept} onChange={e => handleDeptChange(e.target.value)} className="min-w-0 rounded-xl border border-[#D8DEE8] bg-white px-3 py-2 text-xs text-[#202124]">
+            {DEPARTMENTS.map(dept => <option key={dept.id} value={dept.id}>{dept.name}</option>)}
+          </select>
+          <select aria-label="Seleccionar manual" value={activeDoc} onChange={e => setActiveDoc(e.target.value)} className="min-w-0 rounded-xl border border-[#D8DEE8] bg-white px-3 py-2 text-xs text-[#202124]">
+            {currentDeptDocs.map(item => <option key={item.id} value={item.id}>{item.id} · {item.title}</option>)}
+          </select>
+        </div>
+      </div>
+            {/* Sidebar Navigation */}
       <div className="w-80 border-r border-[#E5EAF2] bg-white flex flex-col hidden lg:flex shrink-0">
         <div className="p-8 border-b border-[#E5EAF2]">
           <div className="h-10 w-10 bg-[#EAF2FF] rounded-xl border border-[#D8E5FA] flex items-center justify-center text-[#1A73E8] mb-4">
@@ -543,10 +555,13 @@ export default function SOPManuals() {
                         <div className="bg-emerald-500/5 p-6 rounded-3xl border border-emerald-500/20 space-y-4">
                            {section.checklistItems?.map((item) => (
                              <label key={item.id} className="flex items-start gap-3 cursor-pointer group">
-                                <div className="mt-0.5 relative flex items-center justify-center w-5 h-5 rounded border border-emerald-500/50 bg-black/50 group-hover:bg-emerald-500/20 transition-colors">
-                                   <CheckSquare className="w-3.5 h-3.5 text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                                <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{item.text}</span>
+                                <input
+                                  type="checkbox"
+                                  checked={!!completedChecks[item.id]}
+                                  onChange={event => setCompletedChecks(previous => ({ ...previous, [item.id]: event.target.checked }))}
+                                  className="mt-0.5 h-4 w-4 shrink-0 accent-emerald-600"
+                                />
+                                <span className={`text-sm transition-colors ${completedChecks[item.id] ? 'text-[#8993A3] line-through' : 'text-[#344054] group-hover:text-[#202124]'}`}>{item.text}</span>
                              </label>
                            ))}
                         </div>
