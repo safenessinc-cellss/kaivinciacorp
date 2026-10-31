@@ -111,7 +111,6 @@ export default function CRMLayout({ userData }: { userData: any }) {
 const strategyGroup = {
       title: t('nav.groups.strategy', 'ESTRATEGIA & KPIS'),
       items: [
-        { name: t('nav.strategic_kpis', 'KPIs Estratégicos'), href: '/crm/reports', icon: BarChart3, color: 'text-white' },
         { name: t('nav.strategic_report', 'Informe Predictivo'), href: '/crm/strategic-report', icon: Activity, color: 'text-cyan-400' },
         { name: t('nav.strategy_intel', 'Estrategia Intel'), href: '/crm/strategy-blog', icon: BrainCircuit, color: 'text-amber-300' },
       ]
@@ -157,7 +156,6 @@ const strategyGroup = {
       items: [
         { name: t('nav.recruitment', 'Reclutamiento AI'), href: '/crm/recruitment', icon: UserPlus, color: 'text-pink-500' },
         { name: t('nav.team', 'Gestión de Equipo'), href: '/crm/team', icon: Users2, color: 'text-orange-500' },
-        { name: t('nav.payroll', 'Módulo Nómina'), href: '/crm/payroll', icon: DollarSign, color: 'text-green-500' },
       ]
     };
 
@@ -165,7 +163,6 @@ const strategyGroup = {
       title: t('nav.groups.portal', 'PORTAL PERSONAL'),
       items: [
         { name: t('nav.my_portal', 'Mi Portal'), href: '/crm/user-portal', icon: UserCircle, color: 'text-gray-400' },
-        { name: t('nav.billing', 'Facturación'), href: '/crm/billing', icon: Receipt, color: 'text-cyan-600' },
       ]
     };
 
@@ -209,7 +206,7 @@ const strategyGroup = {
     }
 
     if (userRole === 'gestor') {
-      return [telemarketingGroup, coreGroup, operationsGroup, clientGroup, strategyGroup, portalGroup];
+      return [coreGroup, operationsGroup, clientGroup, strategyGroup, portalGroup];
     }
 
     if (['admin', 'billing', 'accounting'].includes(userRole)) {
@@ -227,9 +224,8 @@ const strategyGroup = {
 
     if (userRole === 'ceo' || userRole === 'superadmin') {
       const groups = [
-        telemarketingGroup,
-        coreGroup,
         clientGroup,
+        coreGroup,
         operationsGroup,
         financeGroup,
         talentGroup,
@@ -247,8 +243,6 @@ const strategyGroup = {
             { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[#EC4899]' },
             { name: t('nav.security_center', 'Centro de Seguridad'), href: '/crm/security', icon: ShieldCheck, color: 'text-[#FACC15]' },
             { name: t('nav.automations', 'Automatizaciones'), href: '/crm/automations', icon: Zap },
-            { name: t('nav.form_templates', 'Plantillas de Ficha'), href: '/crm/form-templates', icon: LayoutTemplate, color: 'text-[#00F0FF]' },
-            { name: t('nav.integrations', 'Integraciones Externas'), href: '/crm/integrations', icon: Share2, color: 'text-violet-400' },
           ]
         } as any);
       }
@@ -353,7 +347,7 @@ const strategyGroup = {
 
         {/* Quick Access Icons */}
         {!isSidebarCollapsed && (
-          <div className="flex items-center justify-around p-3 border-b border-gray-800 shrink-0 bg-[#111]">
+          <div className="flex items-center justify-around p-3 border-b border-gray-200 shrink-0 bg-white">
             <Link to="/crm/chat" className="p-2 rounded-lg hover:bg-gray-800 hover:text-[#00F0FF] transition-colors relative group" title={t('nav.neural_chat', 'Chat Interno')}>
               <MessageSquare className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -377,7 +371,7 @@ const strategyGroup = {
                 placeholder={t('header.search_placeholder', 'Buscar módulo...')} 
                 value={menuSearch}
                 onChange={(e) => setMenuSearch(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-800 rounded-lg pl-9 pr-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-[#00F0FF] focus:ring-1 focus:ring-[#00F0FF] transition-colors"
+                className="w-full bg-white border border-gray-200 rounded-lg pl-9 pr-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-[#00F0FF] focus:ring-1 focus:ring-[#00F0FF] transition-colors"
               />
             </div>
           </div>
