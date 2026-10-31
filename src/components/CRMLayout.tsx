@@ -216,7 +216,6 @@ const strategyGroup = {
         items: [
           { name: 'Usuarios, roles y permisos', href: '/crm/access-control', icon: Users, color: 'text-blue-400' },
           { name: t('nav.appearance', 'Personalización Visual'), href: '/crm/appearance', icon: Palette, color: 'text-[#EC4899]' },
-          { name: t('nav.integrations', 'Integraciones Externas'), href: '/crm/integrations', icon: Share2, color: 'text-violet-400' },
         ]
       });
       return groups;
